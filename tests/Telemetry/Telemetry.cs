@@ -13,7 +13,7 @@ using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-const string defaultServerConnectionString = "Server=127.0.0.1;Port=3306;User ID=root;Password=pass;";
+const string defaultServerConnectionString = "Server=127.0.0.1;Port=3307;User ID=root;Password=pass;";
 const string defaultDatabaseName = "telemetry_demo";
 const string otlpBaseEndpoint = "http://localhost:4318";
 

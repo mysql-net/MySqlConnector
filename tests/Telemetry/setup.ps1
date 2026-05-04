@@ -20,16 +20,26 @@ function Invoke-MySql
 	)
 
 	$mysqlArguments = @(
+		'-e',
+		"MYSQL_PWD=$RootPassword",
 		$ContainerName,
 		'mysql',
 		'--protocol=tcp',
 		'-h127.0.0.1',
 		'-P3306',
-		'-uroot',
-		"-p$RootPassword"
+		'-uroot'
 	) + $Arguments
 
-	docker exec @mysqlArguments
+	$originalPSNativeCommandUseErrorActionPreference = $PSNativeCommandUseErrorActionPreference
+	$PSNativeCommandUseErrorActionPreference = $false
+	try
+	{
+		docker exec @mysqlArguments
+	}
+	finally
+	{
+		$PSNativeCommandUseErrorActionPreference = $originalPSNativeCommandUseErrorActionPreference
+	}
 }
 
 function Invoke-MySqlWithInput
@@ -42,16 +52,26 @@ function Invoke-MySqlWithInput
 	)
 
 	$mysqlArguments = @(
+		'-e',
+		"MYSQL_PWD=$RootPassword",
 		$ContainerName,
 		'mysql',
 		'--protocol=tcp',
 		'-h127.0.0.1',
 		'-P3306',
-		'-uroot',
-		"-p$RootPassword"
+		'-uroot'
 	) + $Arguments
 
-	$InputText | docker exec -i @mysqlArguments
+	$originalPSNativeCommandUseErrorActionPreference = $PSNativeCommandUseErrorActionPreference
+	$PSNativeCommandUseErrorActionPreference = $false
+	try
+	{
+		$InputText | docker exec -i @mysqlArguments
+	}
+	finally
+	{
+		$PSNativeCommandUseErrorActionPreference = $originalPSNativeCommandUseErrorActionPreference
+	}
 }
 
 function Wait-ForMySql
@@ -64,7 +84,13 @@ function Wait-ForMySql
 
 	for ($attempt = 0; $attempt -lt $Attempts; $attempt++)
 	{
-		Invoke-MySql -ContainerName $ContainerName -RootPassword $RootPassword -Arguments @('-N', '-B', '-e', 'SELECT 1;') *> $null
+		try
+		{
+			Invoke-MySql -ContainerName $ContainerName -RootPassword $RootPassword -Arguments @('-N', '-B', '-e', 'SELECT 1;') *> $null
+		}
+		catch
+		{
+		}
 		if ($LASTEXITCODE -eq 0)
 		{
 			return
@@ -80,7 +106,11 @@ docker version | Out-Null
 
 foreach ($container in @($mysqlContainer, $dashboardContainer))
 {
-	docker rm -f $container 2>$null | Out-Null
+	$existingContainers = docker container ls -a --filter "name=^$container$" --format '{{.Names}}'
+	if (@($existingContainers | Where-Object { $_ -eq $container }).Count -eq 1)
+	{
+		docker rm -f $container | Out-Null
+	}
 }
 
 docker run --rm -d --pull always `
@@ -107,7 +137,7 @@ for ($attempt = 0; $attempt -lt 30; $attempt++)
 docker run --rm -d --pull always `
 	--name $mysqlContainer `
 	-e MYSQL_ROOT_PASSWORD=$mysqlRootPassword `
-	-p 3306:3306 `
+	-p 3307:3306 `
 	$MySqlImage `
 	--max-allowed-packet=96M `
 	--character-set-server=utf8mb4 `
@@ -201,6 +231,6 @@ else
 }
 Write-Host "Aspire telemetry API: $dashboardTelemetryApi"
 Write-Host 'Aspire OTLP endpoint: http://localhost:4318'
-Write-Host 'MySQL connection string: Server=127.0.0.1;Port=3306;User ID=root;Password=pass;Database=telemetry_demo;'
+Write-Host 'MySQL connection string: Server=127.0.0.1;Port=3307;User ID=root;Password=pass;Database=telemetry_demo;'
 Write-Host 'Run: dotnet .\tests\Telemetry\Telemetry.cs'
 Write-Host 'Verify: .\tests\Telemetry\verify.ps1'

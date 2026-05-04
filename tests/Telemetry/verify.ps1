@@ -17,8 +17,8 @@ function Test-ContainerRunning
 		[string] $ContainerName
 	)
 
-	$isRunning = docker inspect --format '{{.State.Running}}' $ContainerName 2>$null
-	return $LASTEXITCODE -eq 0 -and $isRunning.Trim() -eq 'true'
+	$runningContainers = docker container ls --filter "name=^$ContainerName$" --filter 'status=running' --format '{{.Names}}'
+	return $LASTEXITCODE -eq 0 -and @($runningContainers | Where-Object { $_ -eq $ContainerName }).Count -eq 1
 }
 
 function Test-TelemetryApiAvailable
