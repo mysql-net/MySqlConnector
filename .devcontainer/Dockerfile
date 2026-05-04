@@ -1,8 +1,7 @@
-ARG VARIANT=6.0-focal
-FROM mcr.microsoft.com/dotnet/sdk:${VARIANT}
+ARG VARIANT=10.0-noble
+FROM mcr.microsoft.com/devcontainers/dotnet:${VARIANT}
 
-RUN wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
-  && dpkg -i packages-microsoft-prod.deb \
-  && rm packages-microsoft-prod.deb
-
-RUN apt-get update && apt-get install -y dotnet-sdk-7.0
+RUN apt-get update \
+  && export DEBIAN_FRONTEND=noninteractive \
+  && apt-get install -y --no-install-recommends default-mysql-client \
+  && rm -rf /var/lib/apt/lists/*

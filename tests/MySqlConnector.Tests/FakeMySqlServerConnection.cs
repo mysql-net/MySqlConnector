@@ -76,6 +76,18 @@ internal sealed class FakeMySqlServerConnection
 							{
 								await SendAsync(stream, 1, WriteOk);
 							}
+							else if (Regex.IsMatch(query, @"^set session transaction isolation level (read uncommitted|read committed|repeatable read|serializable);$", RegexOptions.IgnoreCase))
+							{
+								await SendAsync(stream, 1, WriteOk);
+							}
+							else if (Regex.IsMatch(query, @"^start transaction(?: with consistent snapshot)?(?:, read (?:write|only)| read (?:write|only))?;$", RegexOptions.IgnoreCase))
+							{
+								await SendAsync(stream, 1, WriteOk);
+							}
+							else if (query.Equals("commit", StringComparison.OrdinalIgnoreCase) || query.Equals("rollback", StringComparison.OrdinalIgnoreCase))
+							{
+								await SendAsync(stream, 1, WriteOk);
+							}
 							else if ((match = Regex.Match(query, @"^SELECT ([0-9])(;|$)")).Success)
 							{
 								var number = match.Groups[1].Value;

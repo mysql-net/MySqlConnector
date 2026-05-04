@@ -36,9 +36,9 @@ internal sealed class XaEnlistedTransaction(Transaction transaction, MySqlConnec
 			{
 				ExecuteXaCommand("END");
 			}
-			catch (MySqlException ex) when (ex.ErrorCode is MySqlErrorCode.XARBDeadlock || (ex.ErrorCode is MySqlErrorCode.XAERRemoveFail && ex.Message.Contains("ROLLBACK ONLY")))
+			catch (MySqlException ex) when (ex is { ErrorCode: MySqlErrorCode.XARBDeadlock or MySqlErrorCode.XARBTimeout or MySqlErrorCode.XARBRollback } || (ex.ErrorCode is MySqlErrorCode.XAERRemoveFail && ex.Message.Contains("ROLLBACK ONLY")))
 			{
-				// ignore deadlock notification AND any unprepared end failure when XAERRemoveFail is returned telling us the XA state is ROLLBACK ONLY.
+				// ignore deadlock notification, timeout, AND any unprepared end failure when XAERRemoveFail is returned telling us the XA state is ROLLBACK ONLY.
 			}
 		}
 
