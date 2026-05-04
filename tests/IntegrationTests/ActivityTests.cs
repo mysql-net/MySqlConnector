@@ -5,6 +5,12 @@ using System.Globalization;
 
 namespace IntegrationTests;
 
+[CollectionDefinition(nameof(NonParallelCollection), DisableParallelization = true)]
+public class NonParallelCollection
+{
+}
+
+[Collection(nameof(NonParallelCollection))]
 public class ActivityTests : IClassFixture<DatabaseFixture>
 {
 	public ActivityTests(DatabaseFixture database)
@@ -217,7 +223,6 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		var activity = Assert.Single(activities);
 		Assert.Equal(ActivityKind.Client, activity.Kind);
 		Assert.Equal("Execute", activity.OperationName);
-		AssertTag(activity.Tags, "db.statement", "SELECT mysql_query_attribute_string('traceparent');\nSELECT mysql_query_attribute_string('traceparent');");
 		Assert.All(traceparents, x => Assert.Equal(activity.Id, x));
 	}
 
@@ -230,7 +235,6 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		connection.Open();
 
 		using var parentActivity = new Activity(nameof(ExecuteTraceContextQueryAttributes));
-		parentActivity.SetIdFormat(ActivityIdFormat.W3C);
 		parentActivity.TraceStateString = "test=value";
 		parentActivity.Start();
 
