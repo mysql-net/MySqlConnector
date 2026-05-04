@@ -54,15 +54,15 @@ public class MySqlParameterCollectionTests : IDisposable
 	[Fact]
 	public void AddSameNamedParameterTwice()
 	{
-		var parameter = new MySqlParameter("@name", 1);
+		var parameter = new MySqlParameter("name", 1);
 
 		Assert.Same(parameter, m_parameterCollection.Add(parameter));
 #if MYSQL_DATA
-		Assert.Throws<MySqlException>(() => m_parameterCollection.Add(parameter));
+		var exception = Assert.Throws<MySqlException>(() => m_parameterCollection.Add(parameter));
 #else
 		var exception = Assert.Throws<ArgumentException>(() => m_parameterCollection.Add(parameter));
-		Assert.StartsWith("The parameter is already contained by this MySqlParameterCollection", exception.Message);
 #endif
+		Assert.StartsWith("Parameter 'name' has already been defined", exception.Message);
 
 		Assert.Equal(1, m_parameterCollection.Count);
 		Assert.Same(parameter, m_parameterCollection[0]);
@@ -106,11 +106,6 @@ public class MySqlParameterCollectionTests : IDisposable
 		var otherCollection = new MySqlCommand().Parameters;
 		otherCollection.Add(parameter);
 
-#if !MYSQL_DATA
-		var exception = Assert.Throws<ArgumentException>(() => m_parameterCollection.Add(parameter));
-		Assert.StartsWith("The parameter is already contained by another MySqlParameterCollection", exception.Message);
-#endif
-
 		Assert.Equal(0, m_parameterCollection.Count);
 		Assert.Equal(1, otherCollection.Count);
 		Assert.Same(parameter, otherCollection[0]);
@@ -125,7 +120,7 @@ public class MySqlParameterCollectionTests : IDisposable
 		Action action = () => m_parameterCollection[0] = parameter2;
 		var exception = Assert.Throws<ArgumentException>(action);
 #if !MYSQL_DATA
-		Assert.StartsWith("The parameter is already contained by this MySqlParameterCollection", exception.Message);
+		Assert.StartsWith("Parameter 'two' has already been defined", exception.Message);
 #endif
 
 		Assert.Equal(2, m_parameterCollection.Count);
@@ -147,7 +142,7 @@ public class MySqlParameterCollectionTests : IDisposable
 		Action action = () => m_parameterCollection[0] = replacement;
 		var exception = Assert.Throws<ArgumentException>(action);
 #if !MYSQL_DATA
-		Assert.StartsWith("Parameter '@two' has already been defined", exception.Message);
+		Assert.StartsWith("Parameter 'two' has already been defined", exception.Message);
 #endif
 
 		Assert.Equal(2, m_parameterCollection.Count);
@@ -181,7 +176,7 @@ public class MySqlParameterCollectionTests : IDisposable
 		Action action = () => m_parameterCollection["@one"] = replacement;
 		var exception = Assert.Throws<ArgumentException>(action);
 #if !MYSQL_DATA
-		Assert.StartsWith("Parameter '@two' has already been defined", exception.Message);
+		Assert.StartsWith("Parameter 'two' has already been defined", exception.Message);
 #endif
 
 		Assert.Equal(2, m_parameterCollection.Count);

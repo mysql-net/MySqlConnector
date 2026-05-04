@@ -130,12 +130,8 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 		var oldParameter = m_parameters[index];
 		if (ReferenceEquals(oldParameter, newParameter))
 			return;
-		if (ReferenceEquals(newParameter.ParameterCollection, this))
-			throw new ArgumentException("The parameter is already contained by this MySqlParameterCollection", nameof(value));
-		if (newParameter.ParameterCollection is not null)
-			throw new ArgumentException("The parameter is already contained by another MySqlParameterCollection", nameof(value));
 		if (!string.IsNullOrEmpty(newParameter.NormalizedParameterName) && NormalizedIndexOf(newParameter.NormalizedParameterName) != -1)
-			throw new ArgumentException($"Parameter '{newParameter.ParameterName}' has already been defined", nameof(value));
+			throw new ArgumentException($"Parameter '{newParameter.NormalizedParameterName}' has already been defined", nameof(value));
 
 		if (oldParameter.NormalizedParameterName is not null)
 			m_nameToIndex.Remove(oldParameter.NormalizedParameterName);
@@ -181,12 +177,10 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 
 	private void AddParameter(MySqlParameter parameter, int index)
 	{
+		if (!string.IsNullOrEmpty(parameter.NormalizedParameterName) && NormalizedIndexOf(parameter.NormalizedParameterName) != -1)
+			throw new ArgumentException($"Parameter '{parameter.NormalizedParameterName}' has already been defined", nameof(parameter));
 		if (ReferenceEquals(parameter.ParameterCollection, this))
 			throw new ArgumentException("The parameter is already contained by this MySqlParameterCollection", nameof(parameter));
-		if (parameter.ParameterCollection is not null)
-			throw new ArgumentException("The parameter is already contained by another MySqlParameterCollection", nameof(parameter));
-		if (!string.IsNullOrEmpty(parameter.NormalizedParameterName) && NormalizedIndexOf(parameter.NormalizedParameterName) != -1)
-			throw new ArgumentException($"Parameter '{parameter.ParameterName}' has already been defined", nameof(parameter));
 
 		if (index < m_parameters.Count)
 		{
