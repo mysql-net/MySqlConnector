@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Runtime.InteropServices;
+using System.Diagnostics;
+using System.Numerics;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
@@ -90,7 +91,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		}
 	}
 
-	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon)
+	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon, Activity? activity)
 	{
 		if (commandListPosition.CommandIndex == commandListPosition.CommandCount)
 			return false;
@@ -102,23 +103,10 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			Log.PreparingCommandPayload(command.Logger, command.Connection!.Session.Id, command.CommandText!);
 
 			writer.Write((byte) CommandKind.Query);
-			var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
-			if (supportsQueryAttributes)
-			{
-				// attribute count
-				var attributes = command.RawAttributes;
-				writer.WriteLengthEncodedInteger((uint) (attributes?.Count ?? 0));
-
-				// attribute set count (always 1)
-				writer.Write((byte) 1);
-
-				if (attributes?.Count > 0)
-					WriteBinaryParameters(writer, attributes.Select(static x => x.ToParameter()).ToArray(), command, true, 0);
-			}
+			if (command.Connection!.Session.SupportsQueryAttributes)
+				WriteAttributes(writer, command, activity);
 			else if (command.RawAttributes?.Count > 0)
-			{
 				Log.QueryAttributesNotSupported(command.Logger, command.Connection!.Session.Id, command.CommandText!);
-			}
 
 			WriteQueryPayload(command, cachedProcedures, writer, appendSemicolon, isFirstCommand: true, isLastCommand: true);
 			commandListPosition.LastUsedPreparedStatement = null;
@@ -129,7 +117,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			writer.Write((byte) CommandKind.StatementExecute);
 			commandListPosition.LastUsedPreparedStatement =
 				commandListPosition.PreparedStatements.Statements[commandListPosition.PreparedStatementIndex];
-			WritePreparedStatement(command, commandListPosition.LastUsedPreparedStatement, writer);
+			WritePreparedStatement(command, commandListPosition.LastUsedPreparedStatement, writer, activity);
 
 			// advance to next prepared statement or next command
 			if (++commandListPosition.PreparedStatementIndex == commandListPosition.PreparedStatements.Statements.Count)
@@ -155,13 +143,32 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	public static bool WriteQueryPayload(IMySqlCommand command, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon, bool isFirstCommand, bool isLastCommand) =>
 		(command.CommandType == CommandType.StoredProcedure) ? WriteStoredProcedure(command, cachedProcedures, writer) : WriteCommand(command, writer, appendSemicolon, isFirstCommand, isLastCommand);
 
-	private static void WritePreparedStatement(IMySqlCommand command, PreparedStatement preparedStatement, ByteBufferWriter writer)
+	public static void WriteAttributes(ByteBufferWriter writer, IMySqlCommand command, Activity? activity)
+	{
+		var attributes = command.RawAttributes;
+		var (totalAttributeCount, telemetryKinds) = GetAttributeCountAndKinds(attributes, activity);
+		writer.WriteLengthEncodedInteger((uint) totalAttributeCount);
+
+		// attribute set count (always 1)
+		writer.Write((byte) 1);
+
+		if (totalAttributeCount > 0)
+		{
+			Span<MySqlParameter> attributeParameters = new MySqlParameter[totalAttributeCount];
+			var index = 0;
+			for (; index < (attributes?.Count ?? 0); index++)
+				attributeParameters[index] = attributes![index].ToParameter();
+			WriteTelemetryAttributes(attributeParameters.Slice(index), activity, telemetryKinds);
+			WriteBinaryParameters(writer, attributeParameters, command, true, 0);
+		}
+	}
+
+	private static void WritePreparedStatement(IMySqlCommand command, PreparedStatement preparedStatement, ByteBufferWriter writer, Activity? activity)
 	{
 		var parameterCollection = command.RawParameters;
 
 		Log.PreparingCommandPayloadWithId(command.Logger, command.Connection!.Session.Id, preparedStatement.StatementId, command.CommandText!);
 
-		var attributes = command.RawAttributes;
 		var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
 		writer.Write(preparedStatement.StatementId);
 
@@ -172,28 +179,31 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		writer.Write(1);
 
 		var commandParameterCount = preparedStatement.Statement.ParameterNames?.Count ?? 0;
-		var attributeCount = attributes?.Count ?? 0;
+
+		var attributes = command.RawAttributes;
+		var (totalAttributeCount, telemetryKinds) = GetAttributeCountAndKinds(attributes, activity);
+
 		if (sendQueryAttributes)
 		{
-			writer.WriteLengthEncodedInteger((uint) (commandParameterCount + attributeCount));
+			writer.WriteLengthEncodedInteger((uint) (commandParameterCount + totalAttributeCount));
 		}
 		else
 		{
 			if (supportsQueryAttributes && commandParameterCount > 0)
 				writer.WriteLengthEncodedInteger((uint) commandParameterCount);
-			if (attributeCount > 0)
+			if (command.RawAttributes?.Count > 0)
 			{
 				Log.QueryAttributesNotSupportedWithId(command.Logger, command.Connection!.Session.Id, preparedStatement.StatementId);
-				attributeCount = 0;
 			}
+			totalAttributeCount = 0;
 		}
 
-		if (commandParameterCount > 0 || attributeCount > 0)
+		if (commandParameterCount > 0 || totalAttributeCount > 0)
 		{
 			// TODO: How to handle incorrect number of parameters?
 
 			// build subset of parameters for this statement
-			var parameters = new MySqlParameter[commandParameterCount + attributeCount];
+			Span<MySqlParameter> parameters = new MySqlParameter[commandParameterCount + totalAttributeCount];
 			for (var i = 0; i < commandParameterCount; i++)
 			{
 				var parameterName = preparedStatement.Statement.NormalizedParameterNames![i];
@@ -204,13 +214,66 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 					throw new MySqlException($"Parameter index {parameterIndex} is invalid when only {parameterCollection?.Count ?? 0} parameter{(parameterCollection?.Count == 1 ? " is" : "s are")} defined.");
 				parameters[i] = parameterCollection![parameterIndex];
 			}
-			for (var i = 0; i < attributeCount; i++)
+			var commandAttributeCount = attributes?.Count ?? 0;
+			for (var i = 0; i < commandAttributeCount; i++)
 				parameters[commandParameterCount + i] = attributes![i].ToParameter();
+			WriteTelemetryAttributes(parameters.Slice(commandParameterCount + commandAttributeCount), activity, telemetryKinds);
 			WriteBinaryParameters(writer, parameters, command, supportsQueryAttributes, commandParameterCount);
 		}
 	}
 
-	private static void WriteBinaryParameters(ByteBufferWriter writer, MySqlParameter[] parameters, IMySqlCommand command, bool supportsQueryAttributes, int parameterCount)
+	// Counts the number of attributes, combining command attributes and the required attributes needed to send the telemetry context.
+	internal static (int AttributeCount, TelemetryAttributeKind Kinds) GetAttributeCountAndKinds(MySqlAttributeCollection? attributes, Activity? activity)
+	{
+		var totalAttributeCount = attributes?.Count ?? 0;
+
+		// we require W3C IdFormat (which is the default since .NET 5) in order to send a correct traceparent attribute
+		var telemetryKinds = TelemetryAttributeKind.None;
+		if (activity is { IdFormat: ActivityIdFormat.W3C, Id.Length: > 0 })
+		{
+			// start with both attributes and eliminate based on activity content and user-provided attributes
+			telemetryKinds = TelemetryAttributeKind.TraceParent |
+				(activity.TraceStateString is { Length: > 0 } ? TelemetryAttributeKind.TraceState : TelemetryAttributeKind.None);
+
+			// check for edge case of user already providing attributes with these names on the command
+			if (attributes is not null)
+			{
+				foreach (var attribute in attributes)
+				{
+					if (attribute.AttributeName == "traceparent")
+						telemetryKinds &= ~TelemetryAttributeKind.TraceParent;
+					else if (attribute.AttributeName == "tracestate")
+						telemetryKinds &= ~TelemetryAttributeKind.TraceState;
+				}
+			}
+
+#if NET6_0_OR_GREATER
+			totalAttributeCount += BitOperations.PopCount((uint) telemetryKinds);
+#else
+			totalAttributeCount +=
+				(((telemetryKinds & TelemetryAttributeKind.TraceParent) != TelemetryAttributeKind.None) ? 1 : 0) +
+				(((telemetryKinds & TelemetryAttributeKind.TraceState) != TelemetryAttributeKind.None) ? 1 : 0);
+#endif
+		}
+
+		return (totalAttributeCount, telemetryKinds);
+	}
+
+	private static void WriteTelemetryAttributes(Span<MySqlParameter> span, Activity? activity, TelemetryAttributeKind kinds)
+	{
+		if ((kinds & TelemetryAttributeKind.TraceParent) != 0)
+		{
+			span[0] = new("traceparent", activity!.Id!);
+			span = span.Slice(1);
+		}
+		if ((kinds & TelemetryAttributeKind.TraceState) != 0)
+		{
+			span[0] = new("tracestate", activity!.TraceStateString!);
+			span = span.Slice(1);
+		}
+	}
+
+	private static void WriteBinaryParameters(ByteBufferWriter writer, ReadOnlySpan<MySqlParameter> parameters, IMySqlCommand command, bool supportsQueryAttributes, int parameterCount)
 	{
 		// write null bitmap
 		byte nullBitmap = 0;
@@ -243,6 +306,10 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 				var dbType = typeMapping.DbTypes[0];
 				mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbType(dbType);
 			}
+
+			// MYSQL_TYPE_STRING is required for W3C trace propagation attributes: https://github.com/mysql/mysql-server/blob/9.7/components/telemetry/tm_propagation.cc#L72-L74
+			if (mySqlDbType == MySqlDbType.VarChar && parameter.ParameterName is "traceparent" or "tracestate")
+				mySqlDbType = MySqlDbType.String;
 
 			// HACK: MariaDB doesn't have a dedicated Vector type so mark it as binary data
 			if (mySqlDbType == MySqlDbType.Vector && command.Connection!.Session.ServerVersion.IsMariaDb)

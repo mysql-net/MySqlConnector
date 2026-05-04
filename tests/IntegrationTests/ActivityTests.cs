@@ -5,6 +5,12 @@ using System.Globalization;
 
 namespace IntegrationTests;
 
+[CollectionDefinition(nameof(NonParallelCollection), DisableParallelization = true)]
+public class NonParallelCollection
+{
+}
+
+[Collection(nameof(NonParallelCollection))]
 public class ActivityTests : IClassFixture<DatabaseFixture>
 {
 	public ActivityTests(DatabaseFixture database)
@@ -138,6 +144,121 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		AssertTags(activity.Tags, csb);
 		AssertTag(activity.Tags, "db.connection_id", connection.ServerThread.ToString(CultureInfo.InvariantCulture));
 		AssertTag(activity.Tags, "db.statement", "SELECT 1;");
+	}
+
+	[SkippableTheory(ServerFeatures.QueryAttributes)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void ExecuteTraceparentQueryAttribute(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+
+		using var parentActivity = new Activity(nameof(ExecuteTraceparentQueryAttribute));
+		parentActivity.Start();
+
+		Activity activity = null;
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = x => activity = x,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		using var command = new MySqlCommand("SELECT mysql_query_attribute_string('traceparent');", connection);
+		if (prepare)
+			command.Prepare();
+
+		var traceparent = command.ExecuteScalar();
+
+		Assert.NotNull(activity);
+		Assert.Equal(activity.Id, traceparent);
+	}
+
+	[SkippableTheory(ServerFeatures.QueryAttributes)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void ExecuteTraceparentQueryAttributeBatch(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+
+		using var parentActivity = new Activity(nameof(ExecuteTraceparentQueryAttributeBatch));
+		parentActivity.Start();
+
+		var activities = new List<Activity>();
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = activities.Add,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		using var batch = new MySqlBatch(connection)
+		{
+			BatchCommands =
+			{
+				new MySqlBatchCommand("SELECT mysql_query_attribute_string('traceparent');"),
+				new MySqlBatchCommand("SELECT mysql_query_attribute_string('traceparent');"),
+			},
+		};
+		if (prepare)
+			batch.Prepare();
+
+		var traceparents = new List<string>();
+		using (var reader = batch.ExecuteReader())
+		{
+			do
+			{
+				Assert.True(reader.Read());
+				traceparents.Add(reader.GetString(0));
+				Assert.False(reader.Read());
+			} while (reader.NextResult());
+		}
+
+		var activity = Assert.Single(activities);
+		Assert.Equal(ActivityKind.Client, activity.Kind);
+		Assert.Equal("Execute", activity.OperationName);
+		Assert.All(traceparents, x => Assert.Equal(activity.Id, x));
+	}
+
+	[SkippableTheory(ServerFeatures.QueryAttributes)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void ExecuteTraceContextQueryAttributes(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+
+		using var parentActivity = new Activity(nameof(ExecuteTraceContextQueryAttributes));
+		parentActivity.TraceStateString = "test=value";
+		parentActivity.Start();
+
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllData,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		using var command = new MySqlCommand(
+			"SELECT mysql_query_attribute_string('traceparent') AS traceparent, mysql_query_attribute_string('tracestate') AS tracestate;",
+			connection);
+		if (prepare)
+			command.Prepare();
+
+		using var reader = command.ExecuteReader();
+		Assert.True(reader.Read());
+		var traceparent = reader.GetString(reader.GetOrdinal("traceparent"));
+		var tracestate = reader.GetString(reader.GetOrdinal("tracestate"));
+		Assert.False(reader.Read());
+
+		Assert.Matches($"^00-{parentActivity.TraceId.ToString()}-[0-9a-f]{{16}}-[0-9a-f]{{2}}$", traceparent);
+		Assert.Equal(parentActivity.TraceStateString, tracestate);
 	}
 
 	[Theory]
