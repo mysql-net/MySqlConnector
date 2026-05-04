@@ -52,14 +52,14 @@ using (var rootActivity = activitySource.StartActivity("TelemetryScenario", Acti
 	traceId = rootActivity?.TraceId.ToString();
 
 	await using var connection = new MySqlConnection(bootstrapConnectionString);
-	await connection.OpenAsync().ConfigureAwait(false);
+	await connection.OpenAsync();
 
-	await using (var createDatabaseCommand = new MySqlCommand($"CREATE DATABASE IF NOT EXISTS {QuoteIdentifier(databaseName)};", connection))
+	await using (var createDatabaseCommand = new MySqlCommand($"CREATE DATABASE IF NOT EXISTS {databaseName};", connection))
 	{
-		await createDatabaseCommand.ExecuteNonQueryAsync().ConfigureAwait(false);
+		await createDatabaseCommand.ExecuteNonQueryAsync();
 	}
 
-	await connection.ChangeDatabaseAsync(databaseName).ConfigureAwait(false);
+	await connection.ChangeDatabaseAsync(databaseName);
 
 	await using (var setupCommand = new MySqlCommand(
 		"""
@@ -71,12 +71,12 @@ using (var rootActivity = activitySource.StartActivity("TelemetryScenario", Acti
 		""",
 		connection))
 	{
-		await setupCommand.ExecuteNonQueryAsync().ConfigureAwait(false);
+		await setupCommand.ExecuteNonQueryAsync();
 	}
 
 	await using (var queryCommand = new MySqlCommand("SELECT mysql_query_attribute_string('traceparent');", connection))
 	{
-		queryTraceparent = (string?) await queryCommand.ExecuteScalarAsync().ConfigureAwait(false);
+		queryTraceparent = (string?) await queryCommand.ExecuteScalarAsync();
 	}
 
 	await using (var preparedCommand = new MySqlCommand(
@@ -84,13 +84,11 @@ using (var rootActivity = activitySource.StartActivity("TelemetryScenario", Acti
 		connection))
 	{
 		preparedCommand.Parameters.AddWithValue("@message", $"prepared at {DateTimeOffset.UtcNow:O}");
-		await preparedCommand.PrepareAsync().ConfigureAwait(false);
+		await preparedCommand.PrepareAsync();
 
-		await using var reader = await preparedCommand.ExecuteReaderAsync().ConfigureAwait(false);
-		if (await reader.ReadAsync().ConfigureAwait(false))
-		{
+		await using var reader = await preparedCommand.ExecuteReaderAsync();
+		if (await reader.ReadAsync())
 			preparedTraceparent = reader.GetString(reader.GetOrdinal("traceparent"));
-		}
 		else
 			preparedTraceparent = null;
 	}
@@ -104,19 +102,19 @@ using (var rootActivity = activitySource.StartActivity("TelemetryScenario", Acti
 		},
 	})
 	{
-		await using var reader = await batch.ExecuteReaderAsync().ConfigureAwait(false);
+		await using var reader = await batch.ExecuteReaderAsync();
 		var batchResultIndex = 0;
 		do
 		{
 			string? batchTraceparent = null;
-			if (await reader.ReadAsync().ConfigureAwait(false))
+			if (await reader.ReadAsync())
 				batchTraceparent = reader.GetString(reader.GetOrdinal("traceparent"));
 
 			if (batchResultIndex < batchTraceparents.Length)
 				batchTraceparents[batchResultIndex] = batchTraceparent;
 
 			batchResultIndex++;
-		} while (await reader.NextResultAsync().ConfigureAwait(false));
+		} while (await reader.NextResultAsync());
 	}
 }
 
@@ -132,7 +130,5 @@ Console.WriteLine($"BATCH[0] traceparent: {batchTraceparents[0] ?? "<null>"}");
 Console.WriteLine($"BATCH[1] traceparent: {batchTraceparents[1] ?? "<null>"}");
 Console.WriteLine("Waiting 5 seconds for client and server spans to export to Aspire...");
 
-await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+await Task.Delay(TimeSpan.FromSeconds(5));
 tracerProvider.ForceFlush();
-
-static string QuoteIdentifier(string value) => $"`{value.Replace("`", "``")}`";
