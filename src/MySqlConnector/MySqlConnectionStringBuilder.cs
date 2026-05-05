@@ -275,6 +275,19 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
+	/// Allows a connection using <see cref="MySqlSslMode.VerifyFull"/> to succeed even if certificate revocation checking fails because revocation status can't be determined. All other <see cref="MySqlSslMode.VerifyFull"/> checks are still performed. This option is only supported on .NET 7.0 or later.
+	/// </summary>
+	[Category("TLS")]
+	[DefaultValue(false)]
+	[Description("Allows a connection using VerifyFull to succeed even if revocation checking fails because revocation status can't be determined.")]
+	[DisplayName("Allow Unknown Certificate Revocation")]
+	public bool AllowUnknownCertificateRevocation
+	{
+		get => MySqlConnectionStringOption.AllowUnknownCertificateRevocation.GetValue(this);
+		set => MySqlConnectionStringOption.AllowUnknownCertificateRevocation.SetValue(this, value);
+	}
+
+	/// <summary>
 	/// The TLS versions which may be used during TLS negotiation, or empty to use OS defaults.
 	/// </summary>
 	[AllowNull]
@@ -919,6 +932,7 @@ internal abstract partial class MySqlConnectionStringOption
 	public static readonly MySqlConnectionStringReferenceOption<string> SslCert;
 	public static readonly MySqlConnectionStringReferenceOption<string> SslKey;
 	public static readonly MySqlConnectionStringReferenceOption<string> SslCa;
+	public static readonly MySqlConnectionStringValueOption<bool> AllowUnknownCertificateRevocation;
 	public static readonly MySqlConnectionStringReferenceOption<string> TlsVersion;
 	public static readonly MySqlConnectionStringReferenceOption<string> TlsCipherSuites;
 
@@ -1060,6 +1074,10 @@ internal abstract partial class MySqlConnectionStringOption
 		AddOption(options, SslCa = new(
 			keys: ["SSL CA", "CACertificateFile", "CA Certificate File", "SslCa", "Ssl-Ca"],
 			defaultValue: ""));
+
+		AddOption(options, AllowUnknownCertificateRevocation = new(
+			keys: ["Allow Unknown Certificate Revocation", "AllowUnknownCertificateRevocation"],
+			defaultValue: false));
 
 		AddOption(options, TlsVersion = new(
 			keys: ["TLS Version", "TlsVersion", "Tls-Version"],
