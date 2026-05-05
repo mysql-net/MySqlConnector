@@ -53,7 +53,7 @@ This library is compatible with popular .NET ORMs including:
 * [RepoDb](https://repodb.net/) ([GitHub](https://github.com/mikependon/RepoDb/tree/master/RepoDb.MySqlConnector), [NuGet](https://www.nuget.org/packages/RepoDb.MySqlConnector))
 * [ServiceStack.OrmLite](https://servicestack.net/ormlite) ([GitHub](https://github.com/ServiceStack/ServiceStack.OrmLite), [NuGet](https://www.nuget.org/packages/ServiceStack.OrmLite.MySqlConnector))
 * [SimpleStack.Orm](https://simplestack.org/) ([GitHub](https://github.com/SimpleStack/simplestack.orm), [NuGet](https://www.nuget.org/packages/SimpleStack.Orm.MySQLConnector))
-* [Gedaq](https://github.com/SoftStoneDevelop/Gedaq) ([GitHub](https://github.com/SoftStoneDevelop/Gedaq), [NuGet](https://www.nuget.org/packages/Gedaq/))
+* [Gedaq](https://github.com/SoftStoneDevelop/Gedaq) ([GitHub](https://github.com/SoftStoneDevelop/Gedaq.MySqlConnector), [NuGet](https://www.nuget.org/packages/Gedaq/))
 
 For Entity Framework support, use:
 
