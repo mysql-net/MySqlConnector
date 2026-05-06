@@ -44,16 +44,13 @@ from Oracle.
 This library is compatible with popular .NET ORMs including:
 
 * [Dapper](https://dapperlib.github.io/Dapper/) ([GitHub](https://github.com/DapperLib/Dapper), [NuGet](https://www.nuget.org/packages/Dapper))
-* [Faithlife.Data](https://faithlife.github.io/FaithlifeData/) ([GitHub](https://github.com/Faithlife/FaithlifeData), [NuGet](https://www.nuget.org/packages/Faithlife.Data))
 * [FreeSql](https://freesql.net/) ([GitHub](https://github.com/dotnetcore/FreeSql), [NuGet](https://www.nuget.org/packages/FreeSql.Provider.MySqlConnector/))
-* [LINQ to DB](https://linq2db.github.io/) ([GitHub](https://github.com/linq2db/linq2db), [NuGet](https://www.nuget.org/packages/linq2db.MySqlConnector)) including ClickHouse support
+* [Gedaq](https://github.com/SoftStoneDevelop/Gedaq) ([GitHub](https://github.com/SoftStoneDevelop/Gedaq.MySqlConnector), [NuGet](https://www.nuget.org/packages/Gedaq/))
+* [LINQ to DB](https://linq2db.github.io/) ([GitHub](https://github.com/linq2db/linq2db), [NuGet](https://www.nuget.org/packages/linq2db.MySql/)) including ClickHouse support
+* [MuchAdo](https://muchado.net/) ([GitHub](https://github.com/MuchAdoNet/MuchAdo), [NuGet](https://www.nuget.org/profiles/MuchAdo))
 * [NHibernate](https://nhibernate.info/) ([GitHub](https://github.com/nhibernate/NHibernate.MySqlConnector), [NuGet](https://www.nuget.org/packages/NHibernate.Driver.MySqlConnector))
 * [NReco.Data](https://www.nrecosite.com/dalc_net.aspx) ([GitHub](https://github.com/nreco/data), [NuGet](https://www.nuget.org/packages/NReco.Data))
-* [Paradigm ORM](https://www.paradigm.net.co/) ([GitHub](https://github.com/MiracleDevs/Paradigm.ORM), [NuGet](https://www.nuget.org/packages/Paradigm.ORM.Data.MySql/))
-* [RepoDb](https://repodb.net/) ([GitHub](https://github.com/mikependon/RepoDb/tree/master/RepoDb.MySqlConnector), [NuGet](https://www.nuget.org/packages/RepoDb.MySqlConnector))
-* [ServiceStack.OrmLite](https://servicestack.net/ormlite) ([GitHub](https://github.com/ServiceStack/ServiceStack.OrmLite), [NuGet](https://www.nuget.org/packages/ServiceStack.OrmLite.MySqlConnector))
 * [SimpleStack.Orm](https://simplestack.org/) ([GitHub](https://github.com/SimpleStack/simplestack.orm), [NuGet](https://www.nuget.org/packages/SimpleStack.Orm.MySQLConnector))
-* [Gedaq](https://github.com/SoftStoneDevelop/Gedaq) ([GitHub](https://github.com/SoftStoneDevelop/Gedaq.MySqlConnector), [NuGet](https://www.nuget.org/packages/Gedaq/))
 
 For Entity Framework support, use:
 
