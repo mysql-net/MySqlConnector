@@ -282,6 +282,8 @@ internal abstract class SqlParser(StatementPreparer preparer)
 		}
 		else if (state is State.SingleQuotedStringSingleQuote or State.DoubleQuotedStringDoubleQuote or State.BacktickQuotedStringBacktick)
 		{
+			if (isNamedParameter)
+				OnNamedParameter(parameterStartIndex, sql.Length - parameterStartIndex);
 			state = State.Statement;
 		}
 

@@ -132,6 +132,27 @@ public class StatementPreparerTests
 	}
 
 	[Theory]
+	[InlineData("SELECT @var", false, "SELECT 123")]
+	[InlineData("SELECT @var ", false, "SELECT 123 ")]
+	[InlineData("SELECT @'var'", false, "SELECT 123")]
+	[InlineData("SELECT @'var'\t", false, "SELECT 123\t")]
+	[InlineData("SELECT @`var`", false, "SELECT 123")]
+	[InlineData("SELECT @\"var\"", false, "SELECT 123")]
+	[InlineData("SELECT @var", true, "SELECT 123;")]
+	[InlineData("SELECT @'var'", true, "SELECT 123;")]
+	[InlineData("SELECT @`var`", true, "SELECT 123;")]
+	[InlineData("SELECT @`var` ", true, "SELECT 123 ;")]
+	[InlineData("SELECT @\"var\"", true, "SELECT 123;")]
+	public void QuotedParametersAtEndOfStatement(string sql, bool appendSemicolon, string expectedSql)
+	{
+		var parameters = new MySqlParameterCollection();
+		parameters.AddWithValue("@var", 123);
+		var options = appendSemicolon ? StatementPreparerOptions.AppendSemicolon : StatementPreparerOptions.None;
+		var parsedSql = GetParsedSql(sql, parameters, options);
+		Assert.Equal(expectedSql, parsedSql);
+	}
+
+	[Theory]
 	[InlineData(@"SET @'var':=1;
 SELECT @foo+@'var' as R")]
 	[InlineData(@"SET @'var':=1;
