@@ -130,8 +130,12 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 		var oldParameter = m_parameters[index];
 		if (ReferenceEquals(oldParameter, newParameter))
 			return;
-		if (!string.IsNullOrEmpty(newParameter.NormalizedParameterName) && NormalizedIndexOf(newParameter.NormalizedParameterName) != -1)
-			throw new ArgumentException($"Parameter '{newParameter.NormalizedParameterName}' has already been defined", nameof(value));
+		if (newParameter.NormalizedParameterName is { Length: > 0 })
+		{
+			var existingIndex = NormalizedIndexOf(newParameter.NormalizedParameterName);
+			if (existingIndex != -1 && existingIndex != index)
+				throw new ArgumentException($"Parameter '{newParameter.NormalizedParameterName}' has already been defined", nameof(value));
+		}
 
 		if (oldParameter.NormalizedParameterName is not null)
 			m_nameToIndex.Remove(oldParameter.NormalizedParameterName);

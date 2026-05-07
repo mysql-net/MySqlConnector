@@ -167,6 +167,19 @@ public class MySqlParameterCollectionTests : IDisposable
 	}
 
 	[Fact]
+	public void SetParameterByIndexSameNameReplacesParameter()
+	{
+		var oldParameter = m_parameterCollection.AddWithValue("@one", 1);
+		var replacement = new MySqlParameter("@one", 2);
+
+		m_parameterCollection[0] = replacement;
+
+		Assert.Equal(1, m_parameterCollection.Count);
+		Assert.Same(replacement, m_parameterCollection[0]);
+		Assert.Equal(0, m_parameterCollection.IndexOf("@one"));
+	}
+
+	[Fact]
 	public void SetParameterByNameDuplicateNameLeavesCollectionUnchanged()
 	{
 		var parameter1 = m_parameterCollection.AddWithValue("@one", 1);
@@ -186,6 +199,19 @@ public class MySqlParameterCollectionTests : IDisposable
 #endif
 		Assert.Same(parameter2, m_parameterCollection[1]);
 		Assert.Equal(1, m_parameterCollection.IndexOf("@two"));
+	}
+
+	[Fact]
+	public void SetParameterByNameSameNameReplacesParameter()
+	{
+		var oldParameter = m_parameterCollection.AddWithValue("@one", 1);
+		var replacement = new MySqlParameter("@one", 2);
+
+		m_parameterCollection["@one"] = replacement;
+
+		Assert.Equal(1, m_parameterCollection.Count);
+		Assert.Same(replacement, m_parameterCollection[0]);
+		Assert.Equal(0, m_parameterCollection.IndexOf("@one"));
 	}
 
 	[Fact]
