@@ -181,6 +181,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		var commandParameterCount = preparedStatement.Statement.ParameterNames?.Count ?? 0;
 
 		var attributes = command.RawAttributes;
+		var commandAttributeCount = attributes?.Count ?? 0;
 		var (totalAttributeCount, telemetryKinds) = GetAttributeCountAndKinds(attributes, activity);
 
 		if (sendQueryAttributes)
@@ -191,11 +192,13 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		{
 			if (supportsQueryAttributes && commandParameterCount > 0)
 				writer.WriteLengthEncodedInteger((uint) commandParameterCount);
-			if (command.RawAttributes?.Count > 0)
+			if (commandAttributeCount > 0)
 			{
 				Log.QueryAttributesNotSupportedWithId(command.Logger, command.Connection!.Session.Id, preparedStatement.StatementId);
+				commandAttributeCount = 0;
 			}
 			totalAttributeCount = 0;
+			telemetryKinds = TelemetryAttributeKind.None;
 		}
 
 		if (commandParameterCount > 0 || totalAttributeCount > 0)
@@ -214,7 +217,6 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 					throw new MySqlException($"Parameter index {parameterIndex} is invalid when only {parameterCollection?.Count ?? 0} parameter{(parameterCollection?.Count == 1 ? " is" : "s are")} defined.");
 				parameters[i] = parameterCollection![parameterIndex];
 			}
-			var commandAttributeCount = attributes?.Count ?? 0;
 			for (var i = 0; i < commandAttributeCount; i++)
 				parameters[commandParameterCount + i] = attributes![i].ToParameter();
 			WriteTelemetryAttributes(parameters.Slice(commandParameterCount + commandAttributeCount), activity, telemetryKinds);
