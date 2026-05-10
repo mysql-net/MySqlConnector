@@ -24,7 +24,6 @@ Otherwise, set the following options appropriately:
 * `Data.UnsupportedFeatures`: A comma-delimited list of `ServerFeature` enum values that your test database server does *not* support
   * `CachingSha2Password`: a user named `caching-sha2-user` exists on your server and uses the `caching_sha2_password` auth plugin
   * `Ed25519`: a user named `ed25519user` exists on your server and uses the `client_ed25519` auth plugin
-  * `ErrorCodes`: server returns error codes in error packet (some MySQL proxies do not)
   * `Json`: the `JSON` data type (MySQL 5.7 and later)
   * `LargePackets`: large packets (over 4MB)
   * `Redirection`: server supports sending redirection information in a server variable in the first OK packet
