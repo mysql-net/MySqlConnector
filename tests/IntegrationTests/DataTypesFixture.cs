@@ -6,6 +6,8 @@ public class DataTypesFixture : DatabaseFixture
 	{
 		Connection.Open();
 		Connection.Execute(@"
+set time_zone='+00:00';
+
 drop table if exists datatypes_bools;
 create table datatypes_bools(
   rowid integer not null primary key auto_increment,
