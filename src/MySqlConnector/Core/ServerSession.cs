@@ -1721,6 +1721,22 @@ internal sealed partial class ServerSession : IServerCapabilities
 			CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
 		};
 
+		if (cs.AllowUnknownCertificateRevocation)
+		{
+			if (cs.SslMode != MySqlSslMode.VerifyFull)
+				throw new MySqlException("AllowUnknownCertificateRevocation may only be used with SslMode=VerifyFull");
+#if NET7_0_OR_GREATER
+			clientAuthenticationOptions.CertificateChainPolicy ??= new();
+			clientAuthenticationOptions.CertificateChainPolicy.VerificationFlags =
+				X509VerificationFlags.IgnoreEndRevocationUnknown |
+				X509VerificationFlags.IgnoreCtlSignerRevocationUnknown |
+				X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown |
+				X509VerificationFlags.IgnoreRootRevocationUnknown;
+#else
+			throw new PlatformNotSupportedException("The AllowUnknownCertificateRevocation connection string option is only supported on .NET 7.0 (or later).");
+#endif
+		}
+
 #if NETCOREAPP3_0_OR_GREATER
 #pragma warning disable CA1416 // Validate platform compatibility
 		if (cs.TlsCipherSuites is { Count: > 0 })

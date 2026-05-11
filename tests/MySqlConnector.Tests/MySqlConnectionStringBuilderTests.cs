@@ -19,6 +19,7 @@ public class MySqlConnectionStringBuilderTests
 		Assert.Null(csb.CertificatePassword);
 		Assert.Null(csb.CertificateThumbprint);
 #else
+		Assert.False(csb.AllowUnknownCertificateRevocation);
 		Assert.Equal(2, csb.CancellationTimeout);
 		Assert.Equal("", csb.CertificateFile);
 		Assert.Equal("", csb.CertificatePassword);
@@ -122,6 +123,7 @@ public class MySqlConnectionStringBuilderTests
 #endif
 				"default command timeout=123;" +
 #if !MYSQL_DATA
+				"allow unknown certificate revocation=true;" +
 				"application name=My Test Application;" +
 				"cancellation timeout = -1;" +
 				"connectionidletimeout=30;" +
@@ -155,7 +157,7 @@ public class MySqlConnectionStringBuilderTests
 				"ssl-ca=ca.pem;" +
 				"ssl-cert=client-cert.pem;" +
 				"ssl-key=client-key.pem;" +
-				"ssl mode=verifyca;" +
+				"ssl mode=verifyfull;" +
 				"tls version=Tls12, TLS v1.3;" +
 				"Uid=username;" +
 				"useaffectedrows=true",
@@ -185,6 +187,7 @@ public class MySqlConnectionStringBuilderTests
 		Assert.Equal("schema_name", csb.Database);
 		Assert.Equal(123u, csb.DefaultCommandTimeout);
 #if !MYSQL_DATA
+		Assert.True(csb.AllowUnknownCertificateRevocation);
 		Assert.Equal("My Test Application", csb.ApplicationName);
 		Assert.Equal(30u, csb.ConnectionIdleTimeout);
 #pragma warning disable 618
@@ -219,7 +222,7 @@ public class MySqlConnectionStringBuilderTests
 		Assert.Equal("ca.pem", csb.SslCa);
 		Assert.Equal("client-cert.pem", csb.SslCert);
 		Assert.Equal("client-key.pem", csb.SslKey);
-		Assert.Equal(MySqlSslMode.VerifyCA, csb.SslMode);
+		Assert.Equal(MySqlSslMode.VerifyFull, csb.SslMode);
 #if MYSQL_DATA
 		Assert.Equal("Tls12, Tls13", csb.TlsVersion);
 #else
@@ -231,9 +234,9 @@ public class MySqlConnectionStringBuilderTests
 
 #if !MYSQL_DATA
 		Assert.Equal("Server=db-server;Port=1234;User ID=username;Password=Pass1234;Database=schema_name;Load Balance=Random;" +
-			"Connection Protocol=Pipe;Pipe Name=MyPipe;SSL Mode=VerifyCA;Certificate File=file.pfx;Certificate Password=Pass2345;" +
+			"Connection Protocol=Pipe;Pipe Name=MyPipe;SSL Mode=VerifyFull;Certificate File=file.pfx;Certificate Password=Pass2345;" +
 			"Certificate Store Location=CurrentUser;Certificate Thumbprint=thumbprint123;SSL Cert=client-cert.pem;SSL Key=client-key.pem;" +
-			"SSL CA=ca.pem;TLS Version=\"TLS 1.2, TLS 1.3\";TLS Cipher Suites=TLS_AES_128_CCM_8_SHA256,TLS_RSA_WITH_RC4_128_MD5;" +
+			"SSL CA=ca.pem;Allow Unknown Certificate Revocation=True;TLS Version=\"TLS 1.2, TLS 1.3\";TLS Cipher Suites=TLS_AES_128_CCM_8_SHA256,TLS_RSA_WITH_RC4_128_MD5;" +
 			"Pooling=False;Connection Lifetime=15;Connection Reset=False;Defer Connection Reset=True;Connection Idle Timeout=30;" +
 			"Minimum Pool Size=5;Maximum Pool Size=15;DNS Check Interval=15;" +
 			"Allow Load Local Infile=True;Allow Public Key Retrieval=True;Allow User Variables=True;" +
@@ -518,6 +521,7 @@ public class MySqlConnectionStringBuilderTests
 	[InlineData("SSL Key", "C:\\key.pem")]
 
 	// not supported
+	[InlineData("Allow Unknown Certificate Revocation", true)]
 	[InlineData("Application Name", "MyApp")]
 	[InlineData("Cancellation Timeout", 5)]
 	[InlineData("Connection Idle Timeout", 10u)]
