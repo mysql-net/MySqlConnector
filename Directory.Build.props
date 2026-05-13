@@ -3,8 +3,9 @@
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>14.0</LangVersion>
+    <Features>runtime-async=on</Features>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
-    <NoWarn>$(NoWarn);1591;CA1708;CA1835;CA2215;CA5397;NU5105;SYSLIB0039</NoWarn>
+    <NoWarn>$(NoWarn);1591;CA1708;CA1835;CA2215;CA5397;NU5105;SYSLIB0039;SYSLIB5007</NoWarn>
     <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
     <NuGetAudit>true</NuGetAudit>
     <NuGetAuditLevel>low</NuGetAuditLevel>
