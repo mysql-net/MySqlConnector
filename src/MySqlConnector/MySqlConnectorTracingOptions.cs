@@ -37,9 +37,9 @@ internal sealed class MySqlConnectorTracingOptions
 			}
 		}
 
-		// if no value was found, our default is "database/dup": emit both kinds
+		// if no value was found, stick with experimental: "Existing database instrumentations SHOULD NOT change the version of the database conventions that they emit by default in their existing major version"
 		if (!foundValue)
-			kinds = MySqlConnectorSemanticConventionsKinds.Stable | MySqlConnectorSemanticConventionsKinds.Experimental;
+			kinds = MySqlConnectorSemanticConventionsKinds.Experimental;
 
 		return kinds;
 	}
