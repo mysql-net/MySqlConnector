@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.IO.Compression;
 using MySqlConnector.Utilities;
 
@@ -117,6 +118,10 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		{
 #if NET6_0_OR_GREATER
 			var uncompressedData = new byte[uncompressedLength];
+#if NET11_0_OR_GREATER
+			using ZLibDecoder decoder = new();
+			decoder.Decompress(payloadReadBytes.AsSpan(), uncompressedData, out _, out var totalBytesRead);
+#else
 			using var compressedStream = new MemoryStream(payloadReadBytes.Array!, payloadReadBytes.Offset, payloadReadBytes.Count);
 			using var decompressingStream = new ZLibStream(compressedStream, CompressionMode.Decompress);
 #if NET7_0_OR_GREATER
@@ -129,6 +134,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 				totalBytesRead += bytesRead;
 			} while (bytesRead > 0);
 #endif
+#endif
 			if (totalBytesRead != uncompressedLength && protocolErrorBehavior == ProtocolErrorBehavior.Throw)
 				throw new MySqlEndOfStreamException(uncompressedLength, totalBytesRead);
 
@@ -137,7 +143,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 			// check CMF (Compression Method and Flags) and FLG (Flags) bytes for expected values
 			var cmf = payloadReadBytes.Array![payloadReadBytes.Offset];
 			var flg = payloadReadBytes.Array[payloadReadBytes.Offset + 1];
-			if (cmf != 0x78 || ((flg & 0x20) == 0x20) || ((cmf * 256 + flg) % 31 != 0))
+			if (cmf != 0x78 || ((flg & 0x20) == 0x20) || (((cmf * 256) + flg) % 31 != 0))
 			{
 				// CMF = 0x78: 32K Window Size + deflate compression
 				// FLG & 0x20: has preset dictionary (not supported)
