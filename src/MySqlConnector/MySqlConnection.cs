@@ -527,7 +527,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		if (State != ConnectionState.Closed)
 			throw new InvalidOperationException($"Cannot Open when State is {State}.");
 
-		using var activity = ActivitySourceHelper.StartActivity(ActivitySourceHelper.OpenActivityName);
+		var conventionsKinds = TracingOptions.SemanticConventionsKinds;
+		using var activity = ActivitySourceHelper.StartActivity(ActivitySourceHelper.OpenActivityName, conventionsKinds);
 		try
 		{
 			SetState(ConnectionState.Connecting);
@@ -594,7 +595,6 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
 			// none of the other activity tags may have been set, so add the connection string when emitting legacy attributes
-			var conventionsKinds = TracingOptions.SemanticConventionsKinds;
 			if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental) && m_connectionSettings?.ConnectionStringBuilder is { } connectionStringBuilder)
 				activity.SetTag(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionStringBuilder.GetConnectionString(connectionStringBuilder.PersistSecurityInfo));
 			activity.SetException(ex, conventionsKinds);

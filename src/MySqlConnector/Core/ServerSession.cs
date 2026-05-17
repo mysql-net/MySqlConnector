@@ -347,7 +347,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 	public Activity? StartActivity(MySqlConnectorSemanticConventionsKinds conventionsKinds, string name, string? commandText = null, CommandType commandType = CommandType.Text, string? operationName = null, string? storedProcedureName = null, int batchSize = 0)
 	{
-		var activity = ActivitySourceHelper.StartActivity(name, m_activityTags);
+		var activity = ActivitySourceHelper.StartActivity(name, conventionsKinds, m_activityTags);
 		if (activity is { IsAllDataRequested: true })
 		{
 			if (DatabaseOverride is not null)
