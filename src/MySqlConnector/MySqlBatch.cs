@@ -160,11 +160,14 @@ public sealed class MySqlBatch :
 		foreach (MySqlBatchCommand batchCommand in BatchCommands)
 			batchCommand.Batch = this;
 
-		var activity = Connection!.Session.StartActivity(ActivitySourceHelper.ExecuteActivityName);
+		var batchSize = BatchCommands.Count;
+		var conventionsKinds = Connection!.TracingOptions.SemanticConventionsKinds;
+		var activity = Connection.Session.StartActivity(conventionsKinds, ActivitySourceHelper.ExecuteActivityName,
+			operationName: batchSize > 1 ? "BATCH" : null, batchSize: batchSize);
 
 		var payloadCreator = IsPrepared ? SingleCommandPayloadCreator.Instance :
 			ConcatenatedCommandPayloadCreator.Instance;
-		return CommandExecutor.ExecuteReaderAsync(new(BatchCommands!.Commands), payloadCreator, behavior, activity, ioBehavior, cancellationToken);
+		return CommandExecutor.ExecuteReaderAsync(new(BatchCommands!.Commands), payloadCreator, behavior, activity, conventionsKinds, ioBehavior, cancellationToken);
 	}
 
 #if NET6_0_OR_GREATER

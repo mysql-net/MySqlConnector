@@ -8,7 +8,7 @@ namespace MySqlConnector.Core;
 
 internal static class CommandExecutor
 {
-	public static async ValueTask<MySqlDataReader> ExecuteReaderAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public static async ValueTask<MySqlDataReader> ExecuteReaderAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity? activity, MySqlConnectorSemanticConventionsKinds conventionsKinds, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		try
 		{
@@ -55,7 +55,7 @@ internal static class CommandExecutor
 			try
 			{
 				await session.SendAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
-				await session.DataReader.InitAsync(commandListPosition, payloadCreator, cachedProcedures, command, behavior, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+				await session.DataReader.InitAsync(commandListPosition, payloadCreator, cachedProcedures, command, behavior, activity, conventionsKinds, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return session.DataReader;
 			}
 			catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
@@ -71,9 +71,9 @@ internal static class CommandExecutor
 				throw new MySqlException($"Error submitting {megabytes}MB packet; ensure 'max_allowed_packet' is greater than {megabytes}MB.", ex);
 			}
 		}
-		catch (Exception ex) when (activity is { IsAllDataRequested: true })
+		catch (Exception ex) when (activity is { IsAllDataRequested: true } && activity.Duration == default)
 		{
-			activity.SetException(ex);
+			activity.SetException(ex, conventionsKinds);
 			activity.Stop();
 			throw;
 		}
