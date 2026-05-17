@@ -287,8 +287,6 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		Assert.Equal("Execute", activity.OperationName);
 		Assert.Equal(ActivityStatusCode.Error, activity.Status);
 
-		var activityEvent = Assert.Single(activity.Events);
-		Assert.Equal("exception", activityEvent.Name);
 		var statusCode = AssertHasTag(activity.Tags, "db.response.status_code");
 		Assert.True(int.TryParse(statusCode, NumberStyles.None, CultureInfo.InvariantCulture, out _));
 		AssertTag(activity.Tags, "error.type", statusCode);

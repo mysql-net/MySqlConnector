@@ -69,16 +69,15 @@ internal static class ActivitySourceHelper
 		}
 		activity.SetTag(ErrorTypeTagName, errorType);
 		activity.SetStatus(ActivityStatusCode.Error, description);
-		var eventTags = new ActivityTagsCollection
-		{
-			{ "exception.type", exception.GetType().FullName },
-			{ "exception.message", exception.Message },
-			{ "exception.stacktrace", exception.ToString() },
-		};
 		if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-			activity.AddEvent(new ActivityEvent("db.client.operation.exception", tags: eventTags));
-		if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
-			activity.AddEvent(new ActivityEvent("exception", tags: eventTags));
+		{
+			activity.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+			{
+				{ "exception.type", exception.GetType().FullName },
+				{ "exception.message", exception.Message },
+				{ "exception.stacktrace", exception.ToString() },
+			}));
+		}
 	}
 
 	public static void CopyTags(IEnumerable<KeyValuePair<string, object?>> tags, Activity? activity)
