@@ -331,7 +331,6 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		Assert.Equal(ActivityStatusCode.Unset, activity.Status);
 
 		AssertTag(activity.Tags, "db.operation.name", "BATCH");
-		AssertTag(activity.Tags, "db.operation.batch.size", "2");
 		AssertTagObject(activity.TagObjects, "db.operation.batch.size", 2);
 		AssertNoTag(activity.Tags, "db.query.text");
 		AssertNoTag(activity.Tags, "db.statement");
@@ -565,7 +564,6 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		AssertTag(activity.Tags, "db.namespace", csb.Database);
 		AssertTag(activity.Tags, "server.address", csb.Server);
 		AssertHasTag(activity.Tags, "network.peer.address");
-		AssertTag(activity.Tags, "network.peer.port", csb.Port.ToString(CultureInfo.InvariantCulture));
 		AssertTagObject(activity.TagObjects, "network.peer.port", csb.Port);
 		if (csb.Port == 3306)
 		{
@@ -573,7 +571,6 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		}
 		else
 		{
-			AssertTag(activity.Tags, "server.port", csb.Port.ToString(CultureInfo.InvariantCulture));
 			AssertTagObject(activity.TagObjects, "server.port", csb.Port);
 		}
 
@@ -615,7 +612,15 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		var tag = tags.SingleOrDefault(x => x.Key == expectedTag);
 		if (tag.Key is null)
 			Assert.Fail($"tag objects did not contain '{expectedTag}'");
+		if (IsNumeric(tag.Value) && IsNumeric(expectedValue))
+		{
+			Assert.Equal(Convert.ToDecimal(expectedValue, CultureInfo.InvariantCulture), Convert.ToDecimal(tag.Value, CultureInfo.InvariantCulture));
+			return;
+		}
 		Assert.Equal(expectedValue, tag.Value);
+
+		static bool IsNumeric(object value) =>
+			value is byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal;
 	}
 }
 #endif
