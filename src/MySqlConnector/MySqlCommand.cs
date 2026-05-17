@@ -364,10 +364,11 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 			operationName = "CALL";
 			storedProcedureName = new NormalizedSchema(CommandText, Connection!.Database).Component ?? CommandText;
 		}
-		var activity = NoActivity ? null : Connection!.Session.StartActivity(Connection.TracingOptions.SemanticConventionsKinds, ActivitySourceHelper.ExecuteActivityName,
+		var conventionsKinds = Connection!.TracingOptions.SemanticConventionsKinds;
+		var activity = NoActivity ? null : Connection.Session.StartActivity(conventionsKinds, ActivitySourceHelper.ExecuteActivityName,
 			commandText: CommandText, commandType: CommandType, operationName: operationName, storedProcedureName: storedProcedureName);
 		m_commandBehavior = behavior;
-		return CommandExecutor.ExecuteReaderAsync(new(this), SingleCommandPayloadCreator.Instance, behavior, activity, ioBehavior, cancellationToken);
+		return CommandExecutor.ExecuteReaderAsync(new(this), SingleCommandPayloadCreator.Instance, behavior, activity, conventionsKinds, ioBehavior, cancellationToken);
 	}
 
 	public MySqlCommand Clone() => new(this);

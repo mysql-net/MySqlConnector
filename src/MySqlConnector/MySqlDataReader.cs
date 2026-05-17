@@ -462,7 +462,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	internal ulong? RealRecordsAffected { get; set; }
 	internal ServerSession? Session => Command?.Connection!.Session;
 
-	internal async Task InitAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary<string, CachedProcedure?>? cachedProcedures, IMySqlCommand command, CommandBehavior behavior, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	internal async Task InitAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary<string, CachedProcedure?>? cachedProcedures, IMySqlCommand command, CommandBehavior behavior, Activity? activity, MySqlConnectorSemanticConventionsKinds conventionsKinds, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		// reset fields from last use of this MySqlDataReader
 		if (m_hasMoreResults)
@@ -502,7 +502,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		{
 			if (activity is { IsAllDataRequested: true })
 			{
-				activity.SetException(ex, command.Connection!.TracingOptions.SemanticConventionsKinds);
+				activity.SetException(ex, conventionsKinds);
 				activity.Stop();
 			}
 			Dispose();
