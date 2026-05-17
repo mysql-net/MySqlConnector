@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using MySqlConnector.Helpers;
 using Xunit.Sdk;
 
 namespace IntegrationTests;
@@ -480,6 +481,85 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		connection.Open();
 		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
 		using var memoryStream = new MemoryStream(m_memoryStreamBytes, false);
+#if !MYSQL_DATA
+		bl.SourceStream = memoryStream;
+#endif
+		bl.TableName = m_testTable;
+		bl.CharacterSet = "UTF8";
+		bl.Columns.AddRange(new string[] { "one", "two", "three" });
+		bl.NumberOfLinesToSkip = 0;
+		bl.FieldTerminator = ",";
+		bl.FieldQuotationCharacter = '"';
+		bl.FieldQuotationOptional = true;
+		bl.Local = true;
+#if !MYSQL_DATA
+		int rowCount = bl.Load();
+#else
+		int rowCount = bl.Load(memoryStream);
+#endif
+		Assert.Equal(5, rowCount);
+	}
+
+	[Fact]
+	public void BulkLoadLocalMemoryStreamManual()
+	{
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
+
+		const byte newLineByte = (byte)'\n';
+		const char qChar = '\'';
+		const char commaChar = ',';
+
+		var memory = new byte[5_000];
+		var inputIndex = 0;
+		Encoder utf8Encoder = null;
+		var span = memory.AsSpan();
+		var totalBytes = 0;
+
+		void WriteRow(int id, Span<byte> span)
+		{
+			ValueWriteHelper.WriteValue(connection, id, ref inputIndex, ref utf8Encoder, span.Slice(totalBytes), out var bytesWritten);
+			totalBytes += bytesWritten;
+			inputIndex = 0;
+
+			ValueWriteHelper.WriteValue(connection, commaChar, ref inputIndex, ref utf8Encoder, span.Slice(totalBytes), out bytesWritten);
+			totalBytes += bytesWritten;
+			inputIndex = 0;
+
+			ValueWriteHelper.WriteValue(connection, qChar, ref inputIndex, ref utf8Encoder, span.Slice(totalBytes), out bytesWritten);
+			totalBytes += bytesWritten;
+			inputIndex = 0;
+			ValueWriteHelper.WriteValue(connection, $"two-{id}", ref inputIndex, ref utf8Encoder, span.Slice(totalBytes), out bytesWritten);
+			totalBytes += bytesWritten;
+			inputIndex = 0;
+			ValueWriteHelper.WriteValue(connection, qChar, ref inputIndex, ref utf8Encoder, span.Slice(totalBytes), out bytesWritten);
+			totalBytes += bytesWritten;
+			inputIndex = 0;
+			ValueWriteHelper.WriteValue(connection, commaChar, ref inputIndex, ref utf8Encoder, span.Slice(totalBytes), out bytesWritten);
+			totalBytes += bytesWritten;
+			inputIndex = 0;
+
+			ValueWriteHelper.WriteValue(connection, qChar, ref inputIndex, ref utf8Encoder, span.Slice(totalBytes), out bytesWritten);
+			totalBytes += bytesWritten;
+			inputIndex = 0;
+			ValueWriteHelper.WriteValue(connection, $"three-{id}", ref inputIndex, ref utf8Encoder, span.Slice(totalBytes), out bytesWritten);
+			totalBytes += bytesWritten;
+			inputIndex = 0;
+			ValueWriteHelper.WriteValue(connection, qChar, ref inputIndex, ref utf8Encoder, span.Slice(totalBytes), out bytesWritten);
+			totalBytes += bytesWritten;
+			inputIndex = 0;
+			span[totalBytes++] = newLineByte;
+			inputIndex = 0;
+		}
+
+		WriteRow(1, span);
+		WriteRow(2, span);
+		WriteRow(3, span);
+		WriteRow(4, span);
+		WriteRow(5, span);
+
+		using var memoryStream = new MemoryStream(memory, 0, totalBytes, false);
 #if !MYSQL_DATA
 		bl.SourceStream = memoryStream;
 #endif
