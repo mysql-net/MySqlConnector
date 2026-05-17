@@ -16,10 +16,11 @@ public sealed class MySqlConnectorTracingOptionsBuilder
 	}
 
 	/// <summary>
-	/// Sets the kinds of database conventions emitted for tracing spans. The default is to emit both experimental and stable conventions.
+	/// Sets the kinds of database conventions emitted for tracing spans.
 	/// </summary>
 	/// <param name="kinds">The kinds of semantic conventions to emit.</param>
 	/// <returns>This builder, so options can be chained.</returns>
+	/// <remarks>The default is controlled by the <c>OTEL_SEMCONV_STABILITY_OPT_IN</c> environment variable.</remarks>
 	public MySqlConnectorTracingOptionsBuilder WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds kinds)
 	{
 		m_semanticConventionsKinds = kinds;

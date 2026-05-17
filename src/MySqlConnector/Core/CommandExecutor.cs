@@ -10,6 +10,7 @@ internal static class CommandExecutor
 {
 	public static async ValueTask<MySqlDataReader> ExecuteReaderAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
+		var conventionsKinds = MySqlConnectorTracingOptions.Default.SemanticConventionsKinds;
 		try
 		{
 			cancellationToken.ThrowIfCancellationRequested();
@@ -17,6 +18,7 @@ internal static class CommandExecutor
 
 			// pre-requisite: Connection is non-null must be checked before calling this method
 			var connection = command.Connection!;
+			conventionsKinds = connection.TracingOptions.SemanticConventionsKinds;
 
 			Log.CommandExecutorExecuteReader(command.Logger, connection.Session.Id, ioBehavior, commandListPosition.CommandCount);
 
@@ -73,7 +75,7 @@ internal static class CommandExecutor
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
-			activity.SetException(ex);
+			activity.SetException(ex, conventionsKinds);
 			activity.Stop();
 			throw;
 		}

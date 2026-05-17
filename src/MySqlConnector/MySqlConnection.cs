@@ -593,10 +593,11 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
-			// none of the other activity tags may have been set (depending on when the exception was thrown), so make sure at least the connection string is added, for diagnostics
-			if (m_connectionSettings?.ConnectionStringBuilder is { } connectionStringBuilder)
+			// none of the other activity tags may have been set, so add the connection string when emitting legacy attributes
+			var conventionsKinds = TracingOptions.SemanticConventionsKinds;
+			if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental) && m_connectionSettings?.ConnectionStringBuilder is { } connectionStringBuilder)
 				activity.SetTag(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionStringBuilder.GetConnectionString(connectionStringBuilder.PersistSecurityInfo));
-			activity.SetException(ex);
+			activity.SetException(ex, conventionsKinds);
 			throw;
 		}
 	}

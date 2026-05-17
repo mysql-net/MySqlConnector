@@ -502,7 +502,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		{
 			if (activity is { IsAllDataRequested: true })
 			{
-				activity.SetException(ex);
+				activity.SetException(ex, command.Connection!.TracingOptions.SemanticConventionsKinds);
 				activity.Stop();
 			}
 			Dispose();

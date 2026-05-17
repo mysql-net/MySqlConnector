@@ -31,7 +31,7 @@ public sealed class MySqlTransaction : DbTransaction
 	{
 		VerifyValid();
 
-		using var activity = Connection!.Session.StartActivity(Connection.TracingOptions.SemanticConventionsKinds, "Commit");
+		using var activity = Connection!.Session.StartActivity(Connection.TracingOptions.SemanticConventionsKinds, "Commit", operationName: "COMMIT");
 		Log.CommittingTransaction(m_logger, Connection.Session.Id);
 		try
 		{
@@ -43,7 +43,7 @@ public sealed class MySqlTransaction : DbTransaction
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
-			activity.SetException(ex);
+			activity.SetException(ex, Connection!.TracingOptions.SemanticConventionsKinds);
 			throw;
 		}
 	}
@@ -259,7 +259,7 @@ public sealed class MySqlTransaction : DbTransaction
 
 	private async Task DoRollback(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		using var activity = Connection!.Session.StartActivity(Connection.TracingOptions.SemanticConventionsKinds, "Rollback");
+		using var activity = Connection!.Session.StartActivity(Connection.TracingOptions.SemanticConventionsKinds, "Rollback", operationName: "ROLLBACK");
 		Log.RollingBackTransaction(m_logger, Connection.Session.Id);
 		try
 		{
@@ -269,7 +269,7 @@ public sealed class MySqlTransaction : DbTransaction
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
-			activity.SetException(ex);
+			activity.SetException(ex, Connection!.TracingOptions.SemanticConventionsKinds);
 			throw;
 		}
 	}
