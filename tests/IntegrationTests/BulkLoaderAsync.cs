@@ -678,7 +678,7 @@ create table bulk_load_data_table(id BIGINT UNIQUE NOT NULL AUTO_INCREMENT, geo_
 #if NET6_0_OR_GREATER
 
 	[Fact]
-	public async Task MySqlBulkImportDataTableWithLongData()
+	public async Task MySqlBulkImport()
 	{
 		var rows = new List<(int, string)>()
 		{
@@ -688,14 +688,14 @@ create table bulk_load_data_table(id BIGINT UNIQUE NOT NULL AUTO_INCREMENT, geo_
 
 		using var connection = new MySqlConnection(GetLocalConnectionString());
 		await connection.OpenAsync();
-		using (var cmd = new MySqlCommand(@"drop table if exists bulk_import_data_table;
-create table bulk_import_data_table(value int, name text);", connection))
+		using (var cmd = new MySqlCommand(@"drop table if exists bulk_import_table;
+create table bulk_import_table(value int, name text);", connection))
 		{
 			await cmd.ExecuteNonQueryAsync();
 		}
 
 		var bulkImport = new MySqlBulkImport(connection);
-		bulkImport.StartImport("bulk_import_data_table", ["value", "name"]);
+		bulkImport.StartImport("bulk_import_table", ["value", "name"]);
 
 		foreach (var row in rows)
 		{
@@ -706,7 +706,7 @@ create table bulk_import_data_table(value int, name text);", connection))
 
 		await bulkImport.WaitFinishImportAsync();
 
-		await using (var cmd = new MySqlCommand(@"select value, name from bulk_import_data_table", connection))
+		await using (var cmd = new MySqlCommand(@"select value, name from bulk_import_table", connection))
 		{
 			await using var reader = await cmd.ExecuteReaderAsync();
 
