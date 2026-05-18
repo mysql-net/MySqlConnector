@@ -115,7 +115,7 @@ namespace Benchmarks.Cases
 			await using var connection = MySqlDataSource.CreateConnection();
 			var bulkCopy = new MySqlBulkCopy(connection)
 			{
-				DestinationTableName = "mysql_bulk_import.person",
+				DestinationTableName = "mysql_bulk_import",
 				BulkCopyTimeout = 0,
 			};
 
