@@ -22,13 +22,13 @@ namespace Benchmarks.Cases
 #pragma warning restore SA1401 // Fields should be private
 
 		[GlobalSetup]
-		public async Task GlobalSetup()
+		public async Task GlobalSetupAsync()
         {
             await OneTimeSetUp();
 		}
 
 		[GlobalCleanup]
-		public async Task GlobalCleanup()
+		public async Task GlobalCleanupAsync()
         {
             await OneTimeTearDown();
         }
@@ -88,11 +88,13 @@ namespace Benchmarks.Cases
 		}
 
 		[Benchmark(Baseline = true, Description = "MySqlBulkCopy.DataRows")]
-		public async Task DataRowsCase()
+		public async Task DataRowsCaseAsync()
 		{
 			DataTable table = new();
 			table.Columns.Add("one", typeof(int));
+			table.Columns.Add("ignore_one", typeof(int));
 			table.Columns.Add("two", typeof(string));
+			table.Columns.Add("ignore_two", typeof(string));
 			table.Columns.Add("three", typeof(string));
 			table.Columns.Add("four", typeof(DateTime));
 			table.Columns.Add("five", typeof(int));
@@ -125,7 +127,7 @@ namespace Benchmarks.Cases
 		}
 
 		[Benchmark(Description = "MySqlBulkCopy.IDataReader")]
-		public async Task DataReaderCase()
+		public async Task DataReaderCaseAsync()
 		{
 			await using var connection = MySqlDataSource.CreateConnection();
 
@@ -150,7 +152,7 @@ namespace Benchmarks.Cases
 		}
 
 		[Benchmark(Description = "MySqlBulkImport")]
-		public async Task MySqlBulkImportCase()
+		public async Task MySqlBulkImportCaseAsync()
 		{
 			await using var connection = MySqlDataSource.CreateConnection();
 			await using var import = new MySqlConnector.MySqlBulkImport(connection);
