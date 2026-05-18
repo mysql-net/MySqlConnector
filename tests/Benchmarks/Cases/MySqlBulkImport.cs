@@ -110,6 +110,8 @@ namespace Benchmarks.Cases
 				newRow["five"] = rowData.Five;
 				newRow["six"] = rowData.Six;
 				newRow["seven"] = rowData.Seven;
+
+				rows.Add(newRow);
 			}
 
 			await using var connection = MySqlDataSource.CreateConnection();
@@ -119,7 +121,7 @@ namespace Benchmarks.Cases
 				BulkCopyTimeout = 0,
 			};
 
-			await bulkCopy.WriteToServerAsync(rows, 5);
+			await bulkCopy.WriteToServerAsync(rows, 7);
 		}
 
 		[Benchmark(Description = "MySqlBulkCopy.IDataReader")]
