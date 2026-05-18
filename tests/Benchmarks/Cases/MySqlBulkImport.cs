@@ -16,7 +16,7 @@ namespace Benchmarks.Cases
     {
 		private RowData[] collection;
 
-		[Params(500, 5_000, 50_000)]
+		[Params(500, 5_000, 50_000, 100_000)]
 #pragma warning disable SA1401 // Fields should be private
 		public int RowsToInsert;
 #pragma warning restore SA1401 // Fields should be private
