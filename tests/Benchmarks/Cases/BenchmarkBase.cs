@@ -17,22 +17,27 @@ namespace Benchmarks.Cases
 		public MySqlDataSource MySqlDataSource;
 #pragma warning restore SA1401 // Fields should be private
 
-		public async Task OneTimeSetUp()
+		public async Task OneTimeSetUp(string connectionString = null)
         {
-            _mysql =
-                new MySqlBuilder("mysql:9.7.0")
-                .WithUsername("root")
-                .WithPassword("dhgvbh73j")
-                .WithPortBinding(3306, true)
-                .WithAutoRemove(true)
-                .WithWaitStrategy(Wait.ForUnixContainer().UntilExternalTcpPortIsAvailable(3306))
-                .Build();
+			if (connectionString == null)
+			{
+				_mysql =
+					new MySqlBuilder("mysql:9.7.0")
+					.WithUsername("root")
+					.WithPassword("dhgvbh73j")
+					.WithPortBinding(3306, true)
+					.WithAutoRemove(true)
+					.WithWaitStrategy(Wait.ForUnixContainer().UntilExternalTcpPortIsAvailable(3306))
+					.Build();
 
-            await _mysql.StartAsync();
-            await _mysql.WaitContainerStateRunningAsync(TimeSpan.FromMinutes(1));
-            await _mysql.WaitResponseAsync(TimeSpan.FromMinutes(1));
+				await _mysql.StartAsync();
+				await _mysql.WaitContainerStateRunningAsync(TimeSpan.FromMinutes(1));
+				await _mysql.WaitResponseAsync(TimeSpan.FromMinutes(1));
 
-            await using (var masterConnection = new MySqlConnection(_mysql.GetConnectionString()))
+				connectionString = _mysql.GetConnectionString();
+			}
+
+			await using (var masterConnection = new MySqlConnection(connectionString))
             {
                 await masterConnection.OpenAsync();
                 await using var createCmd = masterConnection.CreateCommand();
@@ -42,14 +47,14 @@ CREATE DATABASE IF NOT EXISTS benchmark;
                 createCmd.ExecuteNonQuery();
             }
 
-            var builder = new MySqlConnectionStringBuilder(_mysql.GetConnectionString());
-            builder.Database = "benchmark";
-            builder.AllowLoadLocalInfile = true;
+			var builder = new MySqlConnectionStringBuilder(connectionString);
+			builder.Database = "benchmark";
+			builder.AllowLoadLocalInfile = true;
 
-            MySqlDataSource = new MySqlDataSource(builder.ConnectionString);
+			MySqlDataSource = new MySqlDataSource(builder.ConnectionString);
 
-            await using var connection = await MySqlDataSource.OpenConnectionAsync();
-            {
+			await using var connection = await MySqlDataSource.OpenConnectionAsync();
+			{
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
 SET GLOBAL local_infile = 1;
