@@ -121,7 +121,7 @@ namespace Benchmarks.Cases
 				BulkCopyTimeout = 0,
 			};
 
-			await bulkCopy.WriteToServerAsync(rows, 7);
+			await bulkCopy.WriteToServerAsync(rows, 9);
 		}
 
 		[Benchmark(Description = "MySqlBulkCopy.IDataReader")]
