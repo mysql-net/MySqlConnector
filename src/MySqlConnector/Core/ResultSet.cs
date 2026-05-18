@@ -96,7 +96,7 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 								break;
 
 #if NET6_0_OR_GREATER
-							case MySqlBulkImport2 bulkImport:
+							case MySqlBulkImport bulkImport:
 								await bulkImport.SendDataReaderAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 								break;
 #endif

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace Benchmarks.Cases
     {
 		private RowData[] collection;
 
-		[Params(500, 5_000, 50_000, 500_000)]
+		[Params(500, 5_000, 50_000)]
 #pragma warning disable SA1401 // Fields should be private
 		public int RowsToInsert;
 #pragma warning restore SA1401 // Fields should be private
@@ -44,7 +45,9 @@ namespace Benchmarks.Cases
 				ignore_two varchar(200),
 				three varchar(200),
 				four datetime,
-				five blob
+				five int,
+				six datetime,
+				seven int
 			)
 			CHARACTER SET = UTF8;";
 
@@ -65,6 +68,9 @@ namespace Benchmarks.Cases
 					Two = $"two-{id}",
 					Three = $"three-{id}",
 					Four = startDate.AddSeconds(id),
+					Five = id + 1,
+					Six = startDate.AddSeconds(id + 1),
+					Seven = id + 2,
 				};
 			}
 		}
@@ -81,10 +87,45 @@ namespace Benchmarks.Cases
 			command.ExecuteNonQuery();
 		}
 
-		[Benchmark(Baseline = true, Description = "MySqlBulkCopy.IDataReader")]
+		[Benchmark(Baseline = true, Description = "MySqlBulkCopy.DataRows")]
+		public async Task DataRowsCase()
+		{
+			DataTable table = new();
+			table.Columns.Add("one", typeof(int));
+			table.Columns.Add("two", typeof(string));
+			table.Columns.Add("three", typeof(string));
+			table.Columns.Add("four", typeof(DateTime));
+			table.Columns.Add("five", typeof(int));
+			table.Columns.Add("six", typeof(DateTime));
+			table.Columns.Add("seven", typeof(int));
+
+			var rows = new List<DataRow>();
+			foreach (var rowData in collection)
+			{
+				var newRow = table.NewRow();
+				newRow["one"] = rowData.One;
+				newRow["two"] = rowData.Two;
+				newRow["three"] = rowData.Three;
+				newRow["four"] = rowData.Four;
+				newRow["five"] = rowData.Five;
+				newRow["six"] = rowData.Six;
+				newRow["seven"] = rowData.Seven;
+			}
+
+			await using var connection = MySqlDataSource.CreateConnection();
+			var bulkCopy = new MySqlBulkCopy(connection)
+			{
+				DestinationTableName = "mysql_bulk_import.person",
+				BulkCopyTimeout = 0,
+			};
+
+			await bulkCopy.WriteToServerAsync(rows, 5);
+		}
+
+		[Benchmark(Description = "MySqlBulkCopy.IDataReader")]
 		public async Task DataReaderCase()
 		{
-			using var connection = MySqlDataSource.CreateConnection();
+			await using var connection = MySqlDataSource.CreateConnection();
 
 			var bc = new MySqlBulkCopy(connection)
 			{
@@ -95,6 +136,9 @@ namespace Benchmarks.Cases
 					new(1, "two"),
 					new(2, "three"),
 					new(3, "four"),
+					new(4, "five"),
+					new(5, "six"),
+					new(6, "seven"),
 				},
 				BulkCopyTimeout = 0,
 			};
@@ -103,12 +147,12 @@ namespace Benchmarks.Cases
 			await bc.WriteToServerAsync(reader);
 		}
 
-		[Benchmark(Description = "MySqlBulkImport2")]
+		[Benchmark(Description = "MySqlBulkImport")]
 		public async Task MySqlBulkImportCase()
 		{
-			using var connection = MySqlDataSource.CreateConnection();
-			await using var import = new MySqlConnector.MySqlBulkImport2(connection, 1048575);
-			import.StartImport("mysql_bulk_import", ["one", "two", "three", "four"], default);
+			await using var connection = MySqlDataSource.CreateConnection();
+			await using var import = new MySqlConnector.MySqlBulkImport(connection);
+			import.StartImport("mysql_bulk_import", ["one", "two", "three", "four", "five", "six", "seven"], default);
 
 			foreach (var row in collection)
 			{
@@ -116,6 +160,10 @@ namespace Benchmarks.Cases
 				import.WriteColumnValue(row.Two);
 				import.WriteColumnValue(row.Three);
 				import.WriteColumnValue(row.Four);
+				import.WriteColumnValue(row.Five);
+				import.WriteColumnValue(row.Six);
+				import.WriteColumnValue(row.Seven);
+
 				import.EndRow();
 			}
 
@@ -131,6 +179,12 @@ namespace Benchmarks.Cases
 			public string Three { get; set; }
 
 			public DateTime Four { get; set; }
+
+			public int Five { get; set; }
+
+			public DateTime Six { get; set; }
+
+			public int Seven { get; set; }
 		}
 
 		public class DataReader : IDataReader
@@ -153,7 +207,7 @@ namespace Benchmarks.Cases
 
 			public int RecordsAffected => throw new NotImplementedException();
 
-			public int FieldCount => 4;
+			public int FieldCount => 7;
 
 			public void Close() => throw new NotImplementedException();
 			public void Dispose() => throw new NotImplementedException();
@@ -182,12 +236,17 @@ namespace Benchmarks.Cases
 
 			public int GetValues(object[] values)
 			{
-				values[0] = collection[currentIndex].One;
-				values[1] = collection[currentIndex].Two;
-				values[2] = collection[currentIndex].Three;
-				values[3] = collection[currentIndex].Four;
+				var value = collection[currentIndex];
 
-				return 4;
+				values[0] = value.One;
+				values[1] = value.Two;
+				values[2] = value.Three;
+				values[3] = value.Four;
+				values[4] = value.Five;
+				values[5] = value.Six;
+				values[6] = value.Seven;
+
+				return 7;
 			}
 
 			public bool IsDBNull(int i) => throw new NotImplementedException();
