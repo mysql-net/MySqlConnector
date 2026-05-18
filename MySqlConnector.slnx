@@ -9,6 +9,7 @@
   <Project Path="src/MySqlConnector.Logging.NLog/MySqlConnector.Logging.NLog.csproj" />
   <Project Path="src/MySqlConnector.Logging.Serilog/MySqlConnector.Logging.Serilog.csproj" />
   <Project Path="src/MySqlConnector/MySqlConnector.csproj" />
+  <Project Path="tests/Benchmarks/Benchmarks.csproj" Id="c6978c2d-1d1b-430a-a78d-908d80d5a5e2" />
   <Project Path="tests/Conformance.Tests/Conformance.Tests.csproj" />
   <Project Path="tests/IntegrationTests/IntegrationTests.csproj" />
   <Project Path="tests/MySqlConnector.DependencyInjection.Tests/MySqlConnector.DependencyInjection.Tests.csproj" />

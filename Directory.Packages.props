@@ -15,7 +15,7 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.3" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageVersion Include="MySql.Data" Version="9.7.0" />
     <PackageVersion Include="NLog" Version="4.7.15" />
@@ -27,6 +27,8 @@
     <PackageVersion Include="xunit.v3" Version="3.2.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
+	<PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
+	<PackageVersion Include="Testcontainers.MySql" Version="4.10.0" />
   </ItemGroup>
 
   <ItemGroup>

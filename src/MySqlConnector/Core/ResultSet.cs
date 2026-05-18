@@ -95,6 +95,12 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 								await bulkCopy.SendDataReaderAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 								break;
 
+#if NET6_0_OR_GREATER
+							case MySqlBulkImport2 bulkImport:
+								await bulkImport.SendDataReaderAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+								break;
+#endif
+
 							default:
 								throw new InvalidOperationException($"Unsupported Source type: {source.GetType().Name}");
 						}
