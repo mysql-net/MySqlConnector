@@ -1,4 +1,3 @@
-using MySqlConnector.Core;
 using Xunit.Sdk;
 
 namespace IntegrationTests;
