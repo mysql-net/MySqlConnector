@@ -155,8 +155,49 @@ namespace Benchmarks.Cases
 		public async Task MySqlBulkImportCaseAsync()
 		{
 			await using var connection = MySqlDataSource.CreateConnection();
-			await using var import = new MySqlConnector.MySqlBulkImport(connection);
-			import.StartImport("mysql_bulk_import", ["one", "two", "three", "four", "five", "six", "seven"], default);
+			await using var import = new MySqlConnector.MySqlBulkImport(connection)
+			{
+				ColumnMappings =
+				{
+					new()
+					{
+						SourceOrdinal = 0,
+						DestinationColumn = "one",
+					},
+					new()
+					{
+						SourceOrdinal = 1,
+						DestinationColumn = "two",
+					},
+					new()
+					{
+						SourceOrdinal = 2,
+						DestinationColumn = "three",
+					},
+					new()
+					{
+						SourceOrdinal = 3,
+						DestinationColumn = "four",
+					},
+					new()
+					{
+						SourceOrdinal = 4,
+						DestinationColumn = "five",
+					},
+					new()
+					{
+						SourceOrdinal = 5,
+						DestinationColumn = "six",
+					},
+					new()
+					{
+						SourceOrdinal = 6,
+						DestinationColumn = "seven",
+					},
+				},
+			};
+
+			await import.StartImportAsync("mysql_bulk_import", 7);
 
 			foreach (var row in collection)
 			{

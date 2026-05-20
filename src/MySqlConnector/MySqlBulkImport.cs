@@ -3,6 +3,7 @@
 using System.Buffers;
 using System.Text;
 using System.Threading.Channels;
+using Microsoft.Extensions.Logging;
 using MySqlConnector.Helpers;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
@@ -11,10 +12,12 @@ namespace MySqlConnector;
 
 public sealed class MySqlBulkImport : IAsyncDisposable
 {
-	private readonly int rentBufferSize;
+	private readonly ILogger m_logger;
+	private readonly int m_rentBufferSize;
 	private readonly MySqlConnection m_connection;
-	private readonly ArrayPool<byte> pool;
-	private Channel<BufferData> channel = Channel.CreateUnbounded<BufferData>(new UnboundedChannelOptions
+	private readonly MySqlTransaction? m_transaction;
+	private readonly ArrayPool<byte> m_pool;
+	private Channel<BufferData> m_channel = Channel.CreateUnbounded<BufferData>(new UnboundedChannelOptions
 	{
 		SingleReader = true,
 		SingleWriter = true,
@@ -30,10 +33,12 @@ public sealed class MySqlBulkImport : IAsyncDisposable
 	/// Initializes a <see cref="MySqlBulkCopy"/> object with the specified connection, and optionally the active transaction.
 	/// </summary>
 	/// <param name="connection">The <see cref="MySqlConnection"/> to use.</param>
+	/// <param name="transaction">(Optional) The <see cref="MySqlTransaction"/> to use.</param>
 	/// <param name="rentBufferSize">The size of the buffers requested from the pool</param>
 	/// <param name="pool">Pool for obtaining temporary buffers for writing data</param>
 	public MySqlBulkImport(
 		MySqlConnection connection,
+		MySqlTransaction? transaction = null,
 		int rentBufferSize = 65_536,
 		ArrayPool<byte>? pool = null)
 	{
@@ -43,9 +48,12 @@ public sealed class MySqlBulkImport : IAsyncDisposable
 			throw new ArgumentException("The buffer size cannot be less than 1000 bytes.", nameof(rentBufferSize));
 		}
 
-		this.rentBufferSize = rentBufferSize;
+		m_rentBufferSize = rentBufferSize;
 		m_connection = connection;
-		this.pool = pool ?? ArrayPool<byte>.Shared;
+		m_logger = m_connection.LoggingConfiguration.BulkCopyLogger;
+		m_transaction = transaction;
+		m_pool = pool ?? ArrayPool<byte>.Shared;
+		ColumnMappings = [];
 	}
 
 	/// <summary>
@@ -53,16 +61,30 @@ public sealed class MySqlBulkImport : IAsyncDisposable
 	/// </summary>
 	public MySqlBulkLoaderConflictOption ConflictOption { get; set; }
 
-	public void StartImport(
+	/// <summary>
+	/// A collection of <see cref="MySqlBulkCopyColumnMapping"/> objects. If the columns being copied from the
+	/// data source line up one-to-one with the columns in the destination table then populating this collection is
+	/// unnecessary. Otherwise, this should be filled with a collection of <see cref="MySqlBulkCopyColumnMapping"/> objects
+	/// specifying how source columns are to be mapped onto destination columns. If one column mapping is specified,
+	/// then all must be specified.
+	/// </summary>
+	public List<MySqlBulkCopyColumnMapping> ColumnMappings { get; }
+
+	/// <summary>
+	/// Start inserting data
+	/// </summary>
+	/// <param name="destinationTableName">The name of the table to insert rows into.</param>
+	/// <param name="fieldsCount">Specifies how many columns we will fill in each row.</param>
+	/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+	public async Task StartImportAsync(
 		string destinationTableName,
-		string[] columns,
+		int fieldsCount,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(destinationTableName);
-		ArgumentNullException.ThrowIfNull(columns);
-		if (columns.Length == 0)
+		if (fieldsCount <= 0)
 		{
-			throw new ArgumentException("The column array is empty", nameof(columns));
+			throw new ArgumentException($"The number of columns to write cannot be less than 1. To correctly specify '{nameof(ColumnMappings)}', you need to know the number of columns to be written.", nameof(fieldsCount));
 		}
 
 		if (importTask != null)
@@ -88,14 +110,24 @@ public sealed class MySqlBulkImport : IAsyncDisposable
 			ConflictOption = ConflictOption,
 		};
 
-		bulkLoader.Columns.AddRange(columns);
-
 		var closeConnection = false;
 		if (m_connection.State != ConnectionState.Open)
 		{
 			m_connection.Open();
 			closeConnection = true;
 		}
+
+		await ColumnMapperHelper.FillColumnMappingsAsync(
+			tableName,
+			fieldsCount,
+			m_logger,
+			IOBehavior.Asynchronous,
+			bulkLoader,
+			ColumnMappings,
+			m_connection,
+			m_transaction,
+			cancellationToken)
+			.ConfigureAwait(false);
 
 		importTask = Task.Run(async () =>
 		{
@@ -137,7 +169,7 @@ public sealed class MySqlBulkImport : IAsyncDisposable
 				throw new InvalidOperationException($"Before calling '{nameof(WaitFinishImportAsync)}', you must close the line write by calling '{nameof(EndRow)}'");
 			}
 
-			var writer = channel.Writer;
+			var writer = m_channel.Writer;
 			if (bufferData != null)
 			{
 				writer.TryWrite(bufferData);
@@ -159,7 +191,7 @@ public sealed class MySqlBulkImport : IAsyncDisposable
 
 			importTask = null;
 
-			channel = Channel.CreateUnbounded<BufferData>(new UnboundedChannelOptions
+			m_channel = Channel.CreateUnbounded<BufferData>(new UnboundedChannelOptions
 			{
 				SingleReader = true,
 				SingleWriter = true,
@@ -170,14 +202,14 @@ public sealed class MySqlBulkImport : IAsyncDisposable
 
 	public void WriteColumnValue<T>(T value)
 	{
-		bufferData ??= new BufferData(pool.Rent(rentBufferSize), 0);
+		bufferData ??= new BufferData(m_pool.Rent(m_rentBufferSize), 0);
 		var buffer = bufferData.Buffer.AsSpan();
 
 		var totalBytesWritten = bufferData.TotalBytesWritten;
-		if (totalBytesWritten >= rentBufferSize)
+		if (totalBytesWritten >= m_rentBufferSize)
 		{
-			channel.Writer.TryWrite(bufferData);
-			bufferData = new BufferData(pool.Rent(rentBufferSize), 0);
+			m_channel.Writer.TryWrite(bufferData);
+			bufferData = new BufferData(m_pool.Rent(m_rentBufferSize), 0);
 			totalBytesWritten = 0;
 			buffer = bufferData.Buffer.AsSpan();
 		}
@@ -203,8 +235,8 @@ public sealed class MySqlBulkImport : IAsyncDisposable
 			bufferData.TotalBytesWritten = totalBytesWritten;
 			if (!completeWrite)
 			{
-				channel.Writer.TryWrite(bufferData);
-				bufferData = new BufferData(pool.Rent(rentBufferSize), 0);
+				m_channel.Writer.TryWrite(bufferData);
+				bufferData = new BufferData(m_pool.Rent(m_rentBufferSize), 0);
 				totalBytesWritten = 0;
 				buffer = bufferData.Buffer.AsSpan();
 			}
@@ -224,10 +256,10 @@ public sealed class MySqlBulkImport : IAsyncDisposable
 
 		int totalBytesWritten = bufferData!.TotalBytesWritten;
 		Span<byte> buffer;
-		if (totalBytesWritten >= rentBufferSize)
+		if (totalBytesWritten >= m_rentBufferSize)
 		{
-			channel.Writer.TryWrite(bufferData);
-			bufferData = new BufferData(pool.Rent(rentBufferSize), 0);
+			m_channel.Writer.TryWrite(bufferData);
+			bufferData = new BufferData(m_pool.Rent(m_rentBufferSize), 0);
 			totalBytesWritten = 0;
 			buffer = bufferData.Buffer.AsSpan();
 		}
@@ -244,7 +276,7 @@ public sealed class MySqlBulkImport : IAsyncDisposable
 
 	internal async Task SendDataReaderAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		var reader = channel.Reader;
+		var reader = m_channel.Reader;
 		while (await reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
 		{
 			while (reader.TryRead(out var bufferData))
@@ -256,7 +288,7 @@ public sealed class MySqlBulkImport : IAsyncDisposable
 				}
 				finally
 				{
-					pool.Return(bufferData.Buffer);
+					m_pool.Return(bufferData.Buffer);
 				}
 			}
 		}
@@ -264,12 +296,12 @@ public sealed class MySqlBulkImport : IAsyncDisposable
 
 	public async ValueTask DisposeAsync()
 	{
-		channel.Writer.TryComplete();
+		m_channel.Writer.TryComplete();
 		if (bufferData != null)
 		{
 			try
 			{
-				pool.Return(bufferData.Buffer);
+				m_pool.Return(bufferData.Buffer);
 			}
 			catch
 			{
@@ -292,11 +324,11 @@ public sealed class MySqlBulkImport : IAsyncDisposable
 			}
 		}
 
-		while (channel.Reader.TryRead(out var bufferData))
+		while (m_channel.Reader.TryRead(out var bufferData))
 		{
 			try
 			{
-				pool.Return(bufferData.Buffer);
+				m_pool.Return(bufferData.Buffer);
 			}
 			catch
 			{
