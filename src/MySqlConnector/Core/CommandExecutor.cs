@@ -8,7 +8,7 @@ namespace MySqlConnector.Core;
 
 internal static class CommandExecutor
 {
-	public static async ValueTask<MySqlDataReader> ExecuteReaderAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public static async ValueTask<MySqlDataReader> ExecuteReaderAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity? activity, MySqlConnectorSemanticConventionsKinds conventionsKinds, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		try
 		{
@@ -73,7 +73,7 @@ internal static class CommandExecutor
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
-			activity.SetException(ex);
+			activity.SetException(ex, conventionsKinds);
 			activity.Stop();
 			throw;
 		}

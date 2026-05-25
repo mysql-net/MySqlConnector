@@ -50,6 +50,41 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 	}
 
 	[Fact]
+	public void OpenTagsStableConvention()
+	{
+		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
+			.ConfigureTracing(o => o.WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds.Stable));
+		using var dataSource = dataSourceBuilder.Build();
+
+		using var parentActivity = new Activity(nameof(OpenTagsStableConvention));
+		parentActivity.Start();
+
+		Activity activity = null;
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = x => activity = x,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		string connectionString;
+		using (var connection = dataSource.OpenConnection())
+		{
+			connectionString = connection.ConnectionString;
+		}
+		var csb = new MySqlConnectionStringBuilder(connectionString);
+
+		Assert.NotNull(activity);
+		Assert.Equal(ActivityKind.Client, activity.Kind);
+		Assert.Equal("Open", activity.OperationName);
+		Assert.Equal(ActivityStatusCode.Unset, activity.Status);
+
+		AssertStableTags(activity, csb);
+	}
+
+	[Fact]
 	public void OpenFromPoolTags()
 	{
 		var activities = new Activity[2];
@@ -144,6 +179,223 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		AssertTags(activity.Tags, csb);
 		AssertTag(activity.Tags, "db.connection_id", connection.ServerThread.ToString(CultureInfo.InvariantCulture));
 		AssertTag(activity.Tags, "db.statement", "SELECT 1;");
+	}
+
+	[Fact]
+	public void UseConventionKindsNone()
+	{
+		Assert.Throws<ArgumentOutOfRangeException>(() => new MySqlDataSourceBuilder(AppConfig.ConnectionString)
+			.ConfigureTracing(o => o.WithSemanticConventionsKinds(default))
+			.Build());
+	}
+
+	[Fact]
+	public void SelectTagsStableConvention()
+	{
+		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
+			.ConfigureTracing(o => o.WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds.Stable));
+		using var dataSource = dataSourceBuilder.Build();
+		using var connection = dataSource.OpenConnection();
+		var csb = new MySqlConnectionStringBuilder(connection.ConnectionString);
+
+		using var parentActivity = new Activity(nameof(SelectTagsStableConvention));
+		parentActivity.Start();
+
+		Activity activity = null;
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = x => activity = x,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		using (var command = new MySqlCommand("SELECT 1;", connection))
+		{
+			command.ExecuteScalar();
+		}
+
+		Assert.NotNull(activity);
+		Assert.Equal(ActivityKind.Client, activity.Kind);
+		Assert.Equal("Execute", activity.OperationName);
+		Assert.Equal(ActivityStatusCode.Unset, activity.Status);
+
+		AssertStableTags(activity, csb);
+		AssertTag(activity.Tags, "db.connection_id", connection.ServerThread.ToString(CultureInfo.InvariantCulture));
+		AssertTag(activity.Tags, "db.query.text", "SELECT 1;");
+		AssertNoTag(activity.Tags, "db.statement");
+	}
+
+	[Fact]
+	public void SelectTagsDupConvention()
+	{
+		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
+			.ConfigureTracing(o => o.WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds.Experimental | MySqlConnectorSemanticConventionsKinds.Stable));
+		using var dataSource = dataSourceBuilder.Build();
+		using var connection = dataSource.OpenConnection();
+		var csb = new MySqlConnectionStringBuilder(connection.ConnectionString);
+
+		using var parentActivity = new Activity(nameof(SelectTagsDupConvention));
+		parentActivity.Start();
+
+		Activity activity = null;
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = x => activity = x,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		using (var command = new MySqlCommand("SELECT 1;", connection))
+		{
+			command.ExecuteScalar();
+		}
+
+		Assert.NotNull(activity);
+		Assert.Equal(ActivityKind.Client, activity.Kind);
+		Assert.Equal("Execute", activity.OperationName);
+		Assert.Equal(ActivityStatusCode.Unset, activity.Status);
+
+		AssertTags(activity.Tags, csb);
+		AssertStableTags(activity, csb, assertNoLegacyTags: false);
+		AssertTag(activity.Tags, "db.connection_id", connection.ServerThread.ToString(CultureInfo.InvariantCulture));
+		AssertTag(activity.Tags, "db.statement", "SELECT 1;");
+		AssertTag(activity.Tags, "db.query.text", "SELECT 1;");
+	}
+
+	[Fact]
+	public void ErrorTagsStableConvention()
+	{
+		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
+			.ConfigureTracing(o => o.WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds.Stable));
+		using var dataSource = dataSourceBuilder.Build();
+		using var connection = dataSource.OpenConnection();
+
+		using var parentActivity = new Activity(nameof(ErrorTagsStableConvention));
+		parentActivity.Start();
+
+		Activity activity = null;
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = x => activity = x,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		using var command = new MySqlCommand("SELECT * FROM table_that_does_not_exist_for_activity_tests;", connection);
+		Assert.Throws<MySqlException>(() => command.ExecuteScalar());
+
+		Assert.NotNull(activity);
+		Assert.Equal(ActivityKind.Client, activity.Kind);
+		Assert.Equal("Execute", activity.OperationName);
+		Assert.Equal(ActivityStatusCode.Error, activity.Status);
+
+		var statusCode = AssertHasTag(activity.Tags, "db.response.status_code");
+		Assert.True(int.TryParse(statusCode, NumberStyles.None, CultureInfo.InvariantCulture, out _));
+		AssertTag(activity.Tags, "error.type", statusCode);
+		AssertTagObject(activity.TagObjects, "db.response.status_code", statusCode);
+		AssertTagObject(activity.TagObjects, "error.type", statusCode);
+	}
+
+	[Fact]
+	public void BatchTagsStableConvention()
+	{
+		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
+			.ConfigureTracing(o => o.WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds.Stable));
+		using var dataSource = dataSourceBuilder.Build();
+		using var connection = dataSource.OpenConnection();
+
+		using var parentActivity = new Activity(nameof(BatchTagsStableConvention));
+		parentActivity.Start();
+
+		Activity activity = null;
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = x => activity = x,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		using var batch = new MySqlBatch(connection)
+		{
+			BatchCommands =
+			{
+				new MySqlBatchCommand("SELECT 1;"),
+				new MySqlBatchCommand("SELECT 2;"),
+			},
+		};
+		batch.ExecuteNonQuery();
+
+		Assert.NotNull(activity);
+		Assert.Equal(ActivityKind.Client, activity.Kind);
+		Assert.Equal("Execute", activity.OperationName);
+		Assert.Equal(ActivityStatusCode.Unset, activity.Status);
+
+		AssertTag(activity.Tags, "db.operation.name", "BATCH");
+		AssertTagObject(activity.TagObjects, "db.operation.batch.size", 2);
+		AssertNoTag(activity.Tags, "db.query.text");
+		AssertNoTag(activity.Tags, "db.statement");
+	}
+
+	[Fact]
+	public void StoredProcedureTagsStableConvention()
+	{
+		const string procedureName = "activity_tags_test";
+
+		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
+			.ConfigureTracing(o => o.WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds.Stable));
+		using var dataSource = dataSourceBuilder.Build();
+		using var connection = dataSource.OpenConnection();
+		using (var command = new MySqlCommand($"DROP PROCEDURE IF EXISTS {procedureName};", connection))
+			command.ExecuteNonQuery();
+		using (var command = new MySqlCommand($"CREATE PROCEDURE {procedureName}() SELECT 1;", connection))
+			command.ExecuteNonQuery();
+
+		try
+		{
+			using var parentActivity = new Activity(nameof(StoredProcedureTagsStableConvention));
+			parentActivity.Start();
+
+			Activity activity = null;
+			using (var listener = new ActivityListener
+			{
+				ShouldListenTo = x => x.Name == "MySqlConnector",
+				Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+					options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+				ActivityStopped = x => activity = x,
+			})
+			{
+				ActivitySource.AddActivityListener(listener);
+
+				using var command = new MySqlCommand(procedureName, connection)
+				{
+					CommandType = CommandType.StoredProcedure,
+				};
+				Assert.Equal(1, Convert.ToInt32(command.ExecuteScalar(), CultureInfo.InvariantCulture));
+			}
+
+			Assert.NotNull(activity);
+			Assert.Equal(ActivityKind.Client, activity.Kind);
+			Assert.Equal("Execute", activity.OperationName);
+			Assert.Equal(ActivityStatusCode.Unset, activity.Status);
+
+			AssertTag(activity.Tags, "db.operation.name", "CALL");
+			AssertTag(activity.Tags, "db.stored_procedure.name", procedureName);
+			AssertNoTag(activity.Tags, "db.query.text");
+			AssertNoTag(activity.Tags, "db.statement");
+		}
+		finally
+		{
+			using var command = new MySqlCommand($"DROP PROCEDURE IF EXISTS {procedureName};", connection);
+			command.ExecuteNonQuery();
+		}
 	}
 
 	[SkippableTheory(ServerFeatures.QueryAttributes)]
@@ -314,12 +566,70 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		AssertTag(tags, "db.name", csb.Database);
 	}
 
-	private void AssertTag(IEnumerable<KeyValuePair<string, string>> tags, string expectedTag, string expectedValue)
+	private void AssertStableTags(Activity activity, MySqlConnectionStringBuilder csb, bool assertNoLegacyTags = true)
+	{
+		AssertTag(activity.Tags, "db.system.name", "mysql");
+		AssertTag(activity.Tags, "db.namespace", csb.Database);
+		AssertTag(activity.Tags, "server.address", csb.Server);
+		AssertHasTag(activity.Tags, "network.peer.address");
+		AssertTagObject(activity.TagObjects, "network.peer.port", csb.Port);
+		if (csb.Port == 3306)
+		{
+			AssertNoTag(activity.Tags, "server.port");
+		}
+		else
+		{
+			AssertTagObject(activity.TagObjects, "server.port", csb.Port);
+		}
+
+		if (assertNoLegacyTags)
+		{
+			AssertNoTag(activity.Tags, "db.connection_string");
+			AssertNoTag(activity.Tags, "db.user");
+			AssertNoTag(activity.Tags, "db.system");
+			AssertNoTag(activity.Tags, "db.name");
+			AssertNoTag(activity.Tags, "thread.id");
+			AssertNoTag(activity.Tags, "net.transport");
+			AssertNoTag(activity.Tags, "net.peer.name");
+			AssertNoTag(activity.Tags, "net.peer.ip");
+			AssertNoTag(activity.Tags, "net.peer.port");
+		}
+	}
+
+	private string AssertHasTag(IEnumerable<KeyValuePair<string, string>> tags, string expectedTag)
 	{
 		var tag = tags.SingleOrDefault(x => x.Key == expectedTag);
 		if (tag.Key is null)
 			Assert.Fail($"tags did not contain '{expectedTag}'");
+		return tag.Value;
+	}
+
+	private void AssertTag(IEnumerable<KeyValuePair<string, string>> tags, string expectedTag, string expectedValue)
+	{
+		Assert.Equal(expectedValue, AssertHasTag(tags, expectedTag));
+	}
+
+	private void AssertNoTag(IEnumerable<KeyValuePair<string, string>> tags, string tagName)
+	{
+		var tag = tags.SingleOrDefault(x => x.Key == tagName);
+		if (tag.Key is not null)
+			Assert.Fail($"tags unexpectedly contained '{tagName}' = '{tag.Value}'");
+	}
+
+	private void AssertTagObject(IEnumerable<KeyValuePair<string, object>> tags, string expectedTag, object expectedValue)
+	{
+		var tag = tags.SingleOrDefault(x => x.Key == expectedTag);
+		if (tag.Key is null)
+			Assert.Fail($"tag objects did not contain '{expectedTag}'");
+		if (IsNumeric(tag.Value) && IsNumeric(expectedValue))
+		{
+			Assert.Equal(Convert.ToDecimal(expectedValue, CultureInfo.InvariantCulture), Convert.ToDecimal(tag.Value, CultureInfo.InvariantCulture));
+			return;
+		}
 		Assert.Equal(expectedValue, tag.Value);
+
+		static bool IsNumeric(object value) =>
+			value is byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal;
 	}
 }
 #endif
