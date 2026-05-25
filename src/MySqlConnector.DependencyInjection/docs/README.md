@@ -1,20 +1,28 @@
 ## About
 
-MySqlConnector.DependencyInjection helps set up MySqlConnector in applications that use dependency injection, most notably in ASP.NET.
-It allows easy configuration of your MySQL connections and registers the appropriate services in your DI container.
-It also configures logging by integrating MySqlConnector with the `ILoggingFactory` registered with the service provider.
+The dependency injection APIs from `MySqlConnector.DependencyInjection` are now included in `MySqlConnector`.
+Uninstall `MySqlConnector.DependencyInjection` and use `MySqlConnector` instead.
+
+```txt
+dotnet remove package MySqlConnector.DependencyInjection
+dotnet add package MySqlConnector
+```
+
+If `MySqlConnector` is already installed, only the `dotnet remove package MySqlConnector.DependencyInjection` command is needed.
 
 ## How to Use
 
-For example, if using the ASP.NET minimal web API, use the following to register MySqlConnector:
+No code changes are required when switching packages. Continue using the same APIs from the `MySqlConnector` namespace:
 
 ```csharp
+using MySqlConnector;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("Default"));
 ```
 
-This registers a transient `MySqlConnection` which can get injected into your controllers:
+This still registers a transient `MySqlConnection` which can get injected into your controllers:
 
 ```csharp
 app.MapGet("/", async (MySqlConnection connection) =>
@@ -39,7 +47,7 @@ app.MapGet("/", async (MySqlDataSource dataSource) =>
 
 ## Advanced Usage
 
-The `AddMySqlDataSource` method also accepts a lambda parameter allowing you to configure aspects of MySqlConnector beyond the connection string.
+`MySqlConnector` still provides the same `AddMySqlDataSource` overloads for configuring aspects of MySqlConnector beyond the connection string.
 
 ```csharp
 var builder = WebApplication.CreateBuilder(args);

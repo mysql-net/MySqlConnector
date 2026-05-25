@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-11-10
+lastmod: 2026-05-25
 date: 2016-10-16
 menu:
   main:
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `BlogPost` (
 ### Initialize ASP.NET Core Web API
 
 Create a folder named `BlogPostApi`, then run `dotnet new webapi` at the root to create the initial project.
-Run `dotnet add package MySqlConnector.DependencyInjection`. You should have a working project at this point, use `dotnet run`
+Run `dotnet add package MySqlConnector`. You should have a working project at this point, use `dotnet run`
 to verify the project builds and runs successfully.
 
 ### Update Configuration Files
@@ -58,7 +58,7 @@ to verify the project builds and runs successfully.
 ### .NET Core Startup
 
 `Program.cs` contains runtime configuration and framework services.
-Add this call (before `var app = builder.Build();`) to register a MySQL data source:
+Add `using MySqlConnector;` at the top of the file, then add this call (before `var app = builder.Build();`) to register a MySQL data source:
 
 ```csharp
 builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("Default")!);
