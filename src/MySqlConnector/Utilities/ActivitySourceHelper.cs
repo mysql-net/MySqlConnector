@@ -56,7 +56,9 @@ internal static class ActivitySourceHelper
 			description = mySqlException.ErrorCode.ToString();
 			var errorCode = (int) mySqlException.ErrorCode;
 			if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
+			{
 				activity.SetTag(ResponseStatusCodeTagName, errorCode);
+			}
 			if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
 			{
 				errorType = errorCode.ToString(CultureInfo.InvariantCulture);
