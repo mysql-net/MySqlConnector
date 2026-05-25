@@ -55,7 +55,7 @@ internal static class CommandExecutor
 			try
 			{
 				await session.SendAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
-				await session.DataReader.InitAsync(commandListPosition, payloadCreator, cachedProcedures, command, behavior, activity, conventionsKinds, ioBehavior, cancellationToken).ConfigureAwait(false);
+				await session.DataReader.InitAsync(commandListPosition, payloadCreator, cachedProcedures, command, behavior, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return session.DataReader;
 			}
 			catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
