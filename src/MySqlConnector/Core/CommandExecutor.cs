@@ -71,7 +71,7 @@ internal static class CommandExecutor
 				throw new MySqlException($"Error submitting {megabytes}MB packet; ensure 'max_allowed_packet' is greater than {megabytes}MB.", ex);
 			}
 		}
-		catch (Exception ex) when (activity is { IsAllDataRequested: true } && activity.Duration == default)
+		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
 			activity.SetException(ex, conventionsKinds);
 			activity.Stop();
