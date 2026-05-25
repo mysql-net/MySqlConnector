@@ -23,6 +23,11 @@ public sealed class MySqlConnectorTracingOptionsBuilder
 	/// <remarks>The default is controlled by the <c>OTEL_SEMCONV_STABILITY_OPT_IN</c> environment variable.</remarks>
 	public MySqlConnectorTracingOptionsBuilder WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds kinds)
 	{
+		if (kinds is not (MySqlConnectorSemanticConventionsKinds.Experimental or MySqlConnectorSemanticConventionsKinds.Stable or
+				MySqlConnectorSemanticConventionsKinds.Experimental | MySqlConnectorSemanticConventionsKinds.Stable))
+		{
+			throw new ArgumentOutOfRangeException(nameof(kinds), "kinds must be Experimental or Stable conventions (or both).");
+		}
 		m_semanticConventionsKinds = kinds;
 		return this;
 	}

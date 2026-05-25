@@ -14,7 +14,7 @@ internal sealed class MySqlConnectorTracingOptions
 	private static MySqlConnectorSemanticConventionsKinds GetDefaultSemanticConventions()
 	{
 		var foundValue = false;
-		var kinds = MySqlConnectorSemanticConventionsKinds.None;
+		MySqlConnectorSemanticConventionsKinds kinds = default;
 
 		// look for the environment variable documented at https://opentelemetry.io/docs/specs/semconv/db/database-spans/
 		if (Environment.GetEnvironmentVariable("OTEL_SEMCONV_STABILITY_OPT_IN") is { Length: > 0 } optIn)

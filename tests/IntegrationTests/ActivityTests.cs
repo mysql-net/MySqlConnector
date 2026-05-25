@@ -182,6 +182,14 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 	}
 
 	[Fact]
+	public void UseConventionKindsNone()
+	{
+		Assert.Throws<ArgumentOutOfRangeException>(() => new MySqlDataSourceBuilder(AppConfig.ConnectionString)
+			.ConfigureTracing(o => o.WithSemanticConventionsKinds(default))
+			.Build());
+	}
+
+	[Fact]
 	public void SelectTagsStableConvention()
 	{
 		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)

@@ -9,6 +9,7 @@ public enum MySqlConnectorSemanticConventionsKinds
 	/// <summary>
 	/// Emit no semantic convention attributes or events.
 	/// </summary>
+	[Obsolete("Experimental or Stable conventions must be used.")]
 	None = 0,
 
 	/// <summary>
