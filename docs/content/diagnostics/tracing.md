@@ -38,14 +38,14 @@ When using `MySqlDataSourceBuilder`, configure MySqlConnector tracing options wi
 ```csharp
 await using var dataSource = new MySqlDataSourceBuilder(connectionString)
 	.ConfigureTracing(options => options
-		.WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds.Stable)
-		.EnableResultSetHeaderEvent())
+		.WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds.Stable))
 	.Build();
 ```
 
 ## Semantic Conventions
 
 MySqlConnector supports both legacy experimental database attributes and stable OpenTelemetry database attributes.
+These are controlled by the `OTEL_SEMCONV_STABILITY_OPT_IN` environment variable, which can be set to one of the following values:
 
 | `OTEL_SEMCONV_STABILITY_OPT_IN` | Attributes emitted |
 |---|---|
