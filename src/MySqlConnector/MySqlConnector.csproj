@@ -9,6 +9,7 @@
     <PackageId>MySqlConnector</PackageId>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>mysql;mysqlconnector;async;ado.net;database;netcore</PackageTags>
+    <PackageValidationBaselineVersion>2.5.0</PackageValidationBaselineVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
