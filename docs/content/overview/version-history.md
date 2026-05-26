@@ -11,6 +11,10 @@ weight: 30
 
 # Version History
 
+### 2.6.0 Beta 2
+
+* Move `AddMySqlDataSource` and related APIs from `MySqlConnector.DependencyInjection` to `MySqlConnector`: [#1649](https://github.com/mysql-net/MySqlConnector/issues/1649).
+
 ### 2.6.0 Beta 1
 
 * Support distributed tracing by sending `traceparent` to MySQL Server: [#1635](https://github.com/mysql-net/MySqlConnector/issues/1635).
