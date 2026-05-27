@@ -674,6 +674,104 @@ create table bulk_load_data_table(id BIGINT UNIQUE NOT NULL AUTO_INCREMENT, geo_
 
 		await bc.WriteToServerAsync(dataTable);
 	}
+
+#if NET6_0_OR_GREATER
+
+	[Fact]
+	public async Task MySqlBulkImportDataReader()
+	{
+		var rows = new List<(int, string)>()
+		{
+			new(1, "row 1"),
+			new(12345678, "row 12345678"),
+		};
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		await connection.OpenAsync();
+		using (var cmd = new MySqlCommand(@"drop table if exists bulk_import_table;
+create table bulk_import_table(value int, name text);", connection))
+		{
+			await cmd.ExecuteNonQueryAsync();
+		}
+
+		var bulkImport = new MySqlBulkImport(connection);
+		await bulkImport.StartImportAsync("bulk_import_table", 2);
+
+		foreach (var row in rows)
+		{
+			bulkImport.WriteColumnValue(row.Item1);
+			bulkImport.WriteColumnValue(row.Item2);
+			bulkImport.EndRow();
+		}
+
+		await bulkImport.WaitFinishImportAsync();
+
+		await using (var cmd = new MySqlCommand(@"select value, name from bulk_import_table", connection))
+		{
+			await using var reader = await cmd.ExecuteReaderAsync();
+
+			var rowsCount = 0;
+			while (reader.Read())
+			{
+				rowsCount++;
+				var a = reader.GetFieldValue<int>(0);
+				Assert.Contains(rows, wh => wh.Item1 == a);
+
+				var expect = rows.First(wh => wh.Item1 == a);
+				var b = reader.GetFieldValue<string>(1);
+
+				Assert.Equal(expect.Item2, b);
+			}
+
+			Assert.Equal(rows.Count, rowsCount);
+		}
+	}
+
+	[Fact]
+	public async Task MySqlBulkImportLongBlob()
+	{
+		var emptyArray = new byte[524200];
+		var rows = new List<(int, byte[])>()
+		{
+			new(1, emptyArray),
+			new(12345678, emptyArray),
+		};
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		await connection.OpenAsync();
+		using (var cmd = new MySqlCommand(@"drop table if exists bulk_import_table;
+create table bulk_import_table(a int, b longblob);", connection))
+		{
+			await cmd.ExecuteNonQueryAsync();
+		}
+
+		var bulkImport = new MySqlBulkImport(connection);
+		await bulkImport.StartImportAsync("bulk_import_table", 2);
+
+		foreach (var row in rows)
+		{
+			bulkImport.WriteColumnValue(row.Item1);
+			bulkImport.WriteColumnValue(row.Item2);
+			bulkImport.EndRow();
+		}
+
+		await bulkImport.WaitFinishImportAsync();
+
+		using (var cmd = new MySqlCommand(@"select b from bulk_import_table;", connection))
+		{
+			using (var reader = cmd.ExecuteReader())
+			{
+				while (reader.Read())
+				{
+					var actual = reader.GetFieldValue<byte[]>(0);
+					Assert.Equal(actual, emptyArray);
+				}
+			}
+		}
+	}
+
+#endif
+
 #endif
 
 	private static string GetConnectionString() => BulkLoaderSync.GetConnectionString();
