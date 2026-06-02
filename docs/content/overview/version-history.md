@@ -1,5 +1,5 @@
 ---
-lastmod: 2026-05-25
+lastmod: 2026-06-02
 date: 2017-03-27
 menu:
   main:
@@ -11,15 +11,14 @@ weight: 30
 
 # Version History
 
-### 2.6.0 Beta 2
+### 2.6.0
 
-* Move `AddMySqlDataSource` and related APIs from `MySqlConnector.DependencyInjection` to `MySqlConnector`: [#1649](https://github.com/mysql-net/MySqlConnector/issues/1649).
-
-### 2.6.0 Beta 1
-
-* Support distributed tracing by sending `traceparent` to MySQL Server: [#1635](https://github.com/mysql-net/MySqlConnector/issues/1635).
 * Add opt-in stable OpenTelemetry semantic conventions: [#1435](https://github.com/mysql-net/MySqlConnector/issues/1435).
+  * In MySqlConnector 3.0, the experimental conventions will be removed.
+  * Applications should set `OTEL_SEMCONV_STABILITY_OPT_IN` to `database` or `database/dup` (or use `WithSemanticConventionsKinds`) to test the new semantic conventions.
+* Support distributed tracing by sending `traceparent` to MySQL Server: [#1635](https://github.com/mysql-net/MySqlConnector/issues/1635).
 * `EnableResultSetHeaderEvent` is now opt-in: [#1633](https://github.com/mysql-net/MySqlConnector/issues/1633).
+* Move `AddMySqlDataSource` and related APIs from `MySqlConnector.DependencyInjection` to `MySqlConnector`: [#1649](https://github.com/mysql-net/MySqlConnector/issues/1649).
 * Improve reliability and correctness of parameter parsing and rewriting:
   * Fix termination of quoted parameters: [#1627](https://github.com/mysql-net/MySqlConnector/issues/1627).
   * Handle all comment-start characters during SQL parsing: [#1624](https://github.com/mysql-net/MySqlConnector/issues/1624).
@@ -32,10 +31,7 @@ weight: 30
   * Reject negative `DATETIME` ticks: [#1630](https://github.com/mysql-net/MySqlConnector/issues/1630).
   * Don't detect `BINARY` columns as `Guid`: [#1625](https://github.com/mysql-net/MySqlConnector/issues/1625).
 * Improve exception safety: [#1628](https://github.com/mysql-net/MySqlConnector/issues/1628).
-* Maintenance:
-  * Update `log4net` dependency from 2.0.17 to 3.3.0: [#1617](https://github.com/mysql-net/MySqlConnector/pull/1617).
-  * Suppress trimming warnings and update AOT test coverage: [#1607](https://github.com/mysql-net/MySqlConnector/issues/1607), [#1608](https://github.com/mysql-net/MySqlConnector/pull/1608).
-  * Update test dependencies and infrastructure (xUnit v3, AdoNet.Specification.Tests 3.0.0 Beta 1, MySQL test versions).
+* Suppress trimming warnings and update AOT test coverage: [#1607](https://github.com/mysql-net/MySqlConnector/issues/1607), [#1608](https://github.com/mysql-net/MySqlConnector/pull/1608).
 * Thanks to [Markus Mäkelä](https://github.com/markus456) and [Sven Boemer](https://github.com/sbomer) for contributions to this release.
 
 ### 2.5.0
