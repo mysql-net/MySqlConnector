@@ -145,4 +145,9 @@ public enum ServerFeatures
 	/// Server has a dedicated type on the wire for <c>VECTOR</c>.
 	/// </summary>
 	VectorType = 0x800_0000,
+
+	/// <summary>
+	/// Server supports <c>INSERT ... RETURNING</c> (MariaDB 10.5 and later).
+	/// </summary>
+	InsertReturning = 0x1000_0000,
 }
