@@ -132,7 +132,17 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 						m_columnDefinitions = m_columnDefinitionPayloadCache.AsMemory(0, columnCount);
 
 						// if the server supports metadata caching but has re-sent it, something has changed since last prepare/execution and we need to update the columns
-						var preparedColumns = Session.SupportsCachedPreparedMetadata ? DataReader.LastUsedPreparedStatement?.Columns : null;
+						ColumnDefinitionPayload[]? preparedColumns = null;
+						if (Session.SupportsCachedPreparedMetadata && DataReader.LastUsedPreparedStatement is { } lastUsedPreparedStatement)
+						{
+							// the prepared statement may have no cached metadata (e.g., 'INSERT ... RETURNING' reports zero columns when prepared on MariaDB), or the column count may have changed
+							preparedColumns = lastUsedPreparedStatement.Columns;
+							if (preparedColumns?.Length != columnCount)
+							{
+								preparedColumns = new ColumnDefinitionPayload[columnCount];
+								lastUsedPreparedStatement.Columns = preparedColumns;
+							}
+						}
 
 						for (var column = 0; column < columnCount; column++)
 						{

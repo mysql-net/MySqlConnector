@@ -171,19 +171,19 @@ jobs:
       'MySQL 8.0':
         image: 'mysql:8.0'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
-        unsupportedFeatures: 'Ed25519,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
+        unsupportedFeatures: 'Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
       'MySQL 8.4':
         image: 'mysql:8.4'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
-        unsupportedFeatures: 'Ed25519,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
+        unsupportedFeatures: 'Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
       'MySQL 9.4':
         image: 'mysql:9.4'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
-        unsupportedFeatures: 'Ed25519,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
+        unsupportedFeatures: 'Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
       'MySQL 9.7':
         image: 'mysql:9.7'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
-        unsupportedFeatures: 'Ed25519,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
+        unsupportedFeatures: 'Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
       'MariaDB 10.6':
         image: 'mariadb:10.6'
         connectionStringExtra: ''

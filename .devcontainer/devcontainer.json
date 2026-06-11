@@ -17,7 +17,7 @@
   },
   "containerEnv": {
     "Data__ConnectionString": "server=db;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=disabled;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True",
-    "Data__UnsupportedFeatures": "Ed25519,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,UnixDomainSocket,Vector,ZeroDateTime",
+    "Data__UnsupportedFeatures": "Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,UnixDomainSocket,Vector,ZeroDateTime",
     "Data__CertificatesPath": "/workspace/.ci/server/certs"
   },
   "customizations": {
