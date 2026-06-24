@@ -614,7 +614,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				}
 				else
 				{
-					payload = await SendClearPasswordAsync(password, ioBehavior, cancellationToken).ConfigureAwait(false);
+					payload = await SendClearPasswordAsync(currentAuthenticationMethod, password, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 			}
 
@@ -911,6 +911,12 @@ internal sealed partial class ServerSession : IServerCapabilities
 		return false;
 	}
 
+	// Whether the server's identity has been established well enough to send it the account password.
+	// True for a local connection that a network man-in-the-middle can't intercept (a Unix domain socket, or a
+	// TCP loopback connection), or for TLS once the certificate has been fully validated.
+	private bool IsServerIdentityVerifiedForPassword =>
+		m_isUnixSocketConnection || m_isLoopbackConnection || (m_isSecureConnection && m_sslPolicyErrors == SslPolicyErrors.None);
+
 	private async Task<PayloadData> SwitchAuthenticationAsync(ConnectionSettings cs, string password, PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		// if the server didn't support the hashed password; rehash with the new challenge
@@ -926,10 +932,10 @@ internal sealed partial class ServerSession : IServerCapabilities
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			case "mysql_clear_password":
-				if (!m_isSecureConnection && !m_isLoopbackConnection)
+				if (!IsServerIdentityVerifiedForPassword)
 				{
 					Log.NeedsSecureConnection(m_logger, Id, switchRequest.Name);
-					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, $"Authentication method '{switchRequest.Name}' requires a secure connection.");
+					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, $"Authentication method '{switchRequest.Name}' requires a secure connection with a verified server certificate.");
 				}
 
 				// send the password as a NULL-terminated UTF-8 string
@@ -963,7 +969,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				}
 				else
 				{
-					return await SendClearPasswordAsync(password, ioBehavior, cancellationToken).ConfigureAwait(false);
+					return await SendClearPasswordAsync(switchRequest.Name, password, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 
 			case "auth_gssapi_client":
@@ -1008,8 +1014,14 @@ internal sealed partial class ServerSession : IServerCapabilities
 		}
 	}
 
-	private async Task<PayloadData> SendClearPasswordAsync(string password, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task<PayloadData> SendClearPasswordAsync(string authenticationMethod, string password, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
+		if (password.Length != 0 && !IsServerIdentityVerifiedForPassword)
+		{
+			Log.NeedsSecureConnection(m_logger, Id, authenticationMethod);
+			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, $"Authentication method '{authenticationMethod}' requires a secure connection with a verified server certificate to send the password.");
+		}
+
 		// add NUL terminator to password
 		var passwordBytes = AuthenticationUtility.GetNullTerminatedPasswordBytes(password);
 
@@ -1496,6 +1508,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 		{
 			m_socket = socket;
 			m_stream = new NetworkStream(socket);
+			m_isUnixSocketConnection = true;
 
 			lock (m_lock)
 				m_state = State.Connected;
@@ -2315,6 +2328,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private CompressionMethod m_compressionMethod;
 	private bool m_isSecureConnection;
 	private bool m_isLoopbackConnection;
+	private bool m_isUnixSocketConnection;
 	private bool m_supportsConnectionAttributes;
 	private bool m_supportsPipelining;
 	private CharacterSet m_characterSet;
