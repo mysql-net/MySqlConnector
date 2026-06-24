@@ -1,5 +1,5 @@
 ---
-lastmod: 2026-06-02
+lastmod: 2026-06-24
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,12 @@ weight: 30
 ---
 
 # Version History
+
+### 2.6.1
+
+* Fix [GHSA-473q-m89c-ghf8](https://github.com/mysql-net/MySqlConnector/security/advisories/GHSA-473q-m89c-ghf8): MitM password disclosure in zero-configuration TLS mode.
+* Fix `MySqlCommand.Prepare` with `INSERT INTO ... RETURNING`: [#1652](https://github.com/mysql-net/MySqlConnector/issues/1652).
+* Thanks to [Diego Dupin](https://github.com/rusher) for contributions to this release.
 
 ### 2.6.0
 
