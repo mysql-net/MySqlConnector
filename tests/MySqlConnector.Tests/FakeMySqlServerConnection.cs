@@ -1,8 +1,12 @@
 using System.IO;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using MySqlConnector.Protocol;
+using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.Tests;
 
@@ -30,6 +34,12 @@ internal sealed class FakeMySqlServerConnection
 
 				await SendAsync(stream, 0, WriteInitialHandshake);
 				await ReadPayloadAsync(stream, token); // handshake response
+
+				if (m_server.ServerCertificate is { } serverCertificate)
+				{
+					await RunWithTlsAsync(stream, serverCertificate, token);
+					return;
+				}
 
 				if (m_server.SendIncompletePostHandshakeResponse)
 				{
@@ -225,6 +235,44 @@ internal sealed class FakeMySqlServerConnection
 		}
 	}
 
+	// Emulates a (potentially malicious) server that supports TLS. This implements just enough of the protocol to
+	// complete a TLS handshake and then request cleartext-password authentication, in order to verify that the client
+	// will not transmit its password to a server whose certificate it hasn't verified; see GHSA-473q-m89c-ghf8.
+	private async Task RunWithTlsAsync(NetworkStream networkStream, X509Certificate2 serverCertificate, CancellationToken cancellationToken)
+	{
+		try
+		{
+			// perform the server side of the TLS handshake
+			using var sslStream = new SslStream(networkStream, leaveInnerStreamOpen: true);
+			await sslStream.AuthenticateAsServerAsync(serverCertificate, clientCertificateRequired: false, SslProtocols.Tls12, checkCertificateRevocation: false);
+
+			// the client now sends its real handshake response (sequence number 2), encrypted
+			await ReadPayloadAsync(sslStream, cancellationToken);
+
+			if (m_server.RequestClearPasswordSwitch)
+			{
+				// request a switch to cleartext-password authentication (sequence number 3)
+				await SendAsync(sslStream, 3, WriteClearPasswordSwitchRequest);
+
+				// A vulnerable client sends the NUL-terminated plaintext password (sequence number 4) even though the
+				// server's certificate has not been verified; a fixed client refuses and closes the connection instead.
+				try
+				{
+					var response = await ReadPayloadAsync(sslStream, cancellationToken);
+					m_server.SetClearPasswordResponse(response);
+				}
+				catch (Exception ex) when (ex is EndOfStreamException or IOException or OperationCanceledException or ObjectDisposedException)
+				{
+					m_server.SetClearPasswordResponse(null);
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			m_server.SetServerException(ex);
+		}
+	}
+
 	private static async Task SendAsync(Stream stream, int sequenceNumber, Action<BinaryWriter> writePayload)
 	{
 		var packet = MakePayload(sequenceNumber, writePayload);
@@ -278,6 +326,7 @@ internal sealed class FakeMySqlServerConnection
 			ProtocolCapabilities.Protocol41 |
 			ProtocolCapabilities.Transactions |
 			ProtocolCapabilities.SecureConnection |
+			(m_server.ServerCertificate is not null ? ProtocolCapabilities.Ssl : ProtocolCapabilities.None) |
 			ProtocolCapabilities.MultiStatements |
 			ProtocolCapabilities.MultiResults |
 			ProtocolCapabilities.PluginAuth |
@@ -318,6 +367,12 @@ internal sealed class FakeMySqlServerConnection
 		writer.Write((ushort) MySqlErrorCode.UnknownError); // error code
 		writer.WriteRaw("#ERROR");
 		writer.WriteRaw(message);
+	}
+
+	private static void WriteClearPasswordSwitchRequest(BinaryWriter writer)
+	{
+		writer.Write(AuthenticationMethodSwitchRequestPayload.Signature);
+		writer.WriteNullTerminated("mysql_clear_password");
 	}
 
 	private readonly FakeMySqlServer m_server;
