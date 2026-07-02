@@ -1634,7 +1634,27 @@ internal sealed partial class ServerSession : IServerCapabilities
 		X509Certificate ValidateLocalCertificate(object lcbSender, string lcbTargetHost, X509CertificateCollection lcbLocalCertificates, X509Certificate? lcbRemoteCertificate, string[] lcbAcceptableIssuers) => lcbLocalCertificates[0];
 
 		bool ValidateRemoteCertificate(object rcbSender, X509Certificate? rcbCertificate, X509Chain? rcbChain, SslPolicyErrors rcbPolicyErrors)
-		{
+        {
+            if (rcbPolicyErrors != SslPolicyErrors.None && rcbChain != null && m_logger.IsEnabled(LogLevel.Trace))
+            {
+                var builder = new StringBuilder();
+                builder.AppendLine($"Entering {nameof(ValidateRemoteCertificate)} with errors: {rcbPolicyErrors}");
+
+                for (int index = 0; index < rcbChain.ChainElements.Count; index++)
+                {
+                    X509ChainElement? element = rcbChain.ChainElements[index];
+                    builder.AppendLine($"Element {index}: {element.Certificate.GetNameInfo(X509NameType.SimpleName, false)}");
+                    builder.AppendLine("  Status:");
+
+                    foreach (X509ChainStatus status in element.ChainElementStatus)
+                    {
+                        builder.AppendLine($"  {status.Status}: {status.StatusInformation}");
+                    }
+                }
+
+                Log.RemoteCertificateValidationTrace(m_logger, builder.ToString());
+            }
+
 			// if no CA verification is required, then we trust any remote certificate
 			if (cs.SslMode is MySqlSslMode.Preferred or MySqlSslMode.Required)
 				return true;
@@ -1708,7 +1728,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 		var sslStream = clientCertificates is null ? new SslStream(m_stream!, false, validateRemoteCertificate) :
 			new SslStream(m_stream!, false, validateRemoteCertificate, ValidateLocalCertificate);
 
-		var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
+		var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull && !cs.AllowUnknownCertificateRevocation;
 
 		using (var initSsl = HandshakeResponse41Payload.CreateWithSsl(serverCapabilities, cs, m_compressionMethod, m_characterSet))
 			await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
