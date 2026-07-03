@@ -1728,7 +1728,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 		var sslStream = clientCertificates is null ? new SslStream(m_stream!, false, validateRemoteCertificate) :
 			new SslStream(m_stream!, false, validateRemoteCertificate, ValidateLocalCertificate);
 
-		var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull && !cs.AllowUnknownCertificateRevocation;
+		var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull && !cs.SkipCertificateRevocationCheck;
 
 		using (var initSsl = HandshakeResponse41Payload.CreateWithSsl(serverCapabilities, cs, m_compressionMethod, m_characterSet))
 			await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -1741,10 +1741,10 @@ internal sealed partial class ServerSession : IServerCapabilities
 			CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
 		};
 
-		if (cs.AllowUnknownCertificateRevocation)
+		if (cs.SkipCertificateRevocationCheck)
 		{
 			if (cs.SslMode != MySqlSslMode.VerifyFull)
-				throw new MySqlException("AllowUnknownCertificateRevocation may only be used with SslMode=VerifyFull");
+				throw new MySqlException("SkipCertificateRevocationCheck may only be used with SslMode=VerifyFull");
 #if NET7_0_OR_GREATER
 			clientAuthenticationOptions.CertificateChainPolicy ??= new();
 			clientAuthenticationOptions.CertificateChainPolicy.VerificationFlags =
@@ -1753,7 +1753,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown |
 				X509VerificationFlags.IgnoreRootRevocationUnknown;
 #else
-			throw new PlatformNotSupportedException("The AllowUnknownCertificateRevocation connection string option is only supported on .NET 7.0 (or later).");
+			throw new PlatformNotSupportedException("The SkipCertificateRevocationCheck connection string option is only supported on .NET 7.0 (or later).");
 #endif
 		}
 

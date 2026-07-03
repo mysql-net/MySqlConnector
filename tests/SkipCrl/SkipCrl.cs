@@ -46,13 +46,13 @@ Console.WriteLine();
 
 var verifyCaSucceeded = await TryOpenAsync(baseConnectionStringBuilder, MySqlSslMode.VerifyCA);
 Console.WriteLine();
-var verifyFullWithoutOverrideSucceeded = await TryOpenAsync(baseConnectionStringBuilder, MySqlSslMode.VerifyFull, allowUnknownCertificateRevocation: false);
+var verifyFullWithoutOverrideSucceeded = await TryOpenAsync(baseConnectionStringBuilder, MySqlSslMode.VerifyFull, skipCertificateRevocationCheck: false);
 Console.WriteLine();
-var verifyFullWithOverrideSucceeded = await TryOpenAsync(baseConnectionStringBuilder, MySqlSslMode.VerifyFull, allowUnknownCertificateRevocation: true);
+var verifyFullWithOverrideSucceeded = await TryOpenAsync(baseConnectionStringBuilder, MySqlSslMode.VerifyFull, skipCertificateRevocationCheck: true);
 
 Console.WriteLine();
-Console.WriteLine($"VerifyFull without AllowUnknownCertificateRevocation succeeded: {verifyFullWithoutOverrideSucceeded}");
-Console.WriteLine($"VerifyFull with AllowUnknownCertificateRevocation succeeded: {verifyFullWithOverrideSucceeded}");
+Console.WriteLine($"VerifyFull without SkipCertificateRevocationCheck succeeded: {verifyFullWithoutOverrideSucceeded}");
+Console.WriteLine($"VerifyFull with SkipCertificateRevocationCheck succeeded: {verifyFullWithOverrideSucceeded}");
 Environment.ExitCode = !onlineChainSucceeded &&
 	noCheckChainSucceeded &&
 	verifyCaSucceeded &&
@@ -90,15 +90,15 @@ static bool RunChainCheck(string caCertificatePath, string serverCertificatePath
 	return success;
 }
 
-static async Task<bool> TryOpenAsync(MySqlConnectionStringBuilder baseConnectionStringBuilder, MySqlSslMode sslMode, bool allowUnknownCertificateRevocation = false)
+static async Task<bool> TryOpenAsync(MySqlConnectionStringBuilder baseConnectionStringBuilder, MySqlSslMode sslMode, bool skipCertificateRevocationCheck = false)
 {
 	var connectionStringBuilder = new MySqlConnectionStringBuilder(baseConnectionStringBuilder.ConnectionString)
 	{
 		SslMode = sslMode,
-		AllowUnknownCertificateRevocation = allowUnknownCertificateRevocation,
+		SkipCertificateRevocationCheck = skipCertificateRevocationCheck,
 	};
 
-	Console.WriteLine($"=== {sslMode} (AllowUnknownCertificateRevocation={allowUnknownCertificateRevocation}) ===");
+	Console.WriteLine($"=== {sslMode} (SkipCertificateRevocationCheck={skipCertificateRevocationCheck}) ===");
 	Console.WriteLine(connectionStringBuilder.ConnectionString);
 
 	await using var connection = new MySqlConnection(connectionStringBuilder.ConnectionString);
