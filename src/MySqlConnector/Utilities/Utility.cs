@@ -88,6 +88,11 @@ internal static class Utility
 	}
 #endif
 
+#if !NET6_0_OR_GREATER
+	public static StringBuilder AppendLine(this StringBuilder stringBuilder, IFormatProvider formatProvider, FormattableString message) =>
+		stringBuilder.AppendLine(message.ToString(formatProvider));
+#endif
+
 #if NET5_0_OR_GREATER
 	/// <summary>
 	/// Loads a RSA key from PEM bytes.

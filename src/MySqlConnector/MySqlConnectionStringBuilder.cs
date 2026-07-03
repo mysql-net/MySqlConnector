@@ -275,6 +275,19 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
+	/// Turns off the TLS certificate revocation check when using <see cref="MySqlSslMode.VerifyFull"/>. This allows a connection to be made even when revocation status can't be determined, but it also means revoked certificates may not be detected. All other checks are still performed. Intended for private clouds that don't use revocation.
+	/// </summary>
+	[Category("TLS")]
+	[DefaultValue(false)]
+	[Description("Turns off the TLS certificate revocation check when using VerifyFull. This allows a connection to be made even when revocation status can't be determined, but it also means revoked certificates may not be detected. All other checks are still performed. Intended for private clouds that don't use revocation.")]
+	[DisplayName("Skip Certificate Revocation Check")]
+	public bool SkipCertificateRevocationCheck
+	{
+		get => MySqlConnectionStringOption.SkipCertificateRevocationCheck.GetValue(this);
+		set => MySqlConnectionStringOption.SkipCertificateRevocationCheck.SetValue(this, value);
+	}
+
+	/// <summary>
 	/// The TLS versions which may be used during TLS negotiation, or empty to use OS defaults.
 	/// </summary>
 	[AllowNull]
@@ -919,6 +932,7 @@ internal abstract partial class MySqlConnectionStringOption
 	public static readonly MySqlConnectionStringReferenceOption<string> SslCert;
 	public static readonly MySqlConnectionStringReferenceOption<string> SslKey;
 	public static readonly MySqlConnectionStringReferenceOption<string> SslCa;
+	public static readonly MySqlConnectionStringValueOption<bool> SkipCertificateRevocationCheck;
 	public static readonly MySqlConnectionStringReferenceOption<string> TlsVersion;
 	public static readonly MySqlConnectionStringReferenceOption<string> TlsCipherSuites;
 
@@ -1060,6 +1074,10 @@ internal abstract partial class MySqlConnectionStringOption
 		AddOption(options, SslCa = new(
 			keys: ["SSL CA", "CACertificateFile", "CA Certificate File", "SslCa", "Ssl-Ca"],
 			defaultValue: ""));
+
+		AddOption(options, SkipCertificateRevocationCheck = new(
+			keys: ["Skip Certificate Revocation Check", "SkipCertificateRevocationCheck"],
+			defaultValue: false));
 
 		AddOption(options, TlsVersion = new(
 			keys: ["TLS Version", "TlsVersion", "Tls-Version"],

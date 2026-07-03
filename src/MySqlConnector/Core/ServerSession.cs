@@ -1747,6 +1747,22 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 		bool ValidateRemoteCertificate(object rcbSender, X509Certificate? rcbCertificate, X509Chain? rcbChain, SslPolicyErrors rcbPolicyErrors)
 		{
+			if (rcbPolicyErrors != SslPolicyErrors.None && rcbChain is not null && m_logger.IsEnabled(LogLevel.Trace))
+			{
+				var builder = new StringBuilder();
+
+				for (var index = 0; index < rcbChain.ChainElements.Count; index++)
+				{
+					var element = rcbChain.ChainElements[index];
+					builder.AppendLine(CultureInfo.InvariantCulture, $"Element {index}: {element.Certificate.GetNameInfo(X509NameType.SimpleName, false)}");
+					builder.AppendLine("  Status:");
+					foreach (var status in element.ChainElementStatus)
+						builder.AppendLine(CultureInfo.InvariantCulture, $"  {status.Status}: {status.StatusInformation}");
+				}
+
+				Log.ValidateRemoteCertificateErrorDetails(m_logger, Id, rcbPolicyErrors, builder.ToString());
+			}
+
 			// if no CA verification is required, then we trust any remote certificate
 			if (cs.SslMode is MySqlSslMode.Preferred or MySqlSslMode.Required)
 				return true;
@@ -1820,7 +1836,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 		var sslStream = clientCertificates is null ? new SslStream(m_stream!, false, validateRemoteCertificate) :
 			new SslStream(m_stream!, false, validateRemoteCertificate, ValidateLocalCertificate);
 
-		var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
+		var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull && !cs.SkipCertificateRevocationCheck;
 
 		using (var initSsl = HandshakeResponse41Payload.CreateWithSsl(serverCapabilities, cs, m_compressionMethod, m_characterSet))
 			await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -1832,6 +1848,11 @@ internal sealed partial class ServerSession : IServerCapabilities
 			TargetHost = HostName,
 			CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
 		};
+
+		if (cs.SkipCertificateRevocationCheck && cs.SslMode != MySqlSslMode.VerifyFull)
+		{
+			throw new MySqlException("SkipCertificateRevocationCheck may only be used with SslMode=VerifyFull");
+		}
 
 #if NETCOREAPP3_0_OR_GREATER
 #pragma warning disable CA1416 // Validate platform compatibility

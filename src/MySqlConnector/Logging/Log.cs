@@ -224,6 +224,9 @@ internal static partial class Log
 	[LoggerMessage(EventIds.CertificateErrorValidThumbprint, LogLevel.Trace, "Session {SessionId} ignoring remote certificate error {SslPolicyErrors} due to valid signature in OK packet")]
 	public static partial void CertificateErrorValidThumbprint(ILogger logger, string sessionId, SslPolicyErrors sslPolicyErrors);
 
+	[LoggerMessage(EventIds.ValidateRemoteCertificateErrorDetails, LogLevel.Trace, "Session {SessionId} entering ValidateRemoteCertificate with errors: {PolicyErrors}\n{Details}", SkipEnabledCheck = true)]
+	public static partial void ValidateRemoteCertificateErrorDetails(ILogger logger, string sessionId, SslPolicyErrors policyErrors, string details);
+
 	[LoggerMessage(EventIds.IgnoringCancellationForCommand, LogLevel.Trace, "Ignoring cancellation for closed connection or invalid command {CommandId}")]
 	public static partial void IgnoringCancellationForCommand(ILogger logger, int commandId);
 

@@ -88,6 +88,7 @@ internal static class EventIds
 	public const int CertificateErrorUnixSocket = 2158;
 	public const int CertificateErrorNoPassword = 2159;
 	public const int CertificateErrorValidThumbprint = 2160;
+	public const int ValidateRemoteCertificateErrorDetails = 2161;
 
 	// Command execution events, 2200-2299
 	public const int CannotExecuteNewCommandInState = 2200;
