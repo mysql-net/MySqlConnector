@@ -1849,20 +1849,9 @@ internal sealed partial class ServerSession : IServerCapabilities
 			CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
 		};
 
-		if (cs.SkipCertificateRevocationCheck)
+		if (cs.SkipCertificateRevocationCheck && cs.SslMode != MySqlSslMode.VerifyFull)
 		{
-			if (cs.SslMode != MySqlSslMode.VerifyFull)
-				throw new MySqlException("SkipCertificateRevocationCheck may only be used with SslMode=VerifyFull");
-#if NET7_0_OR_GREATER
-			clientAuthenticationOptions.CertificateChainPolicy ??= new();
-			clientAuthenticationOptions.CertificateChainPolicy.VerificationFlags =
-				X509VerificationFlags.IgnoreEndRevocationUnknown |
-				X509VerificationFlags.IgnoreCtlSignerRevocationUnknown |
-				X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown |
-				X509VerificationFlags.IgnoreRootRevocationUnknown;
-#else
-			throw new PlatformNotSupportedException("The SkipCertificateRevocationCheck connection string option is only supported on .NET 7.0 (or later).");
-#endif
+			throw new MySqlException("SkipCertificateRevocationCheck may only be used with SslMode=VerifyFull");
 		}
 
 #if NETCOREAPP3_0_OR_GREATER

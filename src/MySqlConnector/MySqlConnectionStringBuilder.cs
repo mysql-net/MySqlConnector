@@ -275,7 +275,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
-	/// Bypasses the TLS certificate revocation check when using <see cref="MySqlSslMode.VerifyFull"/>. This allows a connection to be made even when revocation status can't be determined. All other <see cref="MySqlSslMode.VerifyFull"/> checks are still performed. This option is only supported on .NET 7.0 or later.
+	/// Bypasses the TLS certificate revocation check when using <see cref="MySqlSslMode.VerifyFull"/>. This allows a connection to be made even when revocation status can't be determined. All other <see cref="MySqlSslMode.VerifyFull"/> checks are still performed.
 	/// </summary>
 	[Category("TLS")]
 	[DefaultValue(false)]
