@@ -4,8 +4,6 @@ using System.Buffers;
 using System.Buffers.Text;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-
 #if NET462
 using System.Net;
 using System.Reflection;

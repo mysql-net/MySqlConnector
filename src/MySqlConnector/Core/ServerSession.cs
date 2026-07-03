@@ -1746,7 +1746,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 		X509Certificate ValidateLocalCertificate(object lcbSender, string lcbTargetHost, X509CertificateCollection lcbLocalCertificates, X509Certificate? lcbRemoteCertificate, string[] lcbAcceptableIssuers) => lcbLocalCertificates[0];
 
 		bool ValidateRemoteCertificate(object rcbSender, X509Certificate? rcbCertificate, X509Chain? rcbChain, SslPolicyErrors rcbPolicyErrors)
-        {
+		{
 			if (rcbPolicyErrors != SslPolicyErrors.None && rcbChain is not null && m_logger.IsEnabled(LogLevel.Trace))
 			{
 				var builder = new StringBuilder();
