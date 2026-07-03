@@ -275,16 +275,16 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
-	/// Allows a connection using <see cref="MySqlSslMode.VerifyFull"/> to succeed even if certificate revocation checking fails because revocation status can't be determined. All other <see cref="MySqlSslMode.VerifyFull"/> checks are still performed. This option is only supported on .NET 7.0 or later.
+	/// Bypasses the TLS certificate revocation check when using <see cref="MySqlSslMode.VerifyFull"/>. This allows a connection to be made even when revocation status can't be determined. All other <see cref="MySqlSslMode.VerifyFull"/> checks are still performed. This option is only supported on .NET 7.0 or later.
 	/// </summary>
 	[Category("TLS")]
 	[DefaultValue(false)]
-	[Description("Allows a connection using VerifyFull to succeed even if revocation checking fails because revocation status can't be determined.")]
-	[DisplayName("Allow Unknown Certificate Revocation")]
-	public bool AllowUnknownCertificateRevocation
+	[Description("Bypasses the TLS certificate revocation check when using VerifyFull. This allows a connection to be made even when revocation status can't be determined.")]
+	[DisplayName("Skip Certificate Revocation Check")]
+	public bool SkipCertificateRevocationCheck
 	{
-		get => MySqlConnectionStringOption.AllowUnknownCertificateRevocation.GetValue(this);
-		set => MySqlConnectionStringOption.AllowUnknownCertificateRevocation.SetValue(this, value);
+		get => MySqlConnectionStringOption.SkipCertificateRevocationCheck.GetValue(this);
+		set => MySqlConnectionStringOption.SkipCertificateRevocationCheck.SetValue(this, value);
 	}
 
 	/// <summary>
@@ -932,7 +932,7 @@ internal abstract partial class MySqlConnectionStringOption
 	public static readonly MySqlConnectionStringReferenceOption<string> SslCert;
 	public static readonly MySqlConnectionStringReferenceOption<string> SslKey;
 	public static readonly MySqlConnectionStringReferenceOption<string> SslCa;
-	public static readonly MySqlConnectionStringValueOption<bool> AllowUnknownCertificateRevocation;
+	public static readonly MySqlConnectionStringValueOption<bool> SkipCertificateRevocationCheck;
 	public static readonly MySqlConnectionStringReferenceOption<string> TlsVersion;
 	public static readonly MySqlConnectionStringReferenceOption<string> TlsCipherSuites;
 
@@ -1075,8 +1075,8 @@ internal abstract partial class MySqlConnectionStringOption
 			keys: ["SSL CA", "CACertificateFile", "CA Certificate File", "SslCa", "Ssl-Ca"],
 			defaultValue: ""));
 
-		AddOption(options, AllowUnknownCertificateRevocation = new(
-			keys: ["Allow Unknown Certificate Revocation", "AllowUnknownCertificateRevocation"],
+		AddOption(options, SkipCertificateRevocationCheck = new(
+			keys: ["Skip Certificate Revocation Check", "SkipCertificateRevocationCheck"],
 			defaultValue: false));
 
 		AddOption(options, TlsVersion = new(
