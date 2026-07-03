@@ -1747,25 +1747,21 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 		bool ValidateRemoteCertificate(object rcbSender, X509Certificate? rcbCertificate, X509Chain? rcbChain, SslPolicyErrors rcbPolicyErrors)
         {
-            if (rcbPolicyErrors != SslPolicyErrors.None && rcbChain != null && m_logger.IsEnabled(LogLevel.Trace))
-            {
-                var builder = new StringBuilder();
-                builder.AppendLine($"Entering {nameof(ValidateRemoteCertificate)} with errors: {rcbPolicyErrors}");
+			if (rcbPolicyErrors != SslPolicyErrors.None && rcbChain is not null && m_logger.IsEnabled(LogLevel.Trace))
+			{
+				var builder = new StringBuilder();
 
-                for (int index = 0; index < rcbChain.ChainElements.Count; index++)
-                {
-                    X509ChainElement? element = rcbChain.ChainElements[index];
-                    builder.AppendLine($"Element {index}: {element.Certificate.GetNameInfo(X509NameType.SimpleName, false)}");
-                    builder.AppendLine("  Status:");
+				for (var index = 0; index < rcbChain.ChainElements.Count; index++)
+				{
+					var element = rcbChain.ChainElements[index];
+					builder.AppendLine(CultureInfo.InvariantCulture, $"Element {index}: {element.Certificate.GetNameInfo(X509NameType.SimpleName, false)}");
+					builder.AppendLine("  Status:");
+					foreach (var status in element.ChainElementStatus)
+						builder.AppendLine(CultureInfo.InvariantCulture, $"  {status.Status}: {status.StatusInformation}");
+				}
 
-                    foreach (X509ChainStatus status in element.ChainElementStatus)
-                    {
-                        builder.AppendLine($"  {status.Status}: {status.StatusInformation}");
-                    }
-                }
-
-                Log.RemoteCertificateValidationTrace(m_logger, builder.ToString());
-            }
+				Log.ValidateRemoteCertificateErrorDetails(m_logger, Id, rcbPolicyErrors, builder.ToString());
+			}
 
 			// if no CA verification is required, then we trust any remote certificate
 			if (cs.SslMode is MySqlSslMode.Preferred or MySqlSslMode.Required)

@@ -4,6 +4,8 @@ using System.Buffers;
 using System.Buffers.Text;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+
 #if NET462
 using System.Net;
 using System.Reflection;
@@ -86,6 +88,11 @@ internal static class Utility
 			return encoder.GetByteCount(charsPtr, chars.Length, flush);
 		}
 	}
+#endif
+
+#if !NET6_0_OR_GREATER
+	public static StringBuilder AppendLine(this StringBuilder stringBuilder, IFormatProvider formatProvider, FormattableString message) =>
+		stringBuilder.AppendLine(message.ToString(formatProvider));
 #endif
 
 #if NET5_0_OR_GREATER

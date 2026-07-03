@@ -202,7 +202,7 @@ internal sealed class ConnectionSettings
 	public string CACertificateFile { get; }
 	public string SslCertificateFile { get; }
 	public string SslKeyFile { get; }
-	public bool SkipCertificateRevocationCheck	 { get; }
+	public bool SkipCertificateRevocationCheck { get; }
 	public MySqlCertificateStoreLocation CertificateStoreLocation { get; }
 	public string CertificateThumbprint { get; }
 	public SslProtocols TlsVersions { get; }
