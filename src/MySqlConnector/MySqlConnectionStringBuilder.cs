@@ -275,11 +275,11 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
-	/// Bypasses the TLS certificate revocation check when using <see cref="MySqlSslMode.VerifyFull"/>. This allows a connection to be made even when revocation status can't be determined. All other <see cref="MySqlSslMode.VerifyFull"/> checks are still performed.
+	/// Turns off the TLS certificate revocation check when using <see cref="MySqlSslMode.VerifyFull"/>. This allows a connection to be made even when revocation status can't be determined, but it also means revoked certificates may not be detected. All other checks are still performed. Intended for private clouds that don't use revocation.
 	/// </summary>
 	[Category("TLS")]
 	[DefaultValue(false)]
-	[Description("Bypasses the TLS certificate revocation check when using VerifyFull. This allows a connection to be made even when revocation status can't be determined.")]
+	[Description("Turns off the TLS certificate revocation check when using VerifyFull. This allows a connection to be made even when revocation status can't be determined, but it also means revoked certificates may not be detected. All other checks are still performed. Intended for private clouds that don't use revocation.")]
 	[DisplayName("Skip Certificate Revocation Check")]
 	public bool SkipCertificateRevocationCheck
 	{

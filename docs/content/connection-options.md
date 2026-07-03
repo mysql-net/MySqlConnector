@@ -180,7 +180,7 @@ These are the options that need to be used in order to configure a connection to
     <td>Skip Certificate Revocation Check, SkipCertificateRevocationCheck</td>
     <td>false</td>
     <td>
-      <p>Bypasses the TLS certificate revocation check when using <code>SslMode=VerifyFull</code>. This allows a connection to be made even when revocation status can't be determined. All other <code>VerifyFull</code> checks are still performed, including CA and hostname validation.</p>
+      <p>Turns off the TLS certificate revocation check when using <code>SslMode=VerifyFull</code>. This allows a connection to be made even when revocation status can't be determined, but it also means revoked certificates may not be detected. All other checks are still performed. Intended for private clouds that don't use revocation.</p>
       <p>This option may only be used with <code>SslMode=VerifyFull</code>.</p>
     </td>
   </tr>
