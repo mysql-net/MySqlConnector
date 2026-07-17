@@ -16,7 +16,7 @@ jobs:
       uses: actions/checkout@v7
 
     - name: Set up .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
 
     - name: Restore
       run: dotnet restore
@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
 
       - name: Publish
         run: dotnet publish -c Release -r linux-x64 -f ${{ matrix.tfm }} tests/MySqlConnector.NativeAot.Tests/MySqlConnector.NativeAot.Tests.csproj
