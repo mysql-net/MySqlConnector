@@ -180,10 +180,6 @@ jobs:
         image: 'mysql:26.7'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
         unsupportedFeatures: 'Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
-      'MariaDB 10.6':
-        image: 'mariadb:10.6'
-        connectionStringExtra: ''
-        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,ParsecAuthentication,Redirection,Sha256Password,Tls11,TlsFingerprintValidation,UuidToBin,Vector'
       'MariaDB 10.11':
         image: 'mariadb:10.11'
         connectionStringExtra: ''
@@ -194,6 +190,10 @@ jobs:
         unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,ParsecAuthentication,Redirection,Sha256Password,Tls11,UuidToBin,Vector'
       'MariaDB 11.8':
         image: 'mariadb:11.8'
+        connectionStringExtra: ''
+        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Redirection,Sha256Password,Tls11,UuidToBin,VectorType'
+      'MariaDB 12.3':
+        image: 'mariadb:12.3'
         connectionStringExtra: ''
         unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Redirection,Sha256Password,Tls11,UuidToBin,VectorType'
   steps:

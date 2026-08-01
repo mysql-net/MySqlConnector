@@ -183,4 +183,14 @@ public static class TestUtilities
 		return System.Threading.Tasks.Task.CompletedTask;
 	}
 #endif
+
+	public static bool HasServerVersion(this MySqlConnection connection, params ReadOnlySpan<string> versionPrefixes)
+	{
+		foreach (var version in versionPrefixes)
+		{
+			if (connection.ServerVersion.StartsWith(version, StringComparison.Ordinal))
+				return true;
+		}
+		return false;
+	}
 }
