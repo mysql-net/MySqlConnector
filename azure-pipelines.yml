@@ -168,20 +168,16 @@ jobs:
     vmimage: 'ubuntu-24.04'
   strategy:
     matrix:
-      'MySQL 8.0':
-        image: 'mysql:8.0'
-        connectionStringExtra: 'AllowPublicKeyRetrieval=True'
-        unsupportedFeatures: 'Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
       'MySQL 8.4':
         image: 'mysql:8.4'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
         unsupportedFeatures: 'Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
-      'MySQL 9.4':
-        image: 'mysql:9.4'
-        connectionStringExtra: 'AllowPublicKeyRetrieval=True'
-        unsupportedFeatures: 'Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
       'MySQL 9.7':
         image: 'mysql:9.7'
+        connectionStringExtra: 'AllowPublicKeyRetrieval=True'
+        unsupportedFeatures: 'Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
+      'MySQL 26.7':
+        image: 'mysql:26.7'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
         unsupportedFeatures: 'Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
       'MariaDB 10.6':
