@@ -77,7 +77,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 							await m_payloadCreator!.SendCommandPrologueAsync(Command.Connection!, m_commandListPosition, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 							var writer = new ByteBufferWriter();
-							if (!Command.Connection!.Session.IsCancelingQuery && m_payloadCreator.WriteQueryCommand(ref m_commandListPosition, m_cachedProcedures!, writer, false))
+							if (!Command.Connection!.Session.IsCancelingQuery && m_payloadCreator.WriteQueryCommand(ref m_commandListPosition, m_cachedProcedures!, writer, false, Activity))
 							{
 								using var payload = writer.ToPayloadData();
 								await Command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -498,13 +498,8 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 				_ = await NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
-			if (activity is { IsAllDataRequested: true })
-			{
-				activity.SetException(ex);
-				activity.Stop();
-			}
 			Dispose();
 			throw;
 		}

@@ -35,11 +35,13 @@ while (reader.Read())
 }
 ```
 
-### ASP.NET
+### ASP.NET Core
 
-For ASP.NET, use the [MySqlConnector.DependencyInjection package](https://www.nuget.org/packages/MySqlConnector.DependencyInjection/) to integrate with dependency injection and logging.
+For ASP.NET Core, `MySqlConnector` includes `AddMySqlDataSource` to integrate with dependency injection and logging.
 
 ```csharp
+using MySqlConnector;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // use AddMySqlDataSource to configure MySqlConnector
@@ -83,7 +85,6 @@ The main types provided by this library are:
 
 ## Related Packages
 
-* Dependency Injection: [MySqlConnector.DependencyInjection](https://www.nuget.org/packages/MySqlConnector.DependencyInjection/)
 * Entity Framework Core: [Pomelo.EntityFrameworkCore.MySql](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/)
 
 ## Feedback

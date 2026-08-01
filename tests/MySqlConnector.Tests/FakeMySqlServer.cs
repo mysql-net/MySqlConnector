@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 
 namespace MySqlConnector.Tests;
 
@@ -11,6 +12,7 @@ public sealed class FakeMySqlServer
 		m_lock = new();
 		m_connections = [];
 		m_tasks = [];
+		m_clearPasswordResponse = new(TaskCreationOptions.RunContinuationsAsynchronously);
 	}
 
 	public void Start()
@@ -71,6 +73,18 @@ public sealed class FakeMySqlServer
 	public TimeSpan? ConnectDelay { get; set; }
 	public TimeSpan? ResetDelay { get; set; }
 
+	// When set, the server advertises TLS support in its initial handshake and performs the server side of a TLS
+	// handshake (using this certificate) when the client requests it.
+	public X509Certificate2 ServerCertificate { get; set; }
+
+	// When true (and ServerCertificate is set), the server requests a switch to "mysql_clear_password" authentication
+	// immediately after the TLS handshake, then records what the client sends in response (see ClearPasswordResponse).
+	public bool RequestClearPasswordSwitch { get; set; }
+
+	// Completes with the payload the client sends in response to a "mysql_clear_password" auth switch request, or with
+	// null if the client refused to send its password and instead closed the connection.
+	public Task<byte[]> ClearPasswordResponse => m_clearPasswordResponse.Task;
+
 	internal void CancelQuery(int connectionId)
 	{
 		lock (m_lock)
@@ -81,6 +95,10 @@ public sealed class FakeMySqlServer
 	}
 
 	internal void ClientDisconnected() => Interlocked.Decrement(ref m_activeConnections);
+
+	internal void SetClearPasswordResponse(byte[] response) => m_clearPasswordResponse.TrySetResult(response);
+
+	internal void SetServerException(Exception exception) => m_clearPasswordResponse.TrySetException(exception);
 
 	private async Task AcceptConnectionsAsync()
 	{
@@ -101,6 +119,7 @@ public sealed class FakeMySqlServer
 	private readonly TcpListener m_tcpListener;
 	private readonly List<FakeMySqlServerConnection> m_connections;
 	private readonly List<Task> m_tasks;
+	private readonly TaskCompletionSource<byte[]> m_clearPasswordResponse;
 	private CancellationTokenSource m_cts;
 	private int m_activeConnections;
 }

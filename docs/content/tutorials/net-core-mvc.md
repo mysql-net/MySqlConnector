@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-11-10
+lastmod: 2026-05-25
 date: 2016-10-16
 menu:
   main:
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `BlogPost` (
 ### Initialize ASP.NET Core Web API
 
 Create a folder named `BlogPostApi`, then run `dotnet new webapi` at the root to create the initial project.
-Run `dotnet add package MySqlConnector.DependencyInjection`. You should have a working project at this point, use `dotnet run`
+Run `dotnet add package MySqlConnector`. You should have a working project at this point, use `dotnet run`
 to verify the project builds and runs successfully.
 
 ### Update Configuration Files
@@ -58,7 +58,7 @@ to verify the project builds and runs successfully.
 ### .NET Core Startup
 
 `Program.cs` contains runtime configuration and framework services.
-Add this call (before `var app = builder.Build();`) to register a MySQL data source:
+Add `using MySqlConnector;` at the top of the file, then add this call (before `var app = builder.Build();`) to register a MySQL data source:
 
 ```csharp
 builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("Default")!);
@@ -156,8 +156,8 @@ public class BlogPostRepository(MySqlDataSource database)
                 var post = new BlogPost
                 {
                     Id = reader.GetInt32(0),
-                    Title = reader.GetString(1),
-                    Content = reader.GetString(2),
+                    Title = reader.IsDBNull(1) ? null : reader.GetString(1),
+                    Content = reader.IsDBNull(2) ? null : reader.GetString(2),
                 };
                 posts.Add(post);
             }
@@ -247,18 +247,18 @@ Congratulations, you should have a fully functional app at this point!  You shou
 The following API Endpoints should work:
 
 ```http
-@BlostPostApi_HostAddress = http://localhost:5001
+@BlogPostApi_HostAddress = http://localhost:5001
 
-GET {{BlostPostApi_HostAddress}}/api/blog
+GET {{BlogPostApi_HostAddress}}/api/blog
 Accept: application/json
 ###
-POST {{BlostPostApi_HostAddress}}/api/blog
+POST {{BlogPostApi_HostAddress}}/api/blog
 Accept: application/json
 Content-Type: application/json
 
 {"title":"test", "content":"test content"}
 ###
-PUT {{BlostPostApi_HostAddress}}/api/blog/1
+PUT {{BlogPostApi_HostAddress}}/api/blog/1
 Accept: application/json
 Content-Type: application/json
 

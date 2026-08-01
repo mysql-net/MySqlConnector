@@ -37,16 +37,28 @@ internal abstract class EnlistedTransactionBase(Transaction transaction, MySqlCo
 
 	void IEnlistmentNotification.Commit(Enlistment enlistment)
 	{
-		OnCommit(enlistment);
-		enlistment.Done();
-		Connection.UnenlistTransaction();
+		try
+		{
+			OnCommit(enlistment);
+		}
+		finally
+		{
+			enlistment.Done();
+			Connection.UnenlistTransaction();
+		}
 	}
 
 	void IEnlistmentNotification.Rollback(Enlistment enlistment)
 	{
-		OnRollback(enlistment);
-		enlistment.Done();
-		Connection.UnenlistTransaction();
+		try
+		{
+			OnRollback(enlistment);
+		}
+		finally
+		{
+			enlistment.Done();
+			Connection.UnenlistTransaction();
+		}
 	}
 
 	public void InDoubt(Enlistment enlistment) => throw new NotImplementedException();

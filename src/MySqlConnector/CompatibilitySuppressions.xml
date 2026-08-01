@@ -4,13 +4,6 @@
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:System.Data.Common.DbColumn</Target>
-    <Left>lib/net461/MySqlConnector.dll</Left>
-    <Right>lib/netstandard2.0/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:System.Data.Common.DbColumn</Target>
     <Left>lib/net462/MySqlConnector.dll</Left>
     <Right>lib/net471/MySqlConnector.dll</Right>
   </Suppression>
@@ -19,90 +12,6 @@
     <Target>T:System.Data.Common.DbDataSource</Target>
     <Left>lib/net6.0/MySqlConnector.dll</Left>
     <Right>lib/net8.0/MySqlConnector.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:MySqlConnector.MySqlBulkCopy.WriteToServerAsync(System.Collections.Generic.IEnumerable{System.Data.DataRow},System.Int32,System.Threading.CancellationToken)</Target>
-    <Left>lib/net461/MySqlConnector.dll</Left>
-    <Right>lib/netstandard2.0/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:MySqlConnector.MySqlBulkCopy.WriteToServerAsync(System.Data.DataTable,System.Threading.CancellationToken)</Target>
-    <Left>lib/net461/MySqlConnector.dll</Left>
-    <Right>lib/netstandard2.0/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:MySqlConnector.MySqlBulkCopy.WriteToServerAsync(System.Data.IDataReader,System.Threading.CancellationToken)</Target>
-    <Left>lib/net461/MySqlConnector.dll</Left>
-    <Right>lib/netstandard2.0/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:MySqlConnector.MySqlConnection.get_ProvideClientCertificatesCallback</Target>
-    <Left>lib/net461/MySqlConnector.dll</Left>
-    <Right>lib/netstandard2.0/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:MySqlConnector.MySqlConnection.ResetConnectionAsync(System.Threading.CancellationToken)</Target>
-    <Left>lib/net461/MySqlConnector.dll</Left>
-    <Right>lib/netstandard2.0/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:MySqlConnector.MySqlBulkCopy.WriteToServerAsync(System.Collections.Generic.IEnumerable{System.Data.DataRow},System.Int32,System.Threading.CancellationToken)</Target>
-    <Left>lib/net471/MySqlConnector.dll</Left>
-    <Right>lib/net471/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:MySqlConnector.MySqlBulkCopy.WriteToServerAsync(System.Data.DataTable,System.Threading.CancellationToken)</Target>
-    <Left>lib/net471/MySqlConnector.dll</Left>
-    <Right>lib/net471/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:MySqlConnector.MySqlBulkCopy.WriteToServerAsync(System.Data.IDataReader,System.Threading.CancellationToken)</Target>
-    <Left>lib/net471/MySqlConnector.dll</Left>
-    <Right>lib/net471/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:MySqlConnector.MySqlConnection.get_ProvideClientCertificatesCallback</Target>
-    <Left>lib/net471/MySqlConnector.dll</Left>
-    <Right>lib/net471/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:MySqlConnector.MySqlConnection.ResetConnectionAsync(System.Threading.CancellationToken)</Target>
-    <Left>lib/net471/MySqlConnector.dll</Left>
-    <Right>lib/net471/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:MySqlConnector.MySqlConnection.get_ProvideClientCertificatesCallback</Target>
-    <Left>lib/netstandard2.0/MySqlConnector.dll</Left>
-    <Right>lib/netstandard2.0/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:MySqlConnector.MySqlConnection.ResetConnectionAsync(System.Threading.CancellationToken)</Target>
-    <Left>lib/netstandard2.0/MySqlConnector.dll</Left>
-    <Right>lib/netstandard2.0/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
@@ -148,27 +57,6 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
-    <Target>T:MySqlConnector.MySqlConversionException</Target>
-    <Left>lib/net461/MySqlConnector.dll</Left>
-    <Right>lib/netstandard2.0/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0008</DiagnosticId>
-    <Target>T:MySqlConnector.MySqlException</Target>
-    <Left>lib/net461/MySqlConnector.dll</Left>
-    <Right>lib/netstandard2.0/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0008</DiagnosticId>
-    <Target>T:MySqlConnector.MySqlProtocolException</Target>
-    <Left>lib/net461/MySqlConnector.dll</Left>
-    <Right>lib/netstandard2.0/MySqlConnector.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:MySqlConnector.MySqlDataReader</Target>
     <Left>lib/netstandard2.0/MySqlConnector.dll</Left>
     <Right>lib/net462/MySqlConnector.dll</Right>
@@ -178,9 +66,5 @@
     <Target>T:MySqlConnector.MySqlBatchCommandCollection</Target>
     <Left>lib/netstandard2.1/MySqlConnector.dll</Left>
     <Right>lib/net6.0/MySqlConnector.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>PKV006</DiagnosticId>
-    <Target>.NETFramework,Version=v4.5</Target>
   </Suppression>
 </Suppressions>

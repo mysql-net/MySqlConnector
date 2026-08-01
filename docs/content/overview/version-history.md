@@ -1,5 +1,5 @@
 ---
-lastmod: 2025-11-11
+lastmod: 2026-06-24
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,35 @@ weight: 30
 ---
 
 # Version History
+
+### 2.6.1
+
+* Fix [GHSA-473q-m89c-ghf8](https://github.com/mysql-net/MySqlConnector/security/advisories/GHSA-473q-m89c-ghf8): MitM password disclosure in zero-configuration TLS mode.
+* Fix `MySqlCommand.Prepare` with `INSERT INTO ... RETURNING`: [#1652](https://github.com/mysql-net/MySqlConnector/issues/1652).
+* Thanks to [Diego Dupin](https://github.com/rusher) for contributions to this release.
+
+### 2.6.0
+
+* Add opt-in stable OpenTelemetry semantic conventions: [#1435](https://github.com/mysql-net/MySqlConnector/issues/1435).
+  * In MySqlConnector 3.0, the experimental conventions will be removed.
+  * Applications should set `OTEL_SEMCONV_STABILITY_OPT_IN` to `database` or `database/dup` (or use `WithSemanticConventionsKinds`) to test the new semantic conventions.
+* Support distributed tracing by sending `traceparent` to MySQL Server: [#1635](https://github.com/mysql-net/MySqlConnector/issues/1635).
+* `EnableResultSetHeaderEvent` is now opt-in: [#1633](https://github.com/mysql-net/MySqlConnector/issues/1633).
+* Move `AddMySqlDataSource` and related APIs from `MySqlConnector.DependencyInjection` to `MySqlConnector`: [#1649](https://github.com/mysql-net/MySqlConnector/issues/1649).
+* Improve reliability and correctness of parameter parsing and rewriting:
+  * Fix termination of quoted parameters: [#1627](https://github.com/mysql-net/MySqlConnector/issues/1627).
+  * Handle all comment-start characters during SQL parsing: [#1624](https://github.com/mysql-net/MySqlConnector/issues/1624).
+  * Add stricter argument validation and checks: [#1632](https://github.com/mysql-net/MySqlConnector/issues/1632).
+* Improve XA and transaction handling:
+  * Handle more XA error codes: [#1631](https://github.com/mysql-net/MySqlConnector/issues/1631).
+  * Clear transaction when closing a database: [#1623](https://github.com/mysql-net/MySqlConnector/issues/1623).
+  * Handle missing transaction in `DoCloseAsync`: [#729](https://github.com/mysql-net/MySqlConnector/issues/729).
+* Improve data type handling:
+  * Reject negative `DATETIME` ticks: [#1630](https://github.com/mysql-net/MySqlConnector/issues/1630).
+  * Don't detect `BINARY` columns as `Guid`: [#1625](https://github.com/mysql-net/MySqlConnector/issues/1625).
+* Improve exception safety: [#1628](https://github.com/mysql-net/MySqlConnector/issues/1628).
+* Suppress trimming warnings and update AOT test coverage: [#1607](https://github.com/mysql-net/MySqlConnector/issues/1607), [#1608](https://github.com/mysql-net/MySqlConnector/pull/1608).
+* Thanks to [Markus Mäkelä](https://github.com/markus456) and [Sven Boemer](https://github.com/sbomer) for contributions to this release.
 
 ### 2.5.0
 

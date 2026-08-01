@@ -56,6 +56,7 @@ internal sealed class ConnectionSettings
 		SslCertificateFile = csb.SslCert;
 		SslKeyFile = csb.SslKey;
 		CACertificateFile = csb.SslCa;
+		SkipCertificateRevocationCheck = csb.SkipCertificateRevocationCheck;
 		CertificateStoreLocation = csb.CertificateStoreLocation;
 		CertificateThumbprint = csb.CertificateThumbprint;
 
@@ -201,6 +202,7 @@ internal sealed class ConnectionSettings
 	public string CACertificateFile { get; }
 	public string SslCertificateFile { get; }
 	public string SslKeyFile { get; }
+	public bool SkipCertificateRevocationCheck { get; }
 	public MySqlCertificateStoreLocation CertificateStoreLocation { get; }
 	public string CertificateThumbprint { get; }
 	public SslProtocols TlsVersions { get; }
@@ -298,6 +300,7 @@ internal sealed class ConnectionSettings
 		SslCertificateFile = other.SslCertificateFile;
 		SslKeyFile = other.SslKeyFile;
 		CACertificateFile = other.CACertificateFile;
+		SkipCertificateRevocationCheck = other.SkipCertificateRevocationCheck;
 		CertificateStoreLocation = other.CertificateStoreLocation;
 		CertificateThumbprint = other.CertificateThumbprint;
 

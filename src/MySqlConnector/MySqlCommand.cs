@@ -357,10 +357,18 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		if (!IsValid(out var exception))
 			return ValueTaskExtensions.FromException<MySqlDataReader>(exception);
 
-		var activity = NoActivity ? null : Connection!.Session.StartActivity(ActivitySourceHelper.ExecuteActivityName,
-			ActivitySourceHelper.DatabaseStatementTagName, CommandText);
+		string? operationName = null;
+		string? storedProcedureName = null;
+		if (CommandType == CommandType.StoredProcedure)
+		{
+			operationName = "CALL";
+			storedProcedureName = new NormalizedSchema(CommandText, Connection!.Database).Component ?? CommandText;
+		}
+		var conventionsKinds = Connection!.TracingOptions.SemanticConventionsKinds;
+		var activity = NoActivity ? null : Connection.Session.StartActivity(conventionsKinds, ActivitySourceHelper.ExecuteActivityName,
+			commandText: CommandText, commandType: CommandType, operationName: operationName, storedProcedureName: storedProcedureName);
 		m_commandBehavior = behavior;
-		return CommandExecutor.ExecuteReaderAsync(new(this), SingleCommandPayloadCreator.Instance, behavior, activity, ioBehavior, cancellationToken);
+		return CommandExecutor.ExecuteReaderAsync(new(this), SingleCommandPayloadCreator.Instance, behavior, activity, conventionsKinds, ioBehavior, cancellationToken);
 	}
 
 	public MySqlCommand Clone() => new(this);

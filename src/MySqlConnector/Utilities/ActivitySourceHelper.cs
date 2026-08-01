@@ -9,14 +9,26 @@ internal static class ActivitySourceHelper
 {
 	public const string DatabaseConnectionIdTagName = "db.connection_id";
 	public const string DatabaseConnectionStringTagName = "db.connection_string";
-	public const string DatabaseNameTagName = "db.name";
+	public const string DatabaseNamespaceTagNameExperimental = "db.name";
+	public const string DatabaseNamespaceTagNameStable = "db.namespace";
+	public const string DatabaseOperationBatchSizeTagName = "db.operation.batch.size";
+	public const string DatabaseOperationNameTagName = "db.operation.name";
+	public const string DatabaseQueryTextTagName = "db.query.text";
 	public const string DatabaseStatementTagName = "db.statement";
-	public const string DatabaseSystemTagName = "db.system";
+	public const string DatabaseStoredProcedureNameTagName = "db.stored_procedure.name";
+	public const string DatabaseSystemTagNameExperimental = "db.system";
+	public const string DatabaseSystemTagNameStable = "db.system.name";
 	public const string DatabaseUserTagName = "db.user";
+	public const string ErrorTypeTagName = "error.type";
+	public const string NetworkPeerAddressTagName = "network.peer.address";
+	public const string NetworkPeerPortTagName = "network.peer.port";
 	public const string NetPeerIpTagName = "net.peer.ip";
 	public const string NetPeerNameTagName = "net.peer.name";
 	public const string NetPeerPortTagName = "net.peer.port";
 	public const string NetTransportTagName = "net.transport";
+	public const string ResponseStatusCodeTagName = "db.response.status_code";
+	public const string ServerAddressTagName = "server.address";
+	public const string ServerPortTagName = "server.port";
 	public const string ThreadIdTagName = "thread.id";
 
 	public const string DatabaseSystemValue = "mysql";
@@ -27,24 +39,47 @@ internal static class ActivitySourceHelper
 	public const string ExecuteActivityName = "Execute";
 	public const string OpenActivityName = "Open";
 
-	public static Activity? StartActivity(string name, IEnumerable<KeyValuePair<string, object?>>? activityTags = null)
+	public static Activity? StartActivity(string name, MySqlConnectorSemanticConventionsKinds conventionsKinds, IEnumerable<KeyValuePair<string, object?>>? activityTags = null)
 	{
 		var activity = ActivitySource.StartActivity(name, ActivityKind.Client, default(ActivityContext), activityTags);
-		if (activity is { IsAllDataRequested: true })
+		if (activity is { IsAllDataRequested: true } && conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
 			activity.SetTag(ActivitySourceHelper.ThreadIdTagName, Environment.CurrentManagedThreadId.ToString(CultureInfo.InvariantCulture));
 		return activity;
 	}
 
-	public static void SetException(this Activity activity, Exception exception)
+	public static void SetException(this Activity activity, Exception exception, MySqlConnectorSemanticConventionsKinds conventionsKinds)
 	{
-		var description = exception is MySqlException mySqlException ? mySqlException.ErrorCode.ToString() : exception.Message;
-		activity.SetStatus(ActivityStatusCode.Error, description);
-		activity.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+		string description;
+		var errorType = exception.GetType().FullName ?? exception.GetType().Name;
+		if (exception is MySqlException mySqlException)
 		{
-			{ "exception.type", exception.GetType().FullName },
-			{ "exception.message", exception.Message },
-			{ "exception.stacktrace", exception.ToString() },
-		}));
+			description = mySqlException.ErrorCode.ToString();
+			var errorCode = (int) mySqlException.ErrorCode;
+			if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
+			{
+				activity.SetTag(ResponseStatusCodeTagName, errorCode);
+			}
+			if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
+			{
+				errorType = errorCode.ToString(CultureInfo.InvariantCulture);
+				activity.SetTag(ResponseStatusCodeTagName, errorType);
+			}
+		}
+		else
+		{
+			description = exception.Message;
+		}
+		activity.SetTag(ErrorTypeTagName, errorType);
+		activity.SetStatus(ActivityStatusCode.Error, description);
+		if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
+		{
+			activity.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+			{
+				{ "exception.type", exception.GetType().FullName },
+				{ "exception.message", exception.Message },
+				{ "exception.stacktrace", exception.ToString() },
+			}));
+		}
 	}
 
 	public static void CopyTags(IEnumerable<KeyValuePair<string, object?>> tags, Activity? activity)

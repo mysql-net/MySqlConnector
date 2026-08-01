@@ -278,6 +278,27 @@ public class ConnectionTests : IDisposable
 	}
 
 	[Fact]
+	public void CloseBrokenConnectionClearsCurrentTransaction()
+	{
+		using var connection = new MySqlConnection(m_csb.ConnectionString);
+		connection.Open();
+		connection.BeginTransaction();
+
+		m_server.Reset();
+		Assert.False(connection.Ping());
+		Assert.Equal(ConnectionState.Broken, connection.State);
+
+		connection.Close();
+		Assert.Equal(ConnectionState.Closed, connection.State);
+
+		connection.Open();
+		Assert.Equal(ConnectionState.Open, connection.State);
+
+		using var transaction = connection.BeginTransaction();
+		Assert.NotNull(transaction);
+	}
+
+	[Fact]
 	public async Task ResetServerConnectionWhileOpen()
 	{
 		var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString)

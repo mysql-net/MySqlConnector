@@ -248,6 +248,34 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		}
 	}
 
+	[SkippableFact(ServerFeatures.InsertReturning)]
+	public void InsertReturningPreparedStatement()
+	{
+		using var connection = CreateConnection();
+
+		connection.Execute("""
+			DROP TABLE IF EXISTS insert_returning_test;
+			CREATE TABLE insert_returning_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT, data TEXT NOT NULL);
+			""");
+
+		using var command = new MySqlCommand("INSERT INTO insert_returning_test(data) VALUES(@data) RETURNING rowid;", connection);
+		var parameter = command.Parameters.AddWithValue("@data", "");
+		command.Prepare();
+
+		// the statement is prepared with no result set metadata; verify that multiple executions return the metadata and rows correctly (#1652)
+		var expectedRowId = 1;
+		foreach (var value in new[] { "one", "two", "three" })
+		{
+			parameter.Value = value;
+			using var reader = command.ExecuteReader();
+			Assert.True(reader.Read());
+			Assert.Equal("rowid", reader.GetName(0));
+			Assert.Equal(expectedRowId, reader.GetInt32(0));
+			Assert.False(reader.Read());
+			expectedRowId++;
+		}
+	}
+
 	[Fact]
 	public void ThrowsIfNamedParameterUsedButNoParametersDefined()
 	{

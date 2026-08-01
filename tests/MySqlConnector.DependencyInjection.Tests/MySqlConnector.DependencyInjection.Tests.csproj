@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../src/MySqlConnector.DependencyInjection/MySqlConnector.DependencyInjection.csproj" />
+    <ProjectReference Include="../../src/MySqlConnector/MySqlConnector.csproj" />
   </ItemGroup>
 
   <ItemGroup>
