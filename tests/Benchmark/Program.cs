@@ -16,17 +16,18 @@ namespace Benchmark;
 
 class Program
 {
-	static void Main()
+	static void Main(string[] args)
 	{
 		var customConfig = ManualConfig
 			.Create(DefaultConfig.Instance)
 			.AddValidator(JitOptimizationsValidator.FailOnError)
 			.AddDiagnoser(MemoryDiagnoser.Default)
 			.AddColumn(StatisticColumn.AllStatistics)
-			.AddJob(Job.Default.WithRuntime(CoreRuntime.Core80))
+			.AddJob(Job.Default.WithRuntime(CoreRuntime.Core11_0))
 			.AddExporter(DefaultExporters.Csv);
 
-		var summary = BenchmarkRunner.Run<MySqlClient>(customConfig);
+		// pass through command-line arguments so the run can be narrowed with --filter, --job, --runtimes, etc.
+		var summary = BenchmarkRunner.Run<MySqlClient>(customConfig, args);
 		Console.WriteLine(summary);
 	}
 }
@@ -185,7 +186,7 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 	private DbConnection Connection { get; set; }
 
 	// TODO: move to config file
-	static string s_connectionString = "server=127.0.0.1;user id=root;password=pass;port=3306;ssl mode=none;Use Affected Rows=true;Connection Reset=false;Default Command Timeout=0;AutoEnlist=false;";
+	static string s_connectionString = "server=127.0.0.1;user id=root;password=pass;port=3306;ssl mode=disabled;Use Affected Rows=true;Connection Reset=false;Default Command Timeout=0;AutoEnlist=false;";
 
 	Dictionary<string, DbConnection> m_connections = new Dictionary<string, DbConnection>();
 }
