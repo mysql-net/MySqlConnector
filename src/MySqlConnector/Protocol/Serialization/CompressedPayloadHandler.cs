@@ -15,6 +15,12 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		m_compressedBufferedByteReader = new();
 	}
 
+#if NET11_0_OR_GREATER
+	// Creates a handler that uses zstd (instead of zlib) to compress each packet; the compressed protocol is otherwise identical.
+	public CompressedPayloadHandler(IByteHandler byteHandler, bool isZstandard)
+		: this(byteHandler) => m_isZstandard = isZstandard;
+#endif
+
 	public void Dispose()
 	{
 		Utility.Dispose(ref m_byteHandler);
@@ -119,13 +125,12 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 #if NET6_0_OR_GREATER
 			var uncompressedData = new byte[uncompressedLength];
 #if NET11_0_OR_GREATER
-			using ZLibDecoder decoder = new();
-			if (decoder.Decompress(payloadReadBytes.AsSpan(), uncompressedData, out _, out var totalBytesRead) is { } status and not OperationStatus.Done)
+			if (!TryDecompress(payloadReadBytes.AsSpan(), uncompressedData, out var totalBytesRead))
 			{
 				// throw InvalidDataException for corrupt data to match ZLibStream
 				if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
 					return default;
-				throw new InvalidDataException($"Couldn't decompress zlib payload: {status}");
+				throw new InvalidDataException($"Couldn't decompress {(m_isZstandard ? "zstd" : "zlib")} payload");
 			}
 #else
 			using var compressedStream = new MemoryStream(payloadReadBytes.Array!, payloadReadBytes.Offset, payloadReadBytes.Count);
@@ -208,7 +213,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 
 		// rent a buffer for the seven-byte header plus the worst-case compressed payload; because the worst case is never
 		// smaller than the input, this buffer is also large enough when the payload has to be sent uncompressed
-		var buffer = ArrayPool<byte>.Shared.Rent((int) ZLibEncoder.GetMaxCompressedLength(remainingUncompressedBytes) + 7);
+		var buffer = ArrayPool<byte>.Shared.Rent((int) GetMaxCompressedLength(remainingUncompressedBytes) + 7);
 		try
 		{
 			var packetLength = WriteCompressedPacket(remainingUncompressedData.AsSpan(0, remainingUncompressedBytes), buffer);
@@ -227,10 +232,10 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 	// Writes a compressed packet header, followed by 'uncompressedPayload', to 'buffer'; returns the total number of bytes written.
 	private int WriteCompressedPacket(ReadOnlySpan<byte> uncompressedPayload, Span<byte> buffer)
 	{
-		// don't compress small packets, and send uncompressed if ZLibEncoder.TryCompress can't fit the compressed data in the destination buffer
+		// don't compress small packets, and send uncompressed if TryCompress can't fit the compressed data in the destination buffer
 		var payloadLength = 0;
 		if (uncompressedPayload.Length > c_minimumSizeToCompress &&
-			ZLibEncoder.TryCompress(uncompressedPayload, buffer[7..], out var compressedLength) &&
+			TryCompress(uncompressedPayload, buffer[7..], out var compressedLength) &&
 			compressedLength < uncompressedPayload.Length)
 		{
 			payloadLength = compressedLength;
@@ -254,6 +259,15 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		SerializationUtility.WriteUInt32(uncompressedLength, buffer[4..7]);
 		return payloadLength + 7;
 	}
+
+	private long GetMaxCompressedLength(int uncompressedLength) =>
+		m_isZstandard ? ZstandardEncoder.GetMaxCompressedLength(uncompressedLength) : ZLibEncoder.GetMaxCompressedLength(uncompressedLength);
+
+	private bool TryCompress(ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten) =>
+		m_isZstandard ? ZstandardEncoder.TryCompress(source, destination, out bytesWritten) : ZLibEncoder.TryCompress(source, destination, out bytesWritten);
+
+	private bool TryDecompress(ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten) =>
+		m_isZstandard ? ZstandardDecoder.TryDecompress(source, destination, out bytesWritten) : ZLibDecoder.TryDecompress(source, destination, out bytesWritten);
 #else
 	private async ValueTask CompressAndWrite(ArraySegment<byte> remainingUncompressedData, IOBehavior ioBehavior)
 	{
@@ -343,6 +357,9 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 
 	private readonly BufferedByteReader m_bufferedByteReader;
 	private readonly BufferedByteReader m_compressedBufferedByteReader;
+#if NET11_0_OR_GREATER
+	private readonly bool m_isZstandard;
+#endif
 	private MemoryStream? m_uncompressedStream;
 	private IByteHandler? m_uncompressedStreamByteHandler;
 	private IByteHandler? m_byteHandler;
