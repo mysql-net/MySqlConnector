@@ -370,11 +370,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 				Utf8.TryWrite(writer.GetSpan(39), CultureInfo.InvariantCulture, $"timestamp('{mySqlDateTimeValue.GetDateTime():yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')", out var bytesWritten);
 				writer.Advance(bytesWritten);
 #else
-#if NET6_0_OR_GREATER
-				var str = string.Create(CultureInfo.InvariantCulture, stackalloc char[39], $"timestamp('{mySqlDateTimeValue.GetDateTime():yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
-#else
 				var str = FormattableString.Invariant($"timestamp('{mySqlDateTimeValue.GetDateTime():yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
-#endif
 				writer.WriteAscii(str);
 #endif
 			}
@@ -386,12 +382,8 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 #if NET6_0_OR_GREATER
 		else if (Value is DateOnly dateOnlyValue)
 		{
-#if NET8_0_OR_GREATER
 			Utf8.TryWrite(writer.GetSpan(23), CultureInfo.InvariantCulture, $"timestamp('{dateOnlyValue:yyyy'-'MM'-'dd}')", out var bytesWritten);
 			writer.Advance(bytesWritten);
-#else
-			writer.WriteAscii(string.Create(CultureInfo.InvariantCulture, stackalloc char[23], $"timestamp('{dateOnlyValue:yyyy'-'MM'-'dd}')"));
-#endif
 		}
 #endif
 		else if (Value is DateTime dateTimeValue)
@@ -405,11 +397,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			Utf8.TryWrite(writer.GetSpan(39), CultureInfo.InvariantCulture, $"timestamp('{dateTimeValue:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')", out var bytesWritten);
 			writer.Advance(bytesWritten);
 #else
-#if NET6_0_OR_GREATER
-			var str = string.Create(CultureInfo.InvariantCulture, stackalloc char[39], $"timestamp('{dateTimeValue:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
-#else
 			var str = FormattableString.Invariant($"timestamp('{dateTimeValue:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
-#endif
 			writer.WriteAscii(str);
 #endif
 		}
@@ -420,23 +408,15 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			Utf8.TryWrite(writer.GetSpan(39), CultureInfo.InvariantCulture, $"timestamp('{dateTimeOffsetValue.UtcDateTime:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')", out var bytesWritten);
 			writer.Advance(bytesWritten);
 #else
-#if NET6_0_OR_GREATER
-			var str = string.Create(CultureInfo.InvariantCulture, stackalloc char[39], $"timestamp('{dateTimeOffsetValue.UtcDateTime:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
-#else
 			var str = FormattableString.Invariant($"timestamp('{dateTimeOffsetValue.UtcDateTime:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
-#endif
 			writer.WriteAscii(str);
 #endif
 		}
 #if NET6_0_OR_GREATER
 		else if (Value is TimeOnly timeOnlyValue)
 		{
-#if NET8_0_OR_GREATER
 			Utf8.TryWrite(writer.GetSpan(22), CultureInfo.InvariantCulture, $"time '{timeOnlyValue:HH':'mm':'ss'.'ffffff}'", out var bytesWritten);
 			writer.Advance(bytesWritten);
-#else
-			writer.WriteAscii(string.Create(CultureInfo.InvariantCulture, stackalloc char[22], $"time '{timeOnlyValue:HH':'mm':'ss'.'ffffff}'"));
-#endif
 		}
 #endif
 		else if (Value is TimeSpan ts)
@@ -451,11 +431,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			Utf8.TryWrite(writer.GetSpan(17), CultureInfo.InvariantCulture, $"{ts.Days * 24 + ts.Hours}:{ts:mm':'ss'.'ffffff}'", out var bytesWritten);
 			writer.Advance(bytesWritten);
 #else
-#if NET6_0_OR_GREATER
-			var str = string.Create(CultureInfo.InvariantCulture, stackalloc char[17], $"{ts.Days * 24 + ts.Hours}:{ts:mm':'ss'.'ffffff}'");
-#else
 			var str = FormattableString.Invariant($"{ts.Days * 24 + ts.Hours}:{ts:mm':'ss'.'ffffff}'");
-#endif
 			writer.WriteAscii(str);
 #endif
 		}

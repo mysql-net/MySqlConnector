@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Condition=" '$(Configuration)' != 'MySqlData' ">
-    <TargetFrameworks>net462;net481;net6.0;net8.0;net10.0;net11.0</TargetFrameworks>
+    <TargetFrameworks>net462;net481;net8.0;net10.0;net11.0</TargetFrameworks>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 

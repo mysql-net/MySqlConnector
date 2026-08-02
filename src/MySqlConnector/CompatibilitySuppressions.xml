@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
@@ -10,8 +10,50 @@
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:System.Data.Common.DbDataSource</Target>
-    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Left>lib/netstandard2.1/MySqlConnector.dll</Left>
     <Right>lib/net8.0/MySqlConnector.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:MySqlConnector.MySqlDataReader.GetDateOnly(System.Int32)</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:MySqlConnector.MySqlDataReader.GetDateOnly(System.String)</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:MySqlConnector.MySqlDataReader.GetTimeOnly(System.Int32)</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:MySqlConnector.MySqlDataReader.GetTimeOnly(System.String)</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:System.Data.Common.DbDataSource.CreateBatch</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:System.Data.Common.DbDataSource.CreateDbBatch</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
@@ -41,19 +83,138 @@
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:MySqlConnector.MySqlBatchCommandCollection.GetEnumerator</Target>
     <Left>lib/netstandard2.1/MySqlConnector.dll</Left>
-    <Right>lib/net6.0/MySqlConnector.dll</Right>
+    <Right>lib/net8.0/MySqlConnector.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:MySqlConnector.MySqlConnectorFactory.CreateBatch</Target>
     <Left>lib/netstandard2.1/MySqlConnector.dll</Left>
-    <Right>lib/net6.0/MySqlConnector.dll</Right>
+    <Right>lib/net8.0/MySqlConnector.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:MySqlConnector.MySqlConnectorFactory.CreateBatchCommand</Target>
     <Left>lib/netstandard2.1/MySqlConnector.dll</Left>
-    <Right>lib/net6.0/MySqlConnector.dll</Right>
+    <Right>lib/net8.0/MySqlConnector.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0007</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlBatch</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0007</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlBatchCommand</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0007</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlBatchCommandCollection</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.Logging.MySqlConnectorLogLevel</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlBatchCommandCollection</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlBulkLoaderConflictOption</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlBulkLoaderPriority</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlCertificateStoreLocation</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlConnectionOpenedConditions</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlConnectionProtocol</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlDateTimeKind</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlDbType</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlErrorCode</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlGuidFormat</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlLoadBalance</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlServerRedirectionMode</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlSslMode</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
@@ -65,6 +226,6 @@
     <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:MySqlConnector.MySqlBatchCommandCollection</Target>
     <Left>lib/netstandard2.1/MySqlConnector.dll</Left>
-    <Right>lib/net6.0/MySqlConnector.dll</Right>
+    <Right>lib/net8.0/MySqlConnector.dll</Right>
   </Suppression>
 </Suppressions>

@@ -2,7 +2,7 @@
 namespace System.Data.Common;
 
 public abstract class DbDataSource
-#if NETCOREAPP3_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER
 	: IDisposable, IAsyncDisposable
 #else
 	: IDisposable
@@ -18,10 +18,6 @@ public abstract class DbDataSource
 		OpenDbConnectionAsync(cancellationToken);
 
 	public DbCommand CreateCommand(string? commandText = null) => CreateDbCommand(commandText);
-
-#if NET6_0_OR_GREATER
-	public DbBatch CreateBatch() => CreateDbBatch();
-#endif
 
 	public void Dispose()
 	{
@@ -68,7 +64,7 @@ public abstract class DbDataSource
 		}
 		catch
 		{
-#if NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER
 			await connection.DisposeAsync().ConfigureAwait(false);
 #else
 			connection.Dispose();
@@ -79,10 +75,6 @@ public abstract class DbDataSource
 
 	// The shim doesn't support these methods; to use the full DbDataSource the client needs to be on .NET 7.0.
 	protected virtual DbCommand CreateDbCommand(string? commandText = null) => throw new NotSupportedException();
-
-#if NET6_0_OR_GREATER
-	protected virtual DbBatch CreateDbBatch() => throw new NotSupportedException();
-#endif
 
 	protected virtual void Dispose(bool disposing)
 	{

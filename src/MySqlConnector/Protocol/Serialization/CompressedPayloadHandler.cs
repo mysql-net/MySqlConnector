@@ -135,16 +135,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 #else
 			using var compressedStream = new MemoryStream(payloadReadBytes.Array!, payloadReadBytes.Offset, payloadReadBytes.Count);
 			using var decompressingStream = new ZLibStream(compressedStream, CompressionMode.Decompress);
-#if NET7_0_OR_GREATER
 			var totalBytesRead = decompressingStream.ReadAtLeast(uncompressedData, uncompressedLength, throwOnEndOfStream: false);
-#else
-			int bytesRead, totalBytesRead = 0;
-			do
-			{
-				bytesRead = decompressingStream.Read(uncompressedData, totalBytesRead, uncompressedLength - totalBytesRead);
-				totalBytesRead += bytesRead;
-			} while (bytesRead > 0);
-#endif
 #endif
 			if (totalBytesRead != uncompressedLength && protocolErrorBehavior == ProtocolErrorBehavior.Throw)
 				throw new MySqlEndOfStreamException(uncompressedLength, totalBytesRead);
