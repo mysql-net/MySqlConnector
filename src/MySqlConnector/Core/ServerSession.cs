@@ -128,16 +128,11 @@ internal sealed partial class ServerSession : IServerCapabilities
 				return;
 			}
 
-			// Verify server identity before executing KILL QUERY to prevent cancelling on the wrong server
+			// if the hostnames don't match, a load balancer may have routed the new connection to a different server, on
+			// which the connection ID would identify a different session; don't kill it: https://github.com/mysql-net/MySqlConnector/issues/1574
 			var killSession = killCommand.Connection!.Session;
-			if (!string.IsNullOrEmpty(ServerHostname) && !string.IsNullOrEmpty(killSession.ServerHostname) && ServerHostname != killSession.ServerHostname)
+			if (killSession.ServerHostname != ServerHostname)
 			{
-				Log.IgnoringCancellationForDifferentServer(m_logger, Id, killSession.Id, ServerHostname, killSession.ServerHostname);
-				return;
-			}
-			else if (!string.IsNullOrEmpty(ServerHostname) || !string.IsNullOrEmpty(killSession.ServerHostname))
-			{
-				// One session has hostname, the other doesn't - this is a potential mismatch
 				Log.IgnoringCancellationForDifferentServer(m_logger, Id, killSession.Id, ServerHostname, killSession.ServerHostname);
 				return;
 			}
@@ -2151,21 +2146,19 @@ internal sealed partial class ServerSession : IServerCapabilities
 			var length = reader.ReadLengthEncodedIntegerOrNull();
 			var hostname = length > 0 ? Encoding.UTF8.GetString(reader.ReadByteString(length)) : null;
 
-			ServerHostname = hostname;
-
-			Log.RetrievedServerHostname(m_logger, Id, hostname);
-
 			// OK/EOF payload
 			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			if (OkPayload.IsOk(payload.Span, this))
 				OkPayload.Verify(payload.Span, this);
 			else
 				EofPayload.Create(payload.Span);
+
+			ServerHostname = hostname;
+			Log.RetrievedServerHostname(m_logger, Id, hostname);
 		}
 		catch (MySqlException ex)
 		{
 			Log.FailedToGetServerHostname(m_logger, ex, Id);
-			ServerHostname = null;
 		}
 	}
 
