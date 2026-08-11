@@ -26,10 +26,6 @@ namespace MySqlConnector.Core;
 
 internal sealed partial class ServerSession : IServerCapabilities
 {
-	// A loopback host name that is deliberately treated as a non-loopback (i.e. potentially man-in-the-middled)
-	// connection for tests; see SslSecurityTests and GHSA-473q-m89c-ghf8.
-	internal const string TestHostNameTreatedAsRemote = "mitm-tests.localhost";
-
 	public ServerSession(ILogger logger, IConnectionPoolMetadata pool)
 	{
 		m_logger = logger;
@@ -423,6 +419,10 @@ internal sealed partial class ServerSession : IServerCapabilities
 		lock (m_lock)
 			m_state = State.Closed;
 	}
+
+	// A loopback host name that is deliberately treated as a non-loopback (i.e. potentially man-in-the-middled)
+	// connection for tests; see SslSecurityTests and GHSA-473q-m89c-ghf8.
+	internal const string TestHostNameTreatedAsRemote = "mitm-tests.localhost";
 
 	private async Task<string?> ConnectAsync(ConnectionSettings cs, MySqlConnection connection, long startingTimestamp, ILoadBalancer? loadBalancer, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
@@ -1434,10 +1434,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 					m_socket.NoDelay = true;
 					m_stream = m_tcpClient.GetStream();
 					m_socket.SetKeepAlive(cs.Keepalive);
-					// NOTE: a test-only host name is treated as non-loopback so that tests can exercise the
-					// network man-in-the-middle security checks against a fake server running on this machine.
-					m_isLoopbackConnection = IPAddress.IsLoopback(ipAddress) &&
-						!string.Equals(hostName, TestHostNameTreatedAsRemote, StringComparison.OrdinalIgnoreCase);
+					m_isLoopbackConnection = IPAddress.IsLoopback(ipAddress) && hostName != TestHostNameTreatedAsRemote;
 				}
 				catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
 				{
