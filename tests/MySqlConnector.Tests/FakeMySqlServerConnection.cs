@@ -185,6 +185,26 @@ internal sealed class FakeMySqlServerConnection
 								var wasSet = CancelQueryEvent.Wait(0, token);
 								await SendAsync(stream, 1, WriteOk);
 							}
+							else if (query == "SELECT @@hostname;")
+							{
+								if (m_server.GetHostname?.Invoke(m_connectionId) is { } hostname)
+								{
+									var hostnameBytes = Encoding.UTF8.GetBytes(hostname);
+									var data = new byte[hostnameBytes.Length + 1];
+									data[0] = (byte) hostnameBytes.Length;
+									hostnameBytes.CopyTo(data, 1);
+
+									await SendAsync(stream, 1, x => x.Write((byte) 1)); // one column
+									await SendAsync(stream, 2, x => x.Write(new byte[] { 3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x5F, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 3, 0x81, 0, 0, 0, 0 })); // column definition
+									await SendAsync(stream, 3, x => x.Write(new byte[] { 0xFE, 0, 0, 2, 0 })); // EOF
+									await SendAsync(stream, 4, x => x.Write(data));
+									await SendAsync(stream, 5, x => x.Write(new byte[] { 0xFE, 0, 0, 2, 0 })); // EOF
+								}
+								else
+								{
+									await SendAsync(stream, 1, x => WriteError(x, "Unknown system variable 'hostname'"));
+								}
+							}
 							else if (query == "select infinity")
 							{
 								var packets = new[]
