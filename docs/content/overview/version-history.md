@@ -1,5 +1,5 @@
 ---
-lastmod: 2026-06-24
+lastmod: 2026-08-11
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,11 @@ weight: 30
 ---
 
 # Version History
+
+### 2.6.2
+
+* Add `SkipCertificateRevocationCheck` connection string option: [#1615](https://github.com/mysql-net/MySqlConnector/issues/1615)
+* Thanks to [Bart Koelman](https://github.com/bart-vmware) for contributions to this release.
 
 ### 2.6.1
 
