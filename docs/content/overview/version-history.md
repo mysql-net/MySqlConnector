@@ -1,5 +1,5 @@
 ---
-lastmod: 2024-04-22
+lastmod: 2026-06-24
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,62 @@ weight: 30
 ---
 
 # Version History
+
+### 2.6.1
+
+* Fix [GHSA-473q-m89c-ghf8](https://github.com/mysql-net/MySqlConnector/security/advisories/GHSA-473q-m89c-ghf8): MitM password disclosure in zero-configuration TLS mode.
+* Fix `MySqlCommand.Prepare` with `INSERT INTO ... RETURNING`: [#1652](https://github.com/mysql-net/MySqlConnector/issues/1652).
+* Thanks to [Diego Dupin](https://github.com/rusher) for contributions to this release.
+
+### 2.6.0
+
+* Add opt-in stable OpenTelemetry semantic conventions: [#1435](https://github.com/mysql-net/MySqlConnector/issues/1435).
+  * In MySqlConnector 3.0, the experimental conventions will be removed.
+  * Applications should set `OTEL_SEMCONV_STABILITY_OPT_IN` to `database` or `database/dup` (or use `WithSemanticConventionsKinds`) to test the new semantic conventions.
+* Support distributed tracing by sending `traceparent` to MySQL Server: [#1635](https://github.com/mysql-net/MySqlConnector/issues/1635).
+* `EnableResultSetHeaderEvent` is now opt-in: [#1633](https://github.com/mysql-net/MySqlConnector/issues/1633).
+* Move `AddMySqlDataSource` and related APIs from `MySqlConnector.DependencyInjection` to `MySqlConnector`: [#1649](https://github.com/mysql-net/MySqlConnector/issues/1649).
+* Improve reliability and correctness of parameter parsing and rewriting:
+  * Fix termination of quoted parameters: [#1627](https://github.com/mysql-net/MySqlConnector/issues/1627).
+  * Handle all comment-start characters during SQL parsing: [#1624](https://github.com/mysql-net/MySqlConnector/issues/1624).
+  * Add stricter argument validation and checks: [#1632](https://github.com/mysql-net/MySqlConnector/issues/1632).
+* Improve XA and transaction handling:
+  * Handle more XA error codes: [#1631](https://github.com/mysql-net/MySqlConnector/issues/1631).
+  * Clear transaction when closing a database: [#1623](https://github.com/mysql-net/MySqlConnector/issues/1623).
+  * Handle missing transaction in `DoCloseAsync`: [#729](https://github.com/mysql-net/MySqlConnector/issues/729).
+* Improve data type handling:
+  * Reject negative `DATETIME` ticks: [#1630](https://github.com/mysql-net/MySqlConnector/issues/1630).
+  * Don't detect `BINARY` columns as `Guid`: [#1625](https://github.com/mysql-net/MySqlConnector/issues/1625).
+* Improve exception safety: [#1628](https://github.com/mysql-net/MySqlConnector/issues/1628).
+* Suppress trimming warnings and update AOT test coverage: [#1607](https://github.com/mysql-net/MySqlConnector/issues/1607), [#1608](https://github.com/mysql-net/MySqlConnector/pull/1608).
+* Thanks to [Markus Mäkelä](https://github.com/markus456) and [Sven Boemer](https://github.com/sbomer) for contributions to this release.
+
+### 2.5.0
+
+* Support .NET 10: [#1595](https://github.com/mysql-net/MySqlConnector/pull/1595).
+* **Possibly breaking** `MySqlConnection.State` will be set to `ConnectionState.Broken` when there is a network error: [#1599](https://github.com/mysql-net/MySqlConnector/issues/1599).
+  * Previously it would have been set to `ConnectionState.Closed` but the connection wasn't truly closed.
+  * Call `MySqlConnection.Close()` to fully close the connection before calling `Open()` again.
+  * Better yet, call `.Dispose()` (ideally with a `using` declaration) and create a new `MySqlConnection` instance to recover from failure.
+* **Possibly breaking** `MySqlConnection.ResetConnectionAsync` will consistently throw a `MySqlException`: [#1602](https://github.com/mysql-net/MySqlConnector/issues/1602).
+* Implement MariaDB `PARSEC` authentication: [#1540](https://github.com/mysql-net/MySqlConnector/issues/1540), [#1606](https://github.com/mysql-net/MySqlConnector/issues/1606)
+* Support the `VECTOR` data type: [#1549](https://github.com/mysql-net/MySqlConnector/issues/1549).
+* Implement `COM_STMT_SEND_LONG_DATA` to stream large parameter values: [#943](https://github.com/mysql-net/MySqlConnector/issues/943).
+* Add `MySqlConnectorTracingOptions` and builder APIs to configure tracing output: [#1524](https://github.com/mysql-net/MySqlConnector/issues/1524).
+* Read `Guid` values from stored procedure out parameters: [#1528](https://github.com/mysql-net/MySqlConnector/issues/1528).
+* Mark `MySqlDbType` with `[DbProviderSpecificTypeProperty(true)]`: [#1557](https://github.com/mysql-net/MySqlConnector/issues/1557).
+* Allow loopback connections (e.g., Google Cloud SQL Proxy) to use clear-text password or public key retrieval: [#1534](https://github.com/mysql-net/MySqlConnector/issues/1534), [#1542](https://github.com/mysql-net/MySqlConnector/issues/1542).
+* Improve schema metadata with MariaDB by reading stored procedure metadata from `mysql.proc`: [#1547](https://github.com/mysql-net/MySqlConnector/issues/1547)
+* Improve XA transaction rollback handling: [#1585](https://github.com/mysql-net/MySqlConnector/issues/1585), [#1589](https://github.com/mysql-net/MySqlConnector/pull/1589).
+* Free large cached payload buffers when returning sessions to the pool to reduce memory usage: [#1587](https://github.com/mysql-net/MySqlConnector/issues/1587).
+* Suppress error-level logging when a command is canceled: [#1544](https://github.com/mysql-net/MySqlConnector/issues/1544).
+* Fix `MySqlBulkCopy` auto-detected column mappings: [#1568](https://github.com/mysql-net/MySqlConnector/issues/1568).
+* Fix `Foreign Keys` schema SQL syntax: [#1601](https://github.com/mysql-net/MySqlConnector/pull/1601).
+* Fix extra roundtrip for `caching_sha2_password`: [#1562](https://github.com/mysql-net/MySqlConnector/issues/1562).
+* Fix cancellation with AWS RDS Proxy: [#1581](https://github.com/mysql-net/MySqlConnector/issues/1581).
+* Optimization: Use `System.Threading.Lock` for .NET 9.0+.
+* Optimization: Use `PemEncoding` in .NET 5.0+ and UTF-8 methods in .NET 10.0+.
+* Thanks to [Didier Fracassi](https://github.com/djeman), [Jesper Noordsij](https://github.com/jnoordsij), [Holger Boskugel](https://github.com/NETSphereSoft), [Patrick le Duc](https://github.com/PatrickMNL), [Pete Dishman](https://github.com/petedishman), and [Diego Dupin](https://github.com/rusher) for contributions to this release.
 
 ### 2.4.0
 

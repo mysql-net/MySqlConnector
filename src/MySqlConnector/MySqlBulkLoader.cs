@@ -183,7 +183,7 @@ public sealed class MySqlBulkLoader
 		else
 		{
 			if (!Local)
-				throw new InvalidOperationException("Local must be true to use SourceStream, SourceDataTable, or SourceDataReader.");
+				throw new InvalidOperationException("Local must be true to use SourceStream.");
 
 			FileName = GenerateSourceFileName();
 			AddSource(FileName, Source!);

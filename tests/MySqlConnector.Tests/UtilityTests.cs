@@ -94,7 +94,7 @@ public class UtilityTests
 	{
 #if NET5_0_OR_GREATER
 		using var rsa = RSA.Create();
-		Utility.LoadRsaParameters(pre + c_publicKey + post, rsa);
+		Utility.LoadRsaParameters(Encoding.ASCII.GetBytes(pre + c_publicKey + post), rsa);
 		var parameters = rsa.ExportParameters(false);
 #else
 		var parameters = Utility.GetRsaParameters(pre + c_publicKey + post);
@@ -112,7 +112,7 @@ public class UtilityTests
 	{
 #if NET5_0_OR_GREATER
 		using var rsa = RSA.Create();
-		Utility.LoadRsaParameters(pre + c_privateKey + post, rsa);
+		Utility.LoadRsaParameters(Encoding.ASCII.GetBytes(pre + c_privateKey + post), rsa);
 		var parameters = rsa.ExportParameters(true);
 #else
 		var parameters = Utility.GetRsaParameters(pre + c_privateKey + post);

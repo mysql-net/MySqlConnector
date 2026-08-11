@@ -635,6 +635,45 @@ create table bulk_load_data_table(str varchar(5), number tinyint);", connection)
 		var bulkCopy = new MySqlBulkCopy(connection);
 		await Assert.ThrowsAsync<ArgumentNullException>(async () => await bulkCopy.WriteToServerAsync(default(DbDataReader)));
 	}
+
+	[Fact]
+	public async Task BulkCopyGeometryAsync()
+	{
+		var dataTable = new DataTable()
+		{
+			Columns =
+			{
+				new DataColumn("geo_data", typeof(MySqlGeometry)),
+			},
+			Rows =
+			{
+				new object[] { MySqlGeometry.FromWkb(0, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63]) },
+			},
+		};
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		await connection.OpenAsync();
+		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(id BIGINT UNIQUE NOT NULL AUTO_INCREMENT, geo_data GEOMETRY NOT NULL);", connection))
+		{
+			await cmd.ExecuteNonQueryAsync();
+		}
+
+		var bc = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_load_data_table",
+			ColumnMappings =
+			{
+				new()
+				{
+					SourceOrdinal = 0,
+					DestinationColumn = "geo_data",
+				},
+			},
+		};
+
+		await bc.WriteToServerAsync(dataTable);
+	}
 #endif
 
 	private static string GetConnectionString() => BulkLoaderSync.GetConnectionString();

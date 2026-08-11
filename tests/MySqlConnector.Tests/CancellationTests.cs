@@ -329,7 +329,7 @@ public class CancellationTests : IDisposable
 			Assert.Null(ex.InnerException);
 
 			// connection is unusable
-			Assert.Equal(ConnectionState.Closed, connection.State);
+			Assert.Equal(ConnectionState.Broken, connection.State);
 		}
 	}
 
@@ -351,7 +351,7 @@ public class CancellationTests : IDisposable
 			Assert.IsType<SocketException>(ex.InnerException);
 
 			// connection is unusable
-			Assert.Equal(ConnectionState.Closed, connection.State);
+			Assert.Equal(ConnectionState.Broken, connection.State);
 		}
 	}
 
@@ -374,7 +374,7 @@ public class CancellationTests : IDisposable
 			Assert.Null(ex.InnerException);
 
 			// connection is unusable
-			Assert.Equal(ConnectionState.Closed, connection.State);
+			Assert.Equal(ConnectionState.Broken, connection.State);
 		}
 
 		[SkipCITheory]
@@ -394,7 +394,7 @@ public class CancellationTests : IDisposable
 			Assert.IsType<SocketException>(ex.InnerException);
 
 			// connection is unusable
-			Assert.Equal(ConnectionState.Closed, connection.State);
+			Assert.Equal(ConnectionState.Broken, connection.State);
 		}
 	}
 

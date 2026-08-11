@@ -160,9 +160,14 @@ public sealed class MySqlBatch :
 		foreach (MySqlBatchCommand batchCommand in BatchCommands)
 			batchCommand.Batch = this;
 
+		var batchSize = BatchCommands.Count;
+		var conventionsKinds = Connection!.TracingOptions.SemanticConventionsKinds;
+		var activity = Connection.Session.StartActivity(conventionsKinds, ActivitySourceHelper.ExecuteActivityName,
+			operationName: batchSize > 1 ? "BATCH" : null, batchSize: batchSize);
+
 		var payloadCreator = IsPrepared ? SingleCommandPayloadCreator.Instance :
 			ConcatenatedCommandPayloadCreator.Instance;
-		return CommandExecutor.ExecuteReaderAsync(new(BatchCommands!.Commands), payloadCreator, behavior, default, ioBehavior, cancellationToken);
+		return CommandExecutor.ExecuteReaderAsync(new(BatchCommands!.Commands), payloadCreator, behavior, activity, conventionsKinds, ioBehavior, cancellationToken);
 	}
 
 #if NET6_0_OR_GREATER
@@ -199,10 +204,10 @@ public sealed class MySqlBatch :
 #endif
 		int Timeout
 	{
-		get => m_timeout;
+		get;
 		set
 		{
-			m_timeout = value;
+			field = value;
 			((ICancellableCommand) this).EffectiveCommandTimeout = null;
 		}
 	}
@@ -412,7 +417,6 @@ public sealed class MySqlBatch :
 
 	private readonly int m_commandId;
 	private bool m_isDisposed;
-	private int m_timeout;
 	private Action? m_cancelAction;
 	private Action? m_cancelForCommandTimeoutAction;
 	private uint m_cancelTimerId;

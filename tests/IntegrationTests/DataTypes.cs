@@ -636,6 +636,44 @@ UNHEX('33221100554477668899AABBCCDDEEFF'),
 
 		Assert.False(reader.Read());
 	}
+
+	[Theory]
+	[InlineData(16, false, MySqlGuidFormat.Char32)]
+	[InlineData(16, true, MySqlGuidFormat.Char32)]
+	[InlineData(32, false, MySqlGuidFormat.Char32)]
+	[InlineData(32, true, MySqlGuidFormat.Char32)]
+	[InlineData(36, false, MySqlGuidFormat.Char32)]
+	[InlineData(36, false, MySqlGuidFormat.Char36)]
+	public void BinaryColumnIsNotReturnedAsGuid(int columWidth, bool notNull, MySqlGuidFormat guidFormat)
+	{
+		var csb = CreateConnectionStringBuilder();
+		csb.GuidFormat = guidFormat;
+
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+		using var cmd = connection.CreateCommand();
+		cmd.CommandText = $"""
+			drop table if exists binary_data;
+			create table binary_data (
+				rowid integer not null primary key auto_increment,
+				value BINARY({columWidth}) {(notNull ? "NOT NULL" : "")}
+			);
+			""";
+		cmd.ExecuteNonQuery();
+
+		var data = Enumerable.Range(1, columWidth).Select(x => (byte) x).ToArray();
+		cmd.CommandText = "insert into binary_data (value) values (@value);";
+		cmd.Parameters.AddWithValue("@value", data);
+		cmd.ExecuteNonQuery();
+
+		cmd.CommandText = "select value from binary_data;";
+		cmd.Parameters.Clear();
+		using var reader = cmd.ExecuteReader();
+		Assert.True(reader.Read());
+		Assert.Equal(typeof(byte[]), reader.GetFieldType(0));
+		Assert.Equal(MySqlDbType.Binary, ((MySqlDbColumn) reader.GetColumnSchema()[0]).ProviderType);
+		Assert.Equal(data, reader.GetValue(0));
+	}
 #endif
 
 	[Theory]
@@ -1121,11 +1159,12 @@ ORDER BY t.`Key`", Connection);
 	[InlineData("MediumBlob", "datatypes_blobs", MySqlDbType.Blob, 16777215, typeof(byte[]), "LN", 0, 0)]
 	[InlineData("LongBlob", "datatypes_blobs", MySqlDbType.Blob, int.MaxValue, typeof(byte[]), "LN", 0, 0)]
 	[InlineData("guidbin", "datatypes_blobs", MySqlDbType.Binary, 16, typeof(byte[]), "N", 0, 0)]
-	[InlineData("rowid", "datatypes_bools", MySqlDbType.Int32, 11, typeof(int), "AK", 0, 0)]
 #if MYSQL_DATA
+	[InlineData("rowid", "datatypes_bools", MySqlDbType.Int32, 11, typeof(int), "", 0, 0)] // https://bugs.mysql.com/bug.php?id=120347
 	[InlineData("Boolean", "datatypes_bools", MySqlDbType.Byte, 1, typeof(bool), "N", 0, 0)]
 	[InlineData("TinyInt1", "datatypes_bools", MySqlDbType.Byte, 1, typeof(bool), "N", 0, 0)]
 #else
+	[InlineData("rowid", "datatypes_bools", MySqlDbType.Int32, 11, typeof(int), "AK", 0, 0)]
 	[InlineData("Boolean", "datatypes_bools", MySqlDbType.Bool, 1, typeof(bool), "N", 0, 0)]
 	[InlineData("TinyInt1", "datatypes_bools", MySqlDbType.Bool, 1, typeof(bool), "N", 0, 0)]
 #endif

@@ -27,12 +27,7 @@ public sealed class MySqlDataSourceBuilder
 	/// <returns>This builder, so that method calls can be chained.</returns>
 	public MySqlDataSourceBuilder ConfigureTracing(Action<MySqlConnectorTracingOptionsBuilder> configureAction)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(configureAction);
-#else
-		if (configureAction is null)
-			throw new ArgumentNullException(nameof(configureAction));
-#endif
 		m_tracingOptionsBuilderCallbacks ??= [];
 		m_tracingOptionsBuilderCallbacks.Add(configureAction);
 		return this;

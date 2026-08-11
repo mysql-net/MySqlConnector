@@ -88,6 +88,49 @@ internal static class Utility
 	}
 #endif
 
+#if !NET6_0_OR_GREATER
+	public static StringBuilder AppendLine(this StringBuilder stringBuilder, IFormatProvider formatProvider, FormattableString message) =>
+		stringBuilder.AppendLine(message.ToString(formatProvider));
+#endif
+
+#if NET5_0_OR_GREATER
+	/// <summary>
+	/// Loads a RSA key from PEM bytes.
+	/// </summary>
+	public static void LoadRsaParameters(byte[] key, RSA rsa)
+	{
+#if NET10_0_OR_GREATER
+		if (!PemEncoding.TryFindUtf8(key, out var pemFields))
+			throw new FormatException("Unrecognized PEM data: " + Encoding.ASCII.GetString(key.AsSpan(0, Math.Min(key.Length, 80))));
+		var isPrivate = key.AsSpan()[pemFields.Label].SequenceEqual("RSA PRIVATE KEY"u8);
+
+		var keyBytes = key.AsSpan()[pemFields.Base64Data];
+		var bufferLength = keyBytes.Length / 4 * 3;
+		byte[]? buffer = null;
+		Span<byte> bufferBytes = bufferLength > 1024 ?
+			(Span<byte>) (buffer = ArrayPool<byte>.Shared.Rent(bufferLength)) :
+			stackalloc byte[bufferLength];
+		try
+		{
+			if (Base64.DecodeFromUtf8(keyBytes, bufferBytes, out _, out var bytesWritten) != OperationStatus.Done)
+				throw new FormatException("The input is not a valid Base-64 string.");
+			if (isPrivate)
+				rsa.ImportRSAPrivateKey(bufferBytes[..bytesWritten], out var _);
+			else
+				rsa.ImportSubjectPublicKeyInfo(bufferBytes[..bytesWritten], out var _);
+		}
+		finally
+		{
+			if (buffer is not null)
+				ArrayPool<byte>.Shared.Return(buffer);
+		}
+#else
+		LoadRsaParameters(Encoding.ASCII.GetString(key), rsa);
+#endif
+	}
+#endif
+
+#if !NET10_0_OR_GREATER
 	/// <summary>
 	/// Loads a RSA key from a PEM string.
 	/// </summary>
@@ -125,21 +168,13 @@ internal static class Utility
 		}
 		else
 		{
-#if NETCOREAPP3_0_OR_GREATER
-			throw new FormatException(string.Concat("Unrecognized PEM header: ", key.AsSpan(0, Math.Min(key.Length, 80))));
-#else
 			throw new FormatException("Unrecognized PEM header: " + key[..Math.Min(key.Length, 80)]);
-#endif
 		}
 
 		var keyEndIndex = key.IndexOf(pemFooter, keyStartIndex, StringComparison.Ordinal);
 
 		if (keyEndIndex <= -1)
-#if NETCOREAPP3_0_OR_GREATER
-			throw new FormatException(string.Concat("Missing expected '", pemFooter, "' PEM footer: ", key.AsSpan(Math.Max(key.Length - 80, 0))));
-#else
 			throw new FormatException($"Missing expected '{pemFooter}' PEM footer: " + key[Math.Max(key.Length - 80, 0)..]);
-#endif
 #endif
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
@@ -176,6 +211,7 @@ internal static class Utility
 		return GetRsaParameters(System.Convert.FromBase64String(key), isPrivate);
 #endif
 	}
+#endif
 
 #if !NET5_0_OR_GREATER
 	// Derived from: https://stackoverflow.com/a/32243171/, https://stackoverflow.com/a/26978561/, http://luca.ntop.org/Teaching/Appunti/asn1.html

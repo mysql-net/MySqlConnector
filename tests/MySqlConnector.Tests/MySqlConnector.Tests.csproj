@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Condition=" '$(Configuration)' != 'MySqlData' ">
-    <TargetFrameworks>net481;net9.0</TargetFrameworks>
+    <TargetFrameworks>net481;net8.0;net10.0</TargetFrameworks>
   </PropertyGroup>
 
  <PropertyGroup Condition=" '$(Configuration)' == 'MySqlData' ">
@@ -15,7 +15,6 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <AssemblyOriginatorKeyFile>..\..\MySqlConnector.snk</AssemblyOriginatorKeyFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <LangVersion>12.0</LangVersion>
     <NoWarn>$(NoWarn);SA1021</NoWarn>
   </PropertyGroup>
 
@@ -48,7 +47,7 @@
 
   <ItemGroup Condition=" '$(Configuration)' == 'MySqlData' ">
     <PackageReference Include="MySql.Data" />
-    <Compile Remove="ByteBufferWriterTests.cs;CachedProcedureTests.cs;CancellationTests.cs;ColumnCountPayloadTests.cs;ColumnReaderTests.cs;ConnectionOpenedCallbackTests.cs;ConnectionTests.cs;FakeMySqlServer.cs;FakeMySqlServerConnection.cs;LoadBalancerTests.cs;MySqlConnectionTests.cs;MySqlDecimalTests.cs;MySqlExceptionTests.cs;MySqlParameterAppendBinaryTests.cs;MySqlParameterCollectionNameToIndexTests.cs;NormalizeTests.cs;ServerVersionTests.cs;StatementPreparerTests.cs;TypeMapperTests.cs;UtilityTests.cs" />
+    <Compile Remove="ByteBufferWriterTests.cs;CachedProcedureTests.cs;CancellationTests.cs;ColumnCountPayloadTests.cs;ColumnReaderTests.cs;ConnectionOpenedCallbackTests.cs;ConnectionTests.cs;FakeMySqlServer.cs;FakeMySqlServerConnection.cs;LoadBalancerTests.cs;MySqlConnectionTests.cs;MySqlDecimalTests.cs;MySqlExceptionTests.cs;MySqlParameterAppendBinaryTests.cs;MySqlParameterCollectionNameToIndexTests.cs;NormalizeTests.cs;ServerVersionTests.cs;SingleCommandPayloadCreatorTests.cs;SslSecurityTests.cs;StatementPreparerTests.cs;TypeMapperTests.cs;UtilityTests.cs" />
     <Compile Remove="Metrics\*.cs" />
     <Using Include="MySql.Data.MySqlClient" />
     <Using Include="MySql.Data.Types" />

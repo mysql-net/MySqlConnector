@@ -25,6 +25,8 @@ internal static class EventIds
 	public const int ExpectedToReadMoreBytes = 2010;
 	public const int ExpectedSessionState1 = 2011;
 	public const int ExpectedSessionState6 = 2016;
+	public const int ResettingConnectionFailed = 2017;
+	public const int ResetConnection = 2018;
 
 	// Session connecting events, 2100-2199
 	public const int ConnectingFailed = 2100;
@@ -86,9 +88,10 @@ internal static class EventIds
 	public const int CertificateErrorUnixSocket = 2158;
 	public const int CertificateErrorNoPassword = 2159;
 	public const int CertificateErrorValidThumbprint = 2160;
-	public const int GettingServerHostname = 2161;
-	public const int RetrievedServerHostname = 2162;
-	public const int FailedToGetServerHostname = 2163;
+	public const int ValidateRemoteCertificateErrorDetails = 2161;
+	public const int GettingServerHostname = 2162;
+	public const int RetrievedServerHostname = 2163;
+	public const int FailedToGetServerHostname = 2164;
 
 	// Command execution events, 2200-2299
 	public const int CannotExecuteNewCommandInState = 2200;

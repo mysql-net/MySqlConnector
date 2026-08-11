@@ -5,29 +5,35 @@ services:
       dockerfile: Dockerfile
 
     volumes:
-      - ../..:/workspaces:cached
+      - ..:/workspace:cached
 
-    # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
-
-    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
-    network_mode: service:db
-
-    # Uncomment the next line to use a non-root user for all processes.
-    # user: vscode
-
-    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
+    depends_on:
+      db:
+        condition: service_healthy
 
   db:
-    image: mysql:8.0
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile.mysql
     restart: unless-stopped
-    volumes:
-      - mysql-data:/var/lib/mysql
+    tmpfs:
+      - /var/lib/mysql
+      - /tmp
     environment:
       MYSQL_ROOT_PASSWORD: pass
       MYSQL_DATABASE: mysqltest
-    entrypoint: docker-entrypoint.sh --max-allowed-packet=96M --character-set-server=utf8mb4 --log-bin-trust-function-creators=1 --local-infile=1 --max-connections=250 --default-authentication-plugin=mysql_native_password
-
-volumes:
-  mysql-data:
+    healthcheck:
+      test: ["CMD-SHELL", "mysql --user=root --password=$$MYSQL_ROOT_PASSWORD --execute=\"SELECT 1\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    command:
+      - --max-allowed-packet=96M
+      - --character-set-server=utf8mb4
+      - --disable-log-bin
+      - --local-infile=1
+      - --max-connections=250
+      - --secure-file-priv=/var/tmp
+      - --log-bin-trust-function-creators=1

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Core;
@@ -24,6 +25,7 @@ internal interface ICommandPayloadCreator
 	/// <param name="cachedProcedures">A <see cref="CachedProcedure"/> for all the stored procedures in the command list, if any.</param>
 	/// <param name="writer">The <see cref="ByteBufferWriter"/> to write the payload to.</param>
 	/// <param name="appendSemicolon">Whether a statement-separating semicolon should be appended if it's missing.</param>
+	/// <param name="activity">The command activity whose trace context should be propagated to the server, if any.</param>
 	/// <returns><c>true</c> if a command was written; otherwise, <c>false</c> (if there were no more commands in the list).</returns>
-	bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon);
+	bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon, Activity? activity);
 }

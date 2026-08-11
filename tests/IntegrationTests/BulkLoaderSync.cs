@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Xunit.Sdk;
 
 namespace IntegrationTests;
@@ -588,6 +589,71 @@ create table bulk_load_data_table(a int, b decimal(20, 10));", connection))
 		}
 	}
 
+	[SkippableTheory(ServerFeatures.Vector)]
+	[InlineData("byte[]")]
+	[InlineData("float[]")]
+	public void BulkCopyDataTableWithVector(string dataType)
+	{
+		var dataTable = new DataTable()
+		{
+			Columns =
+			{
+				new DataColumn("id", typeof(int)),
+				new DataColumn("data",
+#pragma warning disable SA1118 // Parameter should not span multiple lines
+					dataType switch
+					{
+						"byte[]" => typeof(byte[]),
+						"float[]" => typeof(float[]),
+						_ => throw new ArgumentOutOfRangeException(nameof(dataType)),
+					}),
+#pragma warning restore SA1118 // Parameter should not span multiple lines
+			},
+			Rows =
+			{
+				new object[] { 1, GetDataRowValue([0, 0, 0], dataType) },
+				new object[] { 2, GetDataRowValue([1f, 2f, 3f], dataType) },
+			},
+		};
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(a int, b vector(3));", connection))
+		{
+			cmd.ExecuteNonQuery();
+		}
+
+		var bulkCopy = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_load_data_table",
+		};
+		var result = bulkCopy.WriteToServer(dataTable);
+		Assert.Equal(2, result.RowsInserted);
+		Assert.Empty(result.Warnings);
+
+		using (var cmd = new MySqlCommand(@"select b from bulk_load_data_table order by a;", connection))
+		{
+			using var reader = cmd.ExecuteReader();
+			Assert.True(reader.Read());
+			Assert.Equal(new float[3], GetFloatArray(reader, 0));
+			Assert.True(reader.Read());
+			Assert.Equal([1f, 2f, 3f], GetFloatArray(reader, 0));
+			Assert.False(reader.Read());
+		}
+
+		static object GetDataRowValue(float[] data, string dataType) =>
+			dataType == "byte[]" ? MemoryMarshal.Cast<float, byte>(data).ToArray() : data;
+
+		static float[] GetFloatArray(MySqlDataReader reader, int ordinal) =>
+			reader.GetValue(ordinal) switch
+			{
+				ReadOnlyMemory<float> romf => romf.ToArray(),
+				byte[] b => MemoryMarshal.Cast<byte, float>(b).ToArray(),
+				{ } x => throw new NotSupportedException(x.GetType().Name),
+			};
+	}
+
 #if NET6_0_OR_GREATER
 	[Fact]
 	public void BulkCopyDataTableWithDateOnly()
@@ -1146,6 +1212,66 @@ create table bulk_load_data_table(a int, b text);", connection))
 	}
 
 	[Fact]
+	public void BulkCopyToTableWithYear()
+	{
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+
+		using var cmd = connection.CreateCommand();
+		cmd.CommandText = """
+			DROP TABLE IF EXISTS bulk_copy_year;
+			CREATE TABLE bulk_copy_year(int_value int NULL, year_value year NULL)
+			""";
+		cmd.ExecuteNonQuery();
+
+		var bulkCopy = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_copy_year",
+			ColumnMappings =
+			{
+				new MySqlBulkCopyColumnMapping(0, "int_value", null),
+			},
+		};
+
+		var dt = new DataTable();
+		dt.Columns.Add("numbers");
+		dt.Rows.Add(1);
+		dt.Rows.Add(2);
+
+		var result = bulkCopy.WriteToServer(dt);
+		Assert.Equal(2, result.RowsInserted);
+		Assert.Empty(result.Warnings);
+	}
+
+	[Fact]
+	public void BulkCopyToTableWithYearNotSupported()
+	{
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+
+		using var cmd = connection.CreateCommand();
+		cmd.CommandText = """
+			DROP TABLE IF EXISTS bulk_copy_year;
+			CREATE TABLE bulk_copy_year(int_value int NULL, year_value year NULL)
+			""";
+		cmd.ExecuteNonQuery();
+
+		var bulkCopy = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_copy_year",
+		};
+
+		var dt = new DataTable();
+		dt.Columns.Add("numbers");
+		dt.Columns.Add("year");
+		dt.Rows.Add(1, 2000);
+		dt.Rows.Add(2, 2001);
+
+		var exception = Assert.Throws<NotSupportedException>(() => bulkCopy.WriteToServer(dt));
+		Assert.Equal("'YEAR' columns are not supported by MySqlBulkCopy.", exception.Message);
+	}
+
+	[Fact]
 	public void BulkCopyDoesNotInsertAllRows()
 	{
 		using var connection = new MySqlConnection(GetLocalConnectionString());
@@ -1283,6 +1409,45 @@ create table bulk_load_data_table(a int not null primary key auto_increment, b t
 
 		using (var cmd = new MySqlCommand("select b from bulk_load_data_table;", connection))
 			Assert.Equal(expected, cmd.ExecuteScalar());
+	}
+
+	[Fact]
+	public void BulkCopyGeometry()
+	{
+		var dataTable = new DataTable()
+		{
+			Columns =
+			{
+				new DataColumn("geo_data", typeof(MySqlGeometry)),
+			},
+			Rows =
+			{
+				new object[] { MySqlGeometry.FromWkb(0, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63]) },
+			},
+		};
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(id BIGINT UNIQUE NOT NULL AUTO_INCREMENT, geo_data GEOMETRY NOT NULL);", connection))
+		{
+			cmd.ExecuteNonQuery();
+		}
+
+		var bc = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_load_data_table",
+			ColumnMappings =
+			{
+				new()
+				{
+					SourceOrdinal = 0,
+					DestinationColumn = "geo_data",
+				},
+			},
+		};
+
+		bc.WriteToServer(dataTable);
 	}
 #endif
 

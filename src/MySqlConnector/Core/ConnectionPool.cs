@@ -16,7 +16,7 @@ internal sealed class ConnectionPool : IConnectionPoolMetadata, IDisposable
 
 	int IConnectionPoolMetadata.Generation => m_generation;
 
-	int IConnectionPoolMetadata.GetNewSessionId() => Interlocked.Increment(ref m_lastSessionId); 
+	int IConnectionPoolMetadata.GetNewSessionId() => Interlocked.Increment(ref m_lastSessionId);
 
 	public string? Name { get; }
 

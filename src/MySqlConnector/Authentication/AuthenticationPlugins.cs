@@ -13,18 +13,8 @@ public static class AuthenticationPlugins
 	/// <param name="plugin">The authentication plugin.</param>
 	public static void Register(IAuthenticationPlugin plugin)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(plugin);
-#else
-		if (plugin is null)
-			throw new ArgumentNullException(nameof(plugin));
-#endif
-#if NET8_0_OR_GREATER
 		ArgumentException.ThrowIfNullOrEmpty(plugin.Name);
-#else
-		if (string.IsNullOrEmpty(plugin.Name))
-			throw new ArgumentException("Invalid plugin name.", nameof(plugin));
-#endif
 		lock (s_lock)
 			s_plugins.Add(plugin.Name, plugin);
 	}

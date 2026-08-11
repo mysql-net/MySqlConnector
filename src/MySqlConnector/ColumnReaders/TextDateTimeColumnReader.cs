@@ -72,7 +72,7 @@ internal sealed class TextDateTimeColumnReader : ColumnReader
 				if (data[19] != 46)
 					goto InvalidDateTime;
 
-				if (!Utf8Parser.TryParse(data[20..], out ticks, out bytesConsumed) || bytesConsumed != data.Length - 20 || bytesConsumed > 7)
+				if (!Utf8Parser.TryParse(data[20..], out ticks, out bytesConsumed) || ticks < 0 || bytesConsumed != data.Length - 20 || bytesConsumed > 7 || ticks > 9_999_999)
 					goto InvalidDateTime;
 				for (; bytesConsumed < 7; bytesConsumed++)
 					ticks *= 10;

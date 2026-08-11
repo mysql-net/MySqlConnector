@@ -8,7 +8,7 @@ namespace MySqlConnector.Core;
 
 internal static class CommandExecutor
 {
-	public static async ValueTask<MySqlDataReader> ExecuteReaderAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public static async ValueTask<MySqlDataReader> ExecuteReaderAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity? activity, MySqlConnectorSemanticConventionsKinds conventionsKinds, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		try
 		{
@@ -43,7 +43,7 @@ internal static class CommandExecutor
 
 			var writer = new ByteBufferWriter();
 			//// cachedProcedures will be non-null if there is a stored procedure, which is also the only time it will be read
-			if (!payloadCreator.WriteQueryCommand(ref commandListPosition, cachedProcedures!, writer, false))
+			if (!payloadCreator.WriteQueryCommand(ref commandListPosition, cachedProcedures!, writer, false, activity))
 				throw new InvalidOperationException("ICommandPayloadCreator failed to write query payload");
 
 			cancellationToken.ThrowIfCancellationRequested();
@@ -73,7 +73,7 @@ internal static class CommandExecutor
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
-			activity.SetException(ex);
+			activity.SetException(ex, conventionsKinds);
 			activity.Stop();
 			throw;
 		}

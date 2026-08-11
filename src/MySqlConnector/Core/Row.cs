@@ -77,13 +77,8 @@ internal sealed class Row
 
 	public object GetValue(int ordinal)
 	{
-#if NET8_0_OR_GREATER
 		ArgumentOutOfRangeException.ThrowIfNegative(ordinal);
 		ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(ordinal, ResultSet.ColumnDefinitions!.Length);
-#else
-		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length)
-			throw new ArgumentOutOfRangeException(nameof(ordinal), $"value must be between 0 and {ResultSet.ColumnDefinitions!.Length - 1}");
-#endif
 
 		if (m_dataOffsetLengths[ordinal].Offset == -1)
 			return DBNull.Value;
@@ -235,8 +230,8 @@ internal sealed class Row
 
 	public int GetInt32(int ordinal)
 	{
-		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length)
-			throw new ArgumentOutOfRangeException(nameof(ordinal), $"value must be between 0 and {ResultSet.ColumnDefinitions!.Length - 1}");
+		ArgumentOutOfRangeException.ThrowIfNegative(ordinal);
+		ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(ordinal, ResultSet.ColumnDefinitions!.Length);
 		if (m_dataOffsetLengths[ordinal].Offset == -1)
 			throw new InvalidCastException("Can't convert NULL to Int32");
 
@@ -424,12 +419,7 @@ internal sealed class Row
 
 	public int GetValues(object[] values)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(values);
-#else
-		if (values is null)
-			throw new ArgumentNullException(nameof(values));
-#endif
 		int count = Math.Min(values.Length, ResultSet.ColumnDefinitions!.Length);
 		for (int i = 0; i < count; i++)
 			values[i] = GetValue(i);
@@ -463,24 +453,11 @@ internal sealed class Row
 
 	private static void CheckBufferArguments<T>(long dataOffset, T[] buffer, int bufferOffset, int length)
 	{
-#if NET8_0_OR_GREATER
 		ArgumentOutOfRangeException.ThrowIfNegative(dataOffset);
 		ArgumentOutOfRangeException.ThrowIfGreaterThan(dataOffset, int.MaxValue);
 		ArgumentOutOfRangeException.ThrowIfNegative(length);
 		ArgumentOutOfRangeException.ThrowIfNegative(bufferOffset);
 		ArgumentOutOfRangeException.ThrowIfGreaterThan(bufferOffset, buffer.Length);
-#else
-		if (dataOffset < 0)
-			throw new ArgumentOutOfRangeException(nameof(dataOffset), dataOffset, nameof(dataOffset) + " must be non-negative");
-		if (dataOffset > int.MaxValue)
-			throw new ArgumentOutOfRangeException(nameof(dataOffset), dataOffset, nameof(dataOffset) + " must be a 32-bit integer");
-		if (length < 0)
-			throw new ArgumentOutOfRangeException(nameof(length), length, nameof(length) + " must be non-negative");
-		if (bufferOffset < 0)
-			throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, nameof(bufferOffset) + " must be non-negative");
-		if (bufferOffset > buffer.Length)
-			throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, nameof(bufferOffset) + " must be within the buffer");
-#endif
 		if (checked(bufferOffset + length) > buffer.Length)
 			throw new ArgumentException(nameof(bufferOffset) + " + " + nameof(length) + " cannot exceed " + nameof(buffer) + "." + nameof(buffer.Length), nameof(length));
 	}

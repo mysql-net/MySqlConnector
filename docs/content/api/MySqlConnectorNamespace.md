@@ -27,6 +27,7 @@ title: MySqlConnector
 | enum [MySqlConnectionProtocol](../MySqlConnector/MySqlConnectionProtocolType/) | Specifies the type of connection to make to the server. |
 | class [MySqlConnectionStringBuilder](../MySqlConnector/MySqlConnectionStringBuilderType/) | [`MySqlConnectionStringBuilder`](../MySqlConnector/MySqlConnectionStringBuilderType/) allows you to construct a MySQL connection string by setting properties on the builder then reading the ConnectionString property. |
 | class [MySqlConnectorFactory](../MySqlConnector/MySqlConnectorFactoryType/) | An implementation of DbProviderFactory that creates MySqlConnector objects. |
+| class [MySqlConnectorTracingOptionsBuilder](../MySqlConnector/MySqlConnectorTracingOptionsBuilderType/) | [`MySqlConnectorTracingOptionsBuilder`](../MySqlConnector/MySqlConnectorTracingOptionsBuilderType/) provides an API for configuring OpenTelemetry tracing options. |
 | class [MySqlConversionException](../MySqlConnector/MySqlConversionExceptionType/) | [`MySqlConversionException`](../MySqlConnector/MySqlConversionExceptionType/) is thrown when a MySQL value can't be converted to another type. |
 | class [MySqlDataAdapter](../MySqlConnector/MySqlDataAdapterType/) |  |
 | class [MySqlDataReader](../MySqlConnector/MySqlDataReaderType/) |  |

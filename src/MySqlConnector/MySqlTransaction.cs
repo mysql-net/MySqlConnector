@@ -31,7 +31,7 @@ public sealed class MySqlTransaction : DbTransaction
 	{
 		VerifyValid();
 
-		using var activity = Connection!.Session.StartActivity("Commit");
+		using var activity = Connection!.Session.StartActivity(Connection.TracingOptions.SemanticConventionsKinds, "Commit", operationName: "COMMIT");
 		Log.CommittingTransaction(m_logger, Connection.Session.Id);
 		try
 		{
@@ -43,7 +43,7 @@ public sealed class MySqlTransaction : DbTransaction
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
-			activity.SetException(ex);
+			activity.SetException(ex, Connection!.TracingOptions.SemanticConventionsKinds);
 			throw;
 		}
 	}
@@ -153,18 +153,8 @@ public sealed class MySqlTransaction : DbTransaction
 	{
 		VerifyValid();
 
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(savepointName);
-#else
-		if (savepointName is null)
-			throw new ArgumentNullException(nameof(savepointName));
-#endif
-#if NET8_0_OR_GREATER
 		ArgumentException.ThrowIfNullOrEmpty(savepointName);
-#else
-		if (savepointName.Length == 0)
-			throw new ArgumentException("savepointName must not be empty", nameof(savepointName));
-#endif
 
 		using var cmd = new MySqlCommand(command + "savepoint " + QuoteIdentifier(savepointName), Connection, this) { NoActivity = true };
 		await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -269,7 +259,7 @@ public sealed class MySqlTransaction : DbTransaction
 
 	private async Task DoRollback(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		using var activity = Connection!.Session.StartActivity("Rollback");
+		using var activity = Connection!.Session.StartActivity(Connection.TracingOptions.SemanticConventionsKinds, "Rollback", operationName: "ROLLBACK");
 		Log.RollingBackTransaction(m_logger, Connection.Session.Id);
 		try
 		{
@@ -279,7 +269,7 @@ public sealed class MySqlTransaction : DbTransaction
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
-			activity.SetException(ex);
+			activity.SetException(ex, Connection!.TracingOptions.SemanticConventionsKinds);
 			throw;
 		}
 	}

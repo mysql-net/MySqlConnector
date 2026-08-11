@@ -22,6 +22,6 @@ public class ByteBufferWriterTests
 		var input = char.ConvertFromUtf32(0xE001);
 		for (var i = 0; i < length; i++)
 			writer.Write(input);
-		Assert.Equal(expected, writer.ArraySegment);
+		Assert.Equal(expected, writer.ArraySegment.ToArray());
 	}
 }

@@ -25,24 +25,14 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 
 	public override int Add(object value)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(value);
-#else
-		if (value is null)
-			throw new ArgumentNullException(nameof(value));
-#endif
 		AddParameter((MySqlParameter) value, m_parameters.Count);
 		return m_parameters.Count - 1;
 	}
 
 	public MySqlParameter Add(MySqlParameter parameter)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(parameter);
-#else
-		if (parameter is null)
-			throw new ArgumentNullException(nameof(parameter));
-#endif
 		AddParameter(parameter, m_parameters.Count);
 		return parameter;
 	}
@@ -135,14 +125,18 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 
 	protected override void SetParameter(int index, DbParameter value)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(value);
-#else
-		if (value is null)
-			throw new ArgumentNullException(nameof(value));
-#endif
 		var newParameter = (MySqlParameter) value;
 		var oldParameter = m_parameters[index];
+		if (ReferenceEquals(oldParameter, newParameter))
+			return;
+		if (newParameter.NormalizedParameterName is { Length: > 0 })
+		{
+			var existingIndex = NormalizedIndexOf(newParameter.NormalizedParameterName);
+			if (existingIndex != -1 && existingIndex != index)
+				throw new ArgumentException($"Parameter '{newParameter.NormalizedParameterName}' has already been defined", nameof(value));
+		}
+
 		if (oldParameter.NormalizedParameterName is not null)
 			m_nameToIndex.Remove(oldParameter.NormalizedParameterName);
 		oldParameter.ParameterCollection = null;
@@ -180,7 +174,7 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 		if (newName.Length != 0)
 		{
 			if (m_nameToIndex.ContainsKey(newName))
-				throw new MySqlException($"There is already a parameter with the name '{parameter.ParameterName}' in this collection.");
+				throw new ArgumentException($"There is already a parameter with the name '{parameter.ParameterName}' in this collection");
 			m_nameToIndex[newName] = index;
 		}
 	}
@@ -188,7 +182,10 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 	private void AddParameter(MySqlParameter parameter, int index)
 	{
 		if (!string.IsNullOrEmpty(parameter.NormalizedParameterName) && NormalizedIndexOf(parameter.NormalizedParameterName) != -1)
-			throw new MySqlException($"Parameter '{parameter.ParameterName}' has already been defined.");
+			throw new ArgumentException($"Parameter '{parameter.NormalizedParameterName}' has already been defined", nameof(parameter));
+		if (ReferenceEquals(parameter.ParameterCollection, this))
+			throw new ArgumentException("The parameter is already contained by this MySqlParameterCollection", nameof(parameter));
+
 		if (index < m_parameters.Count)
 		{
 			foreach (var pair in m_nameToIndex.ToList())

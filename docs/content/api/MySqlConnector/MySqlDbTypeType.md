@@ -42,6 +42,7 @@ public enum MySqlDbType
 | VarChar | `253` |  |
 | String | `254` |  |
 | Geometry | `255` |  |
+| Vector | `242` |  |
 | UByte | `501` |  |
 | UInt16 | `502` |  |
 | UInt32 | `503` |  |

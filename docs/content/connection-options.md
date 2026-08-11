@@ -128,7 +128,7 @@ These are the options that need to be used in order to configure a connection to
     <td>This option has the following values:
       <ul>
         <li><b>Preferred</b> - (this is the default). Use SSL if the server supports it.</li>
-        <li><b>None</b> - Do not use SSL.</li>
+        <li><b>Disabled</b> (or <b>None</b>) - Do not use SSL.</li>
         <li><b>Required</b> - Always use SSL. Deny connection if server does not support SSL. Does not validate CA or hostname.</li>
         <li><b>VerifyCA</b> - Always use SSL. Validates the CA but tolerates hostname mismatch.</li>
         <li><b>VerifyFull</b> - Always use SSL. Validates CA and hostname.</li>
@@ -174,6 +174,14 @@ These are the options that need to be used in order to configure a connection to
     <td>
       <p>The path to a CA certificate file in a PEM Encoded (.pem) format. This should be used with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the operating system’s certificate store.</p>
       <p>To provide a custom callback to validate the remote certificate, leave this option empty and set <code>SslMode</code> to <code>Required</code> (or <code>Preferred</code>), then set <a href="/api/mysqlconnector/mysqlconnection/remotecertificatevalidationcallback/"><code>MySqlConnection.RemoteCertificateValidationCallback</code></a> before calling <a href="/api/mysqlconnector/mysqlconnection/open/"><code>MySqlConnection.Open</code></a>. The property should be set to a delegate that will validate the remote certificate, as per <a href="https://docs.microsoft.com/en-us/dotnet/api/system.net.security.remotecertificatevalidationcallback" title="RemoteCertificateValidationCallback Delegate (MSDN)">the documentation</a>.</p>
+    </td>
+  </tr>
+  <tr id="SkipCertificateRevocationCheck">
+    <td>Skip Certificate Revocation Check, SkipCertificateRevocationCheck</td>
+    <td>false</td>
+    <td>
+      <p>Turns off the TLS certificate revocation check when using <code>SslMode=VerifyFull</code>. This allows a connection to be made even when revocation status can't be determined, but it also means revoked certificates may not be detected. All other checks are still performed. Intended for private clouds that don't use revocation.</p>
+      <p>This option may only be used with <code>SslMode=VerifyFull</code>.</p>
     </td>
   </tr>
   <tr id="TlsVersion">
@@ -361,7 +369,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>Ignore Command Transaction, IgnoreCommandTransaction</td>
     <td>false</td>
     <td>If <code>true</code>, the value of <code>MySqlCommand.Transaction</code> is ignored when commands are executed.
-    This matches the Connector/NET behaviour and can make porting code easier. For more information, see <a href="troubleshooting/transaction-usage/">Transaction Usage</a>.</td>
+    This matches the Connector/NET behaviour and can make porting code easier. For more information, see <a href="/troubleshooting/transaction-usage/">Transaction Usage</a>.</td>
   </tr>
   <tr id="IgnorePrepare">
     <td>Ignore Prepare, IgnorePrepare</td>
@@ -512,7 +520,7 @@ from your connection string when migrating from Connector/NET to MySqlConnector.
   <tr id="Logging">
     <td>Logging</td>
     <td>false</td>
-    <td>Use <a href="/overview/logging/">MySqlConnector logging</a> (which is more flexible) instead.</td>
+    <td>Use <a href="/diagnostics/logging/">MySqlConnector logging</a> (which is more flexible) instead.</td>
   </tr>
   <tr id="OldGetStringBehavior">
     <td>OldGetStringBehavior</td>

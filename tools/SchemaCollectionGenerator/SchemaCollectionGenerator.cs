@@ -25,12 +25,7 @@ codeWriter.WriteLine("""
 	{
 		public async ValueTask<DataTable> GetSchemaAsync(IOBehavior ioBehavior, string collectionName, string?[]? restrictionValues, CancellationToken cancellationToken)
 		{
-	#if NET6_0_OR_GREATER
 			ArgumentNullException.ThrowIfNull(collectionName);
-	#else
-			if (collectionName is null)
-				throw new ArgumentNullException(nameof(collectionName));
-	#endif
 
 			var dataTable = new DataTable();
 	""");

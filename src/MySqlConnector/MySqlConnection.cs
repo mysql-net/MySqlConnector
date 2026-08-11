@@ -433,12 +433,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	private void TakeSessionFrom(MySqlConnection other)
 	{
 #if DEBUG
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(other);
-#else
-		if (other is null)
-			throw new ArgumentNullException(nameof(other));
-#endif
 		if (m_session is not null)
 			throw new InvalidOperationException("This connection must not have a session");
 		if (other.m_session is null)
@@ -515,7 +510,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		{
 		}
 
-		SetState(ConnectionState.Closed);
+		SetState(ConnectionState.Broken);
 		return false;
 	}
 
@@ -532,7 +527,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		if (State != ConnectionState.Closed)
 			throw new InvalidOperationException($"Cannot Open when State is {State}.");
 
-		using var activity = ActivitySourceHelper.StartActivity(ActivitySourceHelper.OpenActivityName);
+		var conventionsKinds = TracingOptions.SemanticConventionsKinds;
+		using var activity = ActivitySourceHelper.StartActivity(ActivitySourceHelper.OpenActivityName, conventionsKinds);
 		try
 		{
 			SetState(ConnectionState.Connecting);
@@ -598,10 +594,10 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
-			// none of the other activity tags may have been set (depending on when the exception was thrown), so make sure at least the connection string is added, for diagnostics
-			if (m_connectionSettings?.ConnectionStringBuilder is { } connectionStringBuilder)
+			// none of the other activity tags may have been set, so add the connection string when emitting legacy attributes
+			if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental) && m_connectionSettings?.ConnectionStringBuilder is { } connectionStringBuilder)
 				activity.SetTag(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionStringBuilder.GetConnectionString(connectionStringBuilder.PersistSecurityInfo));
-			activity.SetException(ex);
+			activity.SetException(ex, conventionsKinds);
 			throw;
 		}
 	}
@@ -618,9 +614,21 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	{
 		var session = Session;
 		Log.ResettingConnection(m_logger, session.Id);
-		await session.SendAsync(ResetConnectionPayload.Instance, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
-		var payload = await session.ReceiveReplyAsync(AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
-		OkPayload.Verify(payload.Span, session);
+		try
+		{
+			await session.SendAsync(ResetConnectionPayload.Instance, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
+			var payload = await session.ReceiveReplyAsync(AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
+			OkPayload.Verify(payload.Span, session);
+			Log.ResetConnection(m_logger, session.Id);
+		}
+		catch (Exception ex)
+		{
+			Log.ResettingConnectionFailed(m_logger, session.Id, ex.Message);
+			if (ex is MySqlException)
+				throw;
+			else
+				throw new MySqlException("Failed to reset connection", ex);
+		}
 	}
 
 	[AllowNull]
@@ -713,12 +721,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	private static async Task ClearPoolAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(connection);
-#else
-		if (connection is null)
-			throw new ArgumentNullException(nameof(connection));
-#endif
 
 		var pool = ConnectionPool.GetPool(connection.m_connectionString, null, createIfNotFound: false);
 		if (pool is not null)
@@ -1036,12 +1039,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	internal void SetActiveReader(MySqlDataReader dataReader)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(dataReader);
-#else
-		if (dataReader is null)
-			throw new ArgumentNullException(nameof(dataReader));
-#endif
 		if (m_activeReader is not null)
 			throw new InvalidOperationException("Can't replace active reader.");
 		m_activeReader = dataReader;
@@ -1140,6 +1138,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	internal MySqlDataSource? MySqlDataSource => m_dataSource;
 
+	internal MySqlConnectorTracingOptions TracingOptions => m_dataSource?.TracingOptions ?? MySqlConnectorTracingOptions.Default;
+
 	internal void SetState(ConnectionState newState)
 	{
 		if (m_connectionState != newState)
@@ -1223,13 +1223,16 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			// put the new, idle, connection into the list of sessions for this transaction (replacing this MySqlConnection)
 			lock (s_lock)
 			{
-				foreach (var enlistedTransaction in s_transactionConnections[connection.m_enlistedTransaction!.Transaction])
+				if (s_transactionConnections.TryGetValue(connection.m_enlistedTransaction!.Transaction, out var transactionConnections))
 				{
-					if (enlistedTransaction.Connection == this)
+					foreach (var enlistedTransaction in transactionConnections)
 					{
-						enlistedTransaction.Connection = connection;
-						enlistedTransaction.IsIdle = true;
-						break;
+						if (enlistedTransaction.Connection == this)
+						{
+							enlistedTransaction.Connection = connection;
+							enlistedTransaction.IsIdle = true;
+							break;
+						}
 					}
 				}
 			}
@@ -1275,10 +1278,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		if (m_activeReader is not null)
 			await m_activeReader.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		if (CurrentTransaction is not null && m_session!.IsConnected)
-		{
 			await CurrentTransaction.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			CurrentTransaction = null;
-		}
+		CurrentTransaction = null;
 	}
 
 	private ConnectionSettings GetConnectionSettings() =>

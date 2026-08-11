@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-11-11
+lastmod: 2026-05-25
 date: 2018-01-20
 menu:
   main:
@@ -38,18 +38,20 @@ await using var command = new MySqlCommand("SELECT 1", connection);
 _ = await command.ExecuteScalarAsync();
 ```
 
-## ASP.NET and Dependency Injection
+## ASP.NET Core and Dependency Injection
 
-If you're using ASP.NET, you can use the additional [MySqlConnector.DependencyInjection package](https://www.nuget.org/packages/MySqlConnector.DependencyInjection), which provides seamless integration with dependency injection and logging:
+If you're using ASP.NET Core, `MySqlConnector` also includes seamless integration with dependency injection and logging:
 
 ```csharp
+using MySqlConnector;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddConsole();
 builder.Services.AddMySqlDataSource("Host=localhost;User ID=root;Password=pass");
 ```
 
 The `AddMySqlDataSource` method registers a data source with the DI container.
-This data source automatically uses the logger factory configured by ASP.NET by default.
+This data source automatically uses the logger factory configured by ASP.NET Core by default.
 This allows your endpoints to get injected with MySQL connections which log to the application's logger factory.
 
 ## Global Logging
@@ -82,6 +84,7 @@ This will look like the following, depending on your exact configuration:
 // create a LoggerFactory and configure it with the desired logging framework
 // use ONLY ONE of the "Add" methods below, depending on your logging framework
 var loggerFactory = LoggerFactory.Create(builder =>
+{
   // if you just want console logging
   builder.AddConsole();
 
@@ -91,14 +94,14 @@ var loggerFactory = LoggerFactory.Create(builder =>
     UseWebOrAppConfig = true, // set this if you're storing your settings in Web.config instead of log4net.config
     ExternalConfigurationSetup = true, // set this instead if you're initializing log4net yourself
     // see other options at https://github.com/huorswords/Microsoft.Extensions.Logging.Log4Net.AspNetCore
-  }));
+  });
 
   // connect to NLog via NLog.Extensions.Logging
   builder.AddNLog();
 
   // connect to Serilog via Serilog.Extensions.Logging
   builder.AddSerilog(dispose: true);
-);
+});
 
 // now create a MySqlDataSource and configure it with the LoggerFactory
 await using var dataSource = new MySqlDataSourceBuilder(yourConnectionString)

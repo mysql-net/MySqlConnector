@@ -52,12 +52,7 @@ public sealed class MySqlBulkCopy
 	/// <param name="transaction">(Optional) The <see cref="MySqlTransaction"/> to use.</param>
 	public MySqlBulkCopy(MySqlConnection connection, MySqlTransaction? transaction = null)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(connection);
-#else
-		if (connection is null)
-			throw new ArgumentNullException(nameof(connection));
-#endif
 		m_connection = connection;
 		m_transaction = transaction;
 		m_logger = m_connection.LoggingConfiguration.BulkCopyLogger;
@@ -117,12 +112,7 @@ public sealed class MySqlBulkCopy
 	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
 	public MySqlBulkCopyResult WriteToServer(DataTable dataTable)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(dataTable);
-#else
-		if (dataTable is null)
-			throw new ArgumentNullException(nameof(dataTable));
-#endif
 		m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable);
 #pragma warning disable CA2012 // Safe because method completes synchronously
 		return WriteToServerAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -138,12 +128,7 @@ public sealed class MySqlBulkCopy
 	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
 	public async ValueTask<MySqlBulkCopyResult> WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(dataTable);
-#else
-		if (dataTable is null)
-			throw new ArgumentNullException(nameof(dataTable));
-#endif
 		m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable);
 		return await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 	}
@@ -158,12 +143,7 @@ public sealed class MySqlBulkCopy
 	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
 	public MySqlBulkCopyResult WriteToServer(IEnumerable<DataRow> dataRows, int columnCount)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(dataRows);
-#else
-		if (dataRows is null)
-			throw new ArgumentNullException(nameof(dataRows));
-#endif
 		m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows, columnCount);
 #pragma warning disable CA2012 // Safe because method completes synchronously
 		return WriteToServerAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -181,12 +161,7 @@ public sealed class MySqlBulkCopy
 	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
 	public async ValueTask<MySqlBulkCopyResult> WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, CancellationToken cancellationToken = default)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(dataRows);
-#else
-		if (dataRows is null)
-			throw new ArgumentNullException(nameof(dataRows));
-#endif
 		m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows, columnCount);
 		return await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 	}
@@ -199,12 +174,7 @@ public sealed class MySqlBulkCopy
 	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
 	public MySqlBulkCopyResult WriteToServer(IDataReader dataReader)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(dataReader);
-#else
-		if (dataReader is null)
-			throw new ArgumentNullException(nameof(dataReader));
-#endif
 		m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader);
 #pragma warning disable CA2012 // Safe because method completes synchronously
 		return WriteToServerAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -220,12 +190,7 @@ public sealed class MySqlBulkCopy
 	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
 	public async ValueTask<MySqlBulkCopyResult> WriteToServerAsync(IDataReader dataReader, CancellationToken cancellationToken = default)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(dataReader);
-#else
-		if (dataReader is null)
-			throw new ArgumentNullException(nameof(dataReader));
-#endif
 		m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader);
 		return await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 	}
@@ -266,27 +231,31 @@ public sealed class MySqlBulkCopy
 		using (var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SchemaOnly, ioBehavior, cancellationToken).ConfigureAwait(false))
 		{
 			var schema = reader.GetColumnSchema();
-			for (var i = 0; i < Math.Min(m_valuesEnumerator!.FieldCount, schema.Count); i++)
+			for (var i = 0; i < schema.Count; i++)
 			{
 				var destinationColumn = reader.GetName(i);
-				if (schema[i].DataTypeName == "BIT")
+				var dataTypeName = schema[i].DataTypeName;
+				if (dataTypeName == "BIT")
 				{
 					AddColumnMapping(m_logger, columnMappings, addDefaultMappings, i, destinationColumn, $"@`\uE002\bcol{i}`", $"%COL% = CAST(%VAR% AS UNSIGNED)");
-				}
-				else if (schema[i].DataTypeName == "YEAR")
-				{
-					// the current code can't distinguish between 0 = 0000 and 0 = 2000
-					throw new NotSupportedException("'YEAR' columns are not supported by MySqlBulkLoader.");
 				}
 				else
 				{
 					var type = schema[i].DataType;
-					if (type == typeof(byte[]) || (type == typeof(Guid) && (m_connection.GuidFormat is MySqlGuidFormat.Binary16 or MySqlGuidFormat.LittleEndianBinary16 or MySqlGuidFormat.TimeSwapBinary16)))
+					if (type == typeof(byte[]) ||
+						dataTypeName == "VECTOR" ||
+						(type == typeof(Guid) && (m_connection.GuidFormat is MySqlGuidFormat.Binary16 or MySqlGuidFormat.LittleEndianBinary16 or MySqlGuidFormat.TimeSwapBinary16)))
 					{
 						AddColumnMapping(m_logger, columnMappings, addDefaultMappings, i, destinationColumn, $"@`\uE002\bcol{i}`", $"%COL% = UNHEX(%VAR%)");
 					}
 					else if (addDefaultMappings)
 					{
+						if (schema[i].DataTypeName == "YEAR")
+						{
+							// the current code can't distinguish between 0 = 0000 and 0 = 2000
+							throw new NotSupportedException("'YEAR' columns are not supported by MySqlBulkCopy.");
+						}
+
 						Log.AddingDefaultColumnMapping(m_logger, i, destinationColumn);
 						columnMappings.Add(new(i, destinationColumn));
 					}
@@ -295,7 +264,7 @@ public sealed class MySqlBulkCopy
 		}
 
 		// set columns and expressions from the column mappings
-		for (var i = 0; i < m_valuesEnumerator.FieldCount; i++)
+		for (var i = 0; i < m_valuesEnumerator!.FieldCount; i++)
 		{
 			var columnMapping = columnMappings.FirstOrDefault(x => x.SourceOrdinal == i);
 			if (columnMapping is null)
@@ -505,7 +474,7 @@ public sealed class MySqlBulkCopy
 			{
 				return Utf8Formatter.TryFormat(decimalValue, output, out bytesWritten);
 			}
-			else if (value is byte[] or ReadOnlyMemory<byte> or Memory<byte> or ArraySegment<byte> or MySqlGeometry)
+			else if (value is byte[] or ReadOnlyMemory<byte> or Memory<byte> or ArraySegment<byte> or MySqlGeometry or float[] or ReadOnlyMemory<float> or Memory<float>)
 			{
 				var inputSpan = value switch
 				{
@@ -513,6 +482,9 @@ public sealed class MySqlBulkCopy
 					ArraySegment<byte> arraySegment => arraySegment.AsSpan(),
 					Memory<byte> memory => memory.Span,
 					MySqlGeometry geometry => geometry.ValueSpan,
+					float[] floatArray => MySqlParameter.ConvertFloatsToBytes(floatArray.AsSpan()),
+					Memory<float> memory => MySqlParameter.ConvertFloatsToBytes(memory.Span),
+					ReadOnlyMemory<float> memory => MySqlParameter.ConvertFloatsToBytes(memory.Span),
 					_ => ((ReadOnlyMemory<byte>) value).Span,
 				};
 

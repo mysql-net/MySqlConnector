@@ -1,5 +1,5 @@
 variables:
-  DotNetCoreSdkVersion: '9.x'
+  DotNetCoreSdkVersion: '10.x'
   NUGET_PACKAGES: '$(Pipeline.Workspace)/.nuget/packages'
 
 jobs:
@@ -51,8 +51,8 @@ jobs:
       arguments: 'tests\IntegrationTests\IntegrationTests.csproj -c MySqlData'
       testRunTitle: 'MySql.Data integration tests'
     env:
-      DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,ParsecAuthentication,StreamingResults,TlsFingerprintValidation,UnixDomainSocket,Vector'
-      DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=root;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600'
+      DATA__UNSUPPORTEDFEATURES: 'Ed25519,InsertReturning,QueryAttributes,ParsecAuthentication,StreamingResults,TlsFingerprintValidation,UnixDomainSocket,Vector'
+      DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=root;password=test;database=mysqltest;ssl mode=disabled;DefaultCommandTimeout=3600'
       DATA__CERTIFICATESPATH: '$(Build.Repository.LocalPath)\.ci\server\certs\'
       DATA__MYSQLBULKLOADERLOCALCSVFILE: '$(Build.Repository.LocalPath)\tests\TestData\LoadData_UTF8_BOM_Unix.CSV'
       DATA__MYSQLBULKLOADERLOCALTSVFILE: '$(Build.Repository.LocalPath)\tests\TestData\LoadData_UTF8_BOM_Unix.TSV'
@@ -84,7 +84,7 @@ jobs:
   - template: '.ci/conformance-test-steps.yml'
     parameters:
       image: 'mysql:8.0'
-      connectionString: 'server=localhost;port=3306;user id=mysqltest;password=test;database=conformance;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
+      connectionString: 'server=localhost;port=3306;user id=mysqltest;password=test;database=conformance;ssl mode=disabled;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
 
 - job: windows_integration_tests_1
   displayName: 'Windows Integration Tests (Part 1)'
@@ -107,21 +107,21 @@ jobs:
     displayName: 'Remove target frameworks'
     inputs:
       targetType: 'inline'
-      script: '((Get-Content .\tests\IntegrationTests\IntegrationTests.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>net481;net9.0</TargetFrameworks>'')) | Set-Content .\tests\IntegrationTests\IntegrationTests.csproj'
+      script: '((Get-Content .\tests\IntegrationTests\IntegrationTests.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>net481;net10.0</TargetFrameworks>'')) | Set-Content .\tests\IntegrationTests\IntegrationTests.csproj'
   - task: DotNetCoreCLI@2
     displayName: 'Restore packages'
     inputs:
       command: 'restore'
   - task: DotNetCoreCLI@2
-    displayName: 'Integration tests (net481/net9.0)'
+    displayName: 'Integration tests (net481/net10.0)'
     inputs:
       command: 'test'
       projects: 'tests/IntegrationTests/IntegrationTests.csproj'
       arguments: '-c Release --no-restore -p:TestTfmsInParallel=false'
-      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net481/net9.0', 'No SSL') }}
+      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net481/net10.0', 'No SSL') }}
     env:
-      DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,UnixDomainSocket,Vector'
-      DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True;UseCompression=True'
+      DATA__UNSUPPORTEDFEATURES: 'Ed25519,InsertReturning,QueryAttributes,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,UnixDomainSocket,Vector'
+      DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=disabled;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True;UseCompression=True'
 
 - job: windows_integration_tests_2
   displayName: 'Windows Integration Tests (Part 2)'
@@ -158,8 +158,8 @@ jobs:
       arguments: '-c Release --no-restore -p:TestTfmsInParallel=false'
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net8.0', 'No SSL') }}
     env:
-      DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,UnixDomainSocket,Vector'
-      DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
+      DATA__UNSUPPORTEDFEATURES: 'Ed25519,InsertReturning,QueryAttributes,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,UnixDomainSocket,Vector'
+      DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=disabled;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
 
 - job: linux_integration_tests
   dependsOn: linux_build
@@ -168,22 +168,18 @@ jobs:
     vmimage: 'ubuntu-24.04'
   strategy:
     matrix:
-      'MySQL 8.0':
-        image: 'mysql:8.0'
-        connectionStringExtra: 'AllowPublicKeyRetrieval=True'
-        unsupportedFeatures: 'Ed25519,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
       'MySQL 8.4':
         image: 'mysql:8.4'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
-        unsupportedFeatures: 'Ed25519,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
-      'MySQL 9.4':
-        image: 'mysql:9.4'
+        unsupportedFeatures: 'Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
+      'MySQL 9.7':
+        image: 'mysql:9.7'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
-        unsupportedFeatures: 'Ed25519,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
-      'MariaDB 10.6':
-        image: 'mariadb:10.6'
-        connectionStringExtra: ''
-        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,ParsecAuthentication,Redirection,Sha256Password,Tls11,TlsFingerprintValidation,UuidToBin,Vector'
+        unsupportedFeatures: 'Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
+      'MySQL 26.7':
+        image: 'mysql:26.7'
+        connectionStringExtra: 'AllowPublicKeyRetrieval=True'
+        unsupportedFeatures: 'Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
       'MariaDB 10.11':
         image: 'mariadb:10.11'
         connectionStringExtra: ''
@@ -194,6 +190,10 @@ jobs:
         unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,ParsecAuthentication,Redirection,Sha256Password,Tls11,UuidToBin,Vector'
       'MariaDB 11.8':
         image: 'mariadb:11.8'
+        connectionStringExtra: ''
+        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Redirection,Sha256Password,Tls11,UuidToBin,VectorType'
+      'MariaDB 12.3':
+        image: 'mariadb:12.3'
         connectionStringExtra: ''
         unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Redirection,Sha256Password,Tls11,UuidToBin,VectorType'
   steps:

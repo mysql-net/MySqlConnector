@@ -31,7 +31,7 @@ using (var cmd = new MySqlCommand())
 
 // Retrieve all rows
 await using var command = new MySqlCommand("SELECT some_field FROM data", connection);
-await using var reader = await cmd.ExecuteReaderAsync();
+await using var reader = await command.ExecuteReaderAsync();
 while (await reader.ReadAsync())
     Console.WriteLine(reader.GetString(0));
 ```

@@ -14,12 +14,7 @@ internal sealed class TimerQueue
 	/// <returns>A timer ID that can be passed to <see cref="Remove"/> to cancel the timer.</returns>
 	public uint Add(int delay, Action action)
 	{
-#if NET8_0_OR_GREATER
 		ArgumentOutOfRangeException.ThrowIfNegative(delay);
-#else
-		if (delay < 0)
-			throw new ArgumentOutOfRangeException(nameof(delay), $"delay must not be negative: {delay}");
-#endif
 
 		var current = Environment.TickCount;
 		lock (m_lock)

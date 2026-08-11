@@ -7,7 +7,7 @@ steps:
 - task: DownloadPipelineArtifact@2
   inputs:
     buildType: 'current'
-    artifactName: 'MySqlConnector.Tests-9.0-$(Agent.OS)'
+    artifactName: 'MySqlConnector.Tests-10.0-$(Agent.OS)'
     targetPath: $(System.DefaultWorkingDirectory)
 - task: DotNetCoreCLI@2
   displayName: 'Run MySqlConnector.Tests'
@@ -18,7 +18,7 @@ steps:
 - task: DownloadPipelineArtifact@2
   inputs:
     buildType: 'current'
-    artifactName: 'MySqlConnector.DependencyInjection.Tests-9.0-$(Agent.OS)'
+    artifactName: 'MySqlConnector.DependencyInjection.Tests-10.0-$(Agent.OS)'
     targetPath: $(System.DefaultWorkingDirectory)
 - task: DotNetCoreCLI@2
   displayName: 'Run MySqlConnector.DependencyInjection.Tests'
@@ -30,4 +30,4 @@ steps:
   inputs:
     testResultsFormat: VSTest
     testResultsFiles: '**/*.trx'
-    testRunTitle: 'MySqlConnector.Tests-9.0-$(Agent.OS)'
+    testRunTitle: 'MySqlConnector.Tests-10.0-$(Agent.OS)'

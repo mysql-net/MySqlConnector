@@ -8,12 +8,7 @@ internal abstract class SqlParser(StatementPreparer preparer)
 
 	public void Parse(string sql)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(sql);
-#else
-		if (sql is null)
-			throw new ArgumentNullException(nameof(sql));
-#endif
 		OnBeforeParse(sql);
 
 		int parameterStartIndex = -1;
@@ -75,7 +70,10 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				else
 				{
 					if (isNamedParameter)
+					{
 						OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
+						isNamedParameter = false;
+					}
 					if (ch == ';')
 					{
 						OnStatementEnd(index);
@@ -96,7 +94,10 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				else
 				{
 					if (isNamedParameter)
+					{
 						OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
+						isNamedParameter = false;
+					}
 					if (ch == ';')
 					{
 						OnStatementEnd(index);
@@ -117,7 +118,10 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				else
 				{
 					if (isNamedParameter)
+					{
 						OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
+						isNamedParameter = false;
+					}
 					if (ch == ';')
 					{
 						OnStatementEnd(index);
@@ -131,7 +135,7 @@ internal abstract class SqlParser(StatementPreparer preparer)
 			}
 			else if (state == State.SecondHyphen)
 			{
-				if (ch == ' ')
+				if (ch is (>= '\0' and <= ' ') or '\x7F')
 				{
 					state = State.EndOfLineComment;
 				}
@@ -215,7 +219,7 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				if (state is not State.Beginning and not State.Statement)
 					throw new InvalidOperationException($"Unexpected state: {state}");
 
-				if (ch == '-' && index < sql.Length - 2 && sql[index + 1] == '-' && sql[index + 2] == ' ')
+				if (ch == '-' && index < sql.Length - 2 && sql[index + 1] == '-' && sql[index + 2] is (>= '\0' and <= ' ') or '\x7F')
 				{
 					beforeCommentState = state;
 					state = State.Hyphen;
@@ -278,6 +282,8 @@ internal abstract class SqlParser(StatementPreparer preparer)
 		}
 		else if (state is State.SingleQuotedStringSingleQuote or State.DoubleQuotedStringDoubleQuote or State.BacktickQuotedStringBacktick)
 		{
+			if (isNamedParameter)
+				OnNamedParameter(parameterStartIndex, sql.Length - parameterStartIndex);
 			state = State.Statement;
 		}
 

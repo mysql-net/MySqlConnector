@@ -12,12 +12,7 @@ public sealed class MySqlHelper
 	/// </summary>
 	public static string EscapeString(string value)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(value);
-#else
-		if (value is null)
-			throw new ArgumentNullException(nameof(value));
-#endif
 
 		StringBuilder? sb = null;
 		int last = -1;

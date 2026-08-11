@@ -17,6 +17,7 @@ public sealed class MySqlDataSourceBuilder
 | [MySqlDataSourceBuilder](../MySqlDataSourceBuilder/MySqlDataSourceBuilder/)(…) | Initializes a new [`MySqlDataSourceBuilder`](../MySqlDataSourceBuilderType/) with the specified connection string. |
 | [ConnectionStringBuilder](../MySqlDataSourceBuilder/ConnectionStringBuilder/) { get; } | A [`MySqlConnectionStringBuilder`](../MySqlConnectionStringBuilderType/) that can be used to configure the connection string on this [`MySqlDataSourceBuilder`](../MySqlDataSourceBuilderType/). |
 | [Build](../MySqlDataSourceBuilder/Build/)() | Builds a [`MySqlDataSource`](../MySqlDataSourceType/) which is ready for use. |
+| [ConfigureTracing](../MySqlDataSourceBuilder/ConfigureTracing/)(…) | Configures OpenTelemetry tracing options. |
 | [UseClientCertificatesCallback](../MySqlDataSourceBuilder/UseClientCertificatesCallback/)(…) | Sets the callback used to provide client certificates for connecting to a server. |
 | [UseConnectionOpenedCallback](../MySqlDataSourceBuilder/UseConnectionOpenedCallback/)(…) | Adds a callback that is invoked when a new [`MySqlConnection`](../MySqlConnectionType/) is opened. |
 | [UseLoggerFactory](../MySqlDataSourceBuilder/UseLoggerFactory/)(…) | Sets the ILoggerFactory that will be used for logging. |

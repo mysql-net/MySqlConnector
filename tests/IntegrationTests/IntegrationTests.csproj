@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Condition=" '$(Configuration)' != 'MySqlData' ">
-    <TargetFrameworks>net462;net481;net6.0;net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net462;net481;net6.0;net8.0;net10.0</TargetFrameworks>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'MySqlData' ">
-    <TargetFrameworks>net9.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <DefineConstants>MYSQL_DATA</DefineConstants>
     <NoWarn>$(NoWarn);MSB3246</NoWarn>
   </PropertyGroup>
@@ -23,7 +23,6 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
     <ThreadPoolMinThreads>64</ThreadPoolMinThreads>
-    <LangVersion>11.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>$(NoWarn);SA0001;SA1021;SA1133;xUnit1030</NoWarn>
   </PropertyGroup>
@@ -41,7 +40,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
-    <PackageReference Include="System.Text.Json" />
     <Using Include="System" />
     <Using Include="System.Data" />
     <Using Include="System.Data.Common" />

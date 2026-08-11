@@ -27,52 +27,52 @@ steps:
   displayName: 'Publish MySqlConnector.Tests'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f net9.0 --no-build tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj'
+    arguments: '-c Release -f net10.0 --no-build tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@1
   inputs:
-    artifact: 'MySqlConnector.Tests-9.0-$(Agent.OS)'
-    targetPath: 'artifacts/publish/MySqlConnector.Tests/release_net9.0'
+    artifact: 'MySqlConnector.Tests-10.0-$(Agent.OS)'
+    targetPath: 'artifacts/publish/MySqlConnector.Tests/release_net10.0'
     publishLocation: 'pipeline'
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish Conformance.Tests'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f net9.0 --no-build tests/Conformance.Tests/Conformance.Tests.csproj'
+    arguments: '-c Release -f net10.0 --no-build tests/Conformance.Tests/Conformance.Tests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@1
   inputs:
-    artifact: 'Conformance.Tests-9.0-$(Agent.OS)'
-    targetPath: 'artifacts/publish/Conformance.Tests/release_net9.0'
+    artifact: 'Conformance.Tests-10.0-$(Agent.OS)'
+    targetPath: 'artifacts/publish/Conformance.Tests/release_net10.0'
     publishLocation: 'pipeline'
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish MySqlConnector.DependencyInjection.Tests'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f net9.0 --no-build tests/MySqlConnector.DependencyInjection.Tests/MySqlConnector.DependencyInjection.Tests.csproj'
+    arguments: '-c Release -f net10.0 --no-build tests/MySqlConnector.DependencyInjection.Tests/MySqlConnector.DependencyInjection.Tests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@1
   inputs:
-    artifact: 'MySqlConnector.DependencyInjection.Tests-9.0-$(Agent.OS)'
-    targetPath: 'artifacts/publish/MySqlConnector.DependencyInjection.Tests/release_net9.0'
+    artifact: 'MySqlConnector.DependencyInjection.Tests-10.0-$(Agent.OS)'
+    targetPath: 'artifacts/publish/MySqlConnector.DependencyInjection.Tests/release_net10.0'
     publishLocation: 'pipeline'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Publish IntegrationTests (9.0)'
+  displayName: 'Publish IntegrationTests (10.0)'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f net9.0 --no-build tests/IntegrationTests/IntegrationTests.csproj'
+    arguments: '-c Release -f net10.0 --no-build tests/IntegrationTests/IntegrationTests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@1
   inputs:
-    artifact: 'IntegrationTests-net9.0-$(Agent.OS)'
-    targetPath: 'artifacts/publish/IntegrationTests/release_net9.0'
+    artifact: 'IntegrationTests-net10.0-$(Agent.OS)'
+    targetPath: 'artifacts/publish/IntegrationTests/release_net10.0'
     publishLocation: 'pipeline'
 
 - task: DotNetCoreCLI@2

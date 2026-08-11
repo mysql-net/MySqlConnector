@@ -1,10 +1,10 @@
 {
     "Data": {
-      "ConnectionString": "server=127.0.0.1;user id=mysqltest;password=test;port=3306;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=true",
+      "ConnectionString": "server=127.0.0.1;user id=mysqltest;password=test;port=3306;database=mysqltest;ssl mode=disabled;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=true",
       "SocketPath": "./../../../../.ci/run/mysql/mysqld.sock",
       "PasswordlessUser": "no_password",
       "SecondaryDatabase": "testdb2",
-      "UnsupportedFeatures": "Ed25519,QueryAttributes,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,UnixDomainSocket,Vector,ZeroDateTime",
+      "UnsupportedFeatures": "Ed25519,InsertReturning,QueryAttributes,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,UnixDomainSocket,Vector,ZeroDateTime",
       "MySqlBulkLoaderLocalCsvFile": "../../../../tests/TestData/LoadData_UTF8_BOM_Unix.CSV",
       "MySqlBulkLoaderLocalTsvFile": "../../../../tests/TestData/LoadData_UTF8_BOM_Unix.TSV"
     }

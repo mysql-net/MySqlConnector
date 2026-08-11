@@ -15,6 +15,9 @@ namespace MySqlConnector;
 /// <see cref="MySqlConnectionStringBuilder"/> allows you to construct a MySQL connection string by setting properties on the builder then reading the <see cref="DbConnectionStringBuilder.ConnectionString"/> property.
 /// </summary>
 /// <remarks>See <a href="https://mysqlconnector.net/connection-options/">Connection String Options</a> for more documentation on the options.</remarks>
+#if NET6_0_OR_GREATER && !NET10_0_OR_GREATER
+[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2113:ReflectionToRequiresUnreferencedCode", Justification = "Suppressing the same warnings as suppressed in the base DbConnectionStringBuilder.")]
+#endif
 public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 {
 	/// <summary>
@@ -269,6 +272,19 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	{
 		get => MySqlConnectionStringOption.SslCa.GetValue(this);
 		set => MySqlConnectionStringOption.SslCa.SetValue(this, value);
+	}
+
+	/// <summary>
+	/// Turns off the TLS certificate revocation check when using <see cref="MySqlSslMode.VerifyFull"/>. This allows a connection to be made even when revocation status can't be determined, but it also means revoked certificates may not be detected. All other checks are still performed. Intended for private clouds that don't use revocation.
+	/// </summary>
+	[Category("TLS")]
+	[DefaultValue(false)]
+	[Description("Turns off the TLS certificate revocation check when using VerifyFull. This allows a connection to be made even when revocation status can't be determined, but it also means revoked certificates may not be detected. All other checks are still performed. Intended for private clouds that don't use revocation.")]
+	[DisplayName("Skip Certificate Revocation Check")]
+	public bool SkipCertificateRevocationCheck
+	{
+		get => MySqlConnectionStringOption.SkipCertificateRevocationCheck.GetValue(this);
+		set => MySqlConnectionStringOption.SkipCertificateRevocationCheck.SetValue(this, value);
 	}
 
 	/// <summary>
@@ -873,6 +889,8 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	/// <param name="propertyDescriptors">The collection of <see cref="PropertyDescriptor"/> objects to populate.</param>
 #if NET6_0_OR_GREATER
 	[RequiresUnreferencedCode("PropertyDescriptor's PropertyType cannot be statically discovered.")]
+	[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2112:ReflectionToRequiresUnreferencedCode",
+		Justification = "Suppressing the same warnings as suppressed in the base DbConnectionStringBuilder. See https://github.com/mysql-net/MySqlConnector/issues/1607")]
 #endif
 	protected override void GetProperties(Hashtable propertyDescriptors)
 	{
@@ -914,6 +932,7 @@ internal abstract partial class MySqlConnectionStringOption
 	public static readonly MySqlConnectionStringReferenceOption<string> SslCert;
 	public static readonly MySqlConnectionStringReferenceOption<string> SslKey;
 	public static readonly MySqlConnectionStringReferenceOption<string> SslCa;
+	public static readonly MySqlConnectionStringValueOption<bool> SkipCertificateRevocationCheck;
 	public static readonly MySqlConnectionStringReferenceOption<string> TlsVersion;
 	public static readonly MySqlConnectionStringReferenceOption<string> TlsCipherSuites;
 
@@ -1055,6 +1074,10 @@ internal abstract partial class MySqlConnectionStringOption
 		AddOption(options, SslCa = new(
 			keys: ["SSL CA", "CACertificateFile", "CA Certificate File", "SslCa", "Ssl-Ca"],
 			defaultValue: ""));
+
+		AddOption(options, SkipCertificateRevocationCheck = new(
+			keys: ["Skip Certificate Revocation Check", "SkipCertificateRevocationCheck"],
+			defaultValue: false));
 
 		AddOption(options, TlsVersion = new(
 			keys: ["TLS Version", "TlsVersion", "Tls-Version"],
