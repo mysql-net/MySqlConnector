@@ -343,9 +343,13 @@ internal sealed class Row
 	{
 		CheckBinaryColumn(ordinal);
 		var (offset, length) = m_dataOffsetLengths[ordinal];
+#if NET11_0_OR_GREATER
+		return new ReadOnlyMemoryStream(m_data.Slice(offset, length));
+#else
 		return MemoryMarshal.TryGetArray(m_data, out var arraySegment) ?
 			new MemoryStream(arraySegment.Array!, arraySegment.Offset + offset, length, writable: false) :
 			throw new InvalidOperationException("Can't get underlying array.");
+#endif
 	}
 
 	public string GetString(int ordinal) => (string) GetValue(ordinal);

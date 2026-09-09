@@ -1798,8 +1798,6 @@ internal sealed partial class ServerSession : IServerCapabilities
 				// saving sha256 thumbprint and SSL errors until thumbprint validation
 #if NET7_0_OR_GREATER
 				m_remoteCertificateSha2Thumbprint = SHA256.HashData(cert2.RawDataMemory.Span);
-#elif NET5_0_OR_GREATER
-				m_remoteCertificateSha2Thumbprint = SHA256.HashData(cert2.RawData);
 #else
 				using var sha256 = SHA256.Create();
 				m_remoteCertificateSha2Thumbprint = sha256.ComputeHash(cert2.RawData);

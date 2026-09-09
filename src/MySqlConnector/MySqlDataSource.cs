@@ -147,6 +147,7 @@ public sealed class MySqlDataSource : DbDataSource
 			ProvidePasswordCallback = m_providePasswordCallback,
 			RemoteCertificateValidationCallback = m_remoteCertificateValidationCallback,
 			ConnectionOpenedCallback = m_connectionOpenedCallback,
+			ZstandardPlugin = m_zstandardPlugin ?? ZstandardPlugin.Default,
 		};
 	}
 

@@ -1012,7 +1012,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	internal MySqlTransaction? CurrentTransaction { get; set; }
 	internal MySqlConnectorLoggingConfiguration LoggingConfiguration { get; }
-	internal ZstandardPlugin? ZstandardPlugin { get; set; }
+	internal ZstandardPlugin? ZstandardPlugin { get; set; } = ZstandardPlugin.Default;
 	internal MySqlConnectionOpenedCallback? ConnectionOpenedCallback { get; set; }
 	internal bool AllowLoadLocalInfile => GetInitializedConnectionSettings().AllowLoadLocalInfile;
 	internal bool AllowUserVariables => GetInitializedConnectionSettings().AllowUserVariables;
@@ -1164,6 +1164,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		ProvidePasswordCallback = other.ProvidePasswordCallback;
 		RemoteCertificateValidationCallback = other.RemoteCertificateValidationCallback;
 		ConnectionOpenedCallback = other.ConnectionOpenedCallback;
+		ZstandardPlugin = other.ZstandardPlugin;
 	}
 
 	private void VerifyNotDisposed()

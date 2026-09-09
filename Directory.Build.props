@@ -15,6 +15,10 @@
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net11.0' ">
+    <Features>runtime-async=on</Features>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' OR '$(APPVEYOR)' == 'True' OR '$(TF_BUILD)' == 'True' ">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <Deterministic>true</Deterministic>

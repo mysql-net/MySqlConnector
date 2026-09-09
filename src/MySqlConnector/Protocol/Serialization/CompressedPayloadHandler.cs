@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.IO.Compression;
 using MySqlConnector.Utilities;
 
@@ -13,6 +14,12 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		m_bufferedByteReader = new();
 		m_compressedBufferedByteReader = new();
 	}
+
+#if NET11_0_OR_GREATER
+	// Creates a handler that uses zstd (instead of zlib) to compress each packet; the compressed protocol is otherwise identical.
+	public CompressedPayloadHandler(IByteHandler byteHandler, bool isZstandard)
+		: this(byteHandler) => m_isZstandard = isZstandard;
+#endif
 
 	public void Dispose()
 	{
@@ -117,17 +124,18 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		{
 #if NET6_0_OR_GREATER
 			var uncompressedData = new byte[uncompressedLength];
+#if NET11_0_OR_GREATER
+			if (!TryDecompress(payloadReadBytes.AsSpan(), uncompressedData, out var totalBytesRead))
+			{
+				// throw InvalidDataException for corrupt data to match ZLibStream
+				if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
+					return default;
+				throw new InvalidDataException($"Couldn't decompress {(m_isZstandard ? "zstd" : "zlib")} payload");
+			}
+#else
 			using var compressedStream = new MemoryStream(payloadReadBytes.Array!, payloadReadBytes.Offset, payloadReadBytes.Count);
 			using var decompressingStream = new ZLibStream(compressedStream, CompressionMode.Decompress);
-#if NET7_0_OR_GREATER
 			var totalBytesRead = decompressingStream.ReadAtLeast(uncompressedData, uncompressedLength, throwOnEndOfStream: false);
-#else
-			int bytesRead, totalBytesRead = 0;
-			do
-			{
-				bytesRead = decompressingStream.Read(uncompressedData, totalBytesRead, uncompressedLength - totalBytesRead);
-				totalBytesRead += bytesRead;
-			} while (bytesRead > 0);
 #endif
 			if (totalBytesRead != uncompressedLength && protocolErrorBehavior == ProtocolErrorBehavior.Throw)
 				throw new MySqlEndOfStreamException(uncompressedLength, totalBytesRead);
@@ -137,7 +145,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 			// check CMF (Compression Method and Flags) and FLG (Flags) bytes for expected values
 			var cmf = payloadReadBytes.Array![payloadReadBytes.Offset];
 			var flg = payloadReadBytes.Array[payloadReadBytes.Offset + 1];
-			if (cmf != 0x78 || ((flg & 0x20) == 0x20) || ((cmf * 256 + flg) % 31 != 0))
+			if (cmf != 0x78 || ((flg & 0x20) == 0x20) || (((cmf * 256) + flg) % 31 != 0))
 			{
 				// CMF = 0x78: 32K Window Size + deflate compression
 				// FLG & 0x20: has preset dictionary (not supported)
@@ -189,13 +197,76 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 
 	private int GetNextUncompressedSequenceNumber() => m_uncompressedSequenceNumber++;
 
+#if NET11_0_OR_GREATER
 	private async ValueTask CompressAndWrite(ArraySegment<byte> remainingUncompressedData, IOBehavior ioBehavior)
 	{
 		var remainingUncompressedBytes = Math.Min(remainingUncompressedData.Count, ProtocolUtility.MaxPacketSize);
 
-		// don't compress small packets; 80 bytes is typically a good cutoff
+		// rent a buffer for the seven-byte header plus the worst-case compressed payload; because the worst case is never
+		// smaller than the input, this buffer is also large enough when the payload has to be sent uncompressed
+		var buffer = ArrayPool<byte>.Shared.Rent((int) GetMaxCompressedLength(remainingUncompressedBytes) + 7);
+		try
+		{
+			var packetLength = WriteCompressedPacket(remainingUncompressedData.AsSpan(0, remainingUncompressedBytes), buffer);
+			await m_byteHandler!.WriteBytesAsync(new ArraySegment<byte>(buffer, 0, packetLength), ioBehavior).ConfigureAwait(false);
+		}
+		finally
+		{
+			ArrayPool<byte>.Shared.Return(buffer);
+		}
+
+		remainingUncompressedData = remainingUncompressedData.Slice(remainingUncompressedBytes);
+		if (remainingUncompressedData.Count != 0)
+			await CompressAndWrite(remainingUncompressedData, ioBehavior).ConfigureAwait(false);
+	}
+
+	// Writes a compressed packet header, followed by 'uncompressedPayload', to 'buffer'; returns the total number of bytes written.
+	private int WriteCompressedPacket(ReadOnlySpan<byte> uncompressedPayload, Span<byte> buffer)
+	{
+		// don't compress small packets, and send uncompressed if TryCompress can't fit the compressed data in the destination buffer
+		var payloadLength = 0;
+		if (uncompressedPayload.Length > c_minimumSizeToCompress &&
+			TryCompress(uncompressedPayload, buffer[7..], out var compressedLength) &&
+			compressedLength < uncompressedPayload.Length)
+		{
+			payloadLength = compressedLength;
+		}
+
+		uint uncompressedLength;
+		if (payloadLength == 0)
+		{
+			// setting the length to 0 indicates sending uncompressed data
+			uncompressedLength = 0;
+			payloadLength = uncompressedPayload.Length;
+			uncompressedPayload.CopyTo(buffer[7..]);
+		}
+		else
+		{
+			uncompressedLength = (uint) uncompressedPayload.Length;
+		}
+
+		SerializationUtility.WriteUInt32((uint) payloadLength, buffer[0..3]);
+		buffer[3] = GetNextCompressedSequenceNumber();
+		SerializationUtility.WriteUInt32(uncompressedLength, buffer[4..7]);
+		return payloadLength + 7;
+	}
+
+	private long GetMaxCompressedLength(int uncompressedLength) =>
+		m_isZstandard ? ZstandardEncoder.GetMaxCompressedLength(uncompressedLength) : ZLibEncoder.GetMaxCompressedLength(uncompressedLength);
+
+	private bool TryCompress(ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten) =>
+		m_isZstandard ? ZstandardEncoder.TryCompress(source, destination, out bytesWritten) : ZLibEncoder.TryCompress(source, destination, out bytesWritten);
+
+	private bool TryDecompress(ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten) =>
+		m_isZstandard ? ZstandardDecoder.TryDecompress(source, destination, out bytesWritten) : ZLibDecoder.TryDecompress(source, destination, out bytesWritten);
+#else
+	private async ValueTask CompressAndWrite(ArraySegment<byte> remainingUncompressedData, IOBehavior ioBehavior)
+	{
+		var remainingUncompressedBytes = Math.Min(remainingUncompressedData.Count, ProtocolUtility.MaxPacketSize);
+
+		// don't compress small packets
 		var compressedData = default(ArraySegment<byte>);
-		if (remainingUncompressedBytes > 80)
+		if (remainingUncompressedBytes > c_minimumSizeToCompress)
 		{
 			using var compressedStream = new MemoryStream();
 
@@ -242,6 +313,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		if (remainingUncompressedData.Count != 0)
 			await CompressAndWrite(remainingUncompressedData, ioBehavior).ConfigureAwait(false);
 	}
+#endif
 
 	// CompressedByteHandler implements IByteHandler and delegates reading bytes back to the CompressedPayloadHandler class.
 	private sealed class CompressedByteHandler : IByteHandler
@@ -271,8 +343,14 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		private readonly ProtocolErrorBehavior m_protocolErrorBehavior;
 	}
 
+	// Don't compress small packets; 80 bytes is typically a good cutoff.
+	private const int c_minimumSizeToCompress = 80;
+
 	private readonly BufferedByteReader m_bufferedByteReader;
 	private readonly BufferedByteReader m_compressedBufferedByteReader;
+#if NET11_0_OR_GREATER
+	private readonly bool m_isZstandard;
+#endif
 	private MemoryStream? m_uncompressedStream;
 	private IByteHandler? m_uncompressedStreamByteHandler;
 	private IByteHandler? m_byteHandler;

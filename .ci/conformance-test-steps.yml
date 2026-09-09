@@ -1,7 +1,7 @@
 parameters:
   image: ''
   connectionString: ''
-  testPath: '$(Build.BinariesDirectory)/10.0'
+  testPath: '$(Build.BinariesDirectory)/11.0'
 
 steps:
 - task: DeleteFiles@1
@@ -12,7 +12,7 @@ steps:
   condition: always()
   inputs:
     buildType: 'current'
-    artifactName: 'Conformance.Tests-10.0-$(Agent.OS)'
+    artifactName: 'Conformance.Tests-11.0-$(Agent.OS)'
     targetPath: ${{ parameters.testPath }}
 - bash: chmod +x ${{ parameters.testPath }}/Conformance.Tests
   displayName: 'Set execute permissions for xUnit v3'

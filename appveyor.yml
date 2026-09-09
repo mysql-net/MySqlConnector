@@ -10,6 +10,7 @@ install:
   - ps: .\install-dotnet.ps1 -Channel 6.0 -InstallDir "dotnetcli"
   - ps: .\install-dotnet.ps1 -Channel 8.0 -InstallDir "dotnetcli"
   - ps: .\install-dotnet.ps1 -Channel 10.0 -InstallDir "dotnetcli"
+  - ps: .\install-dotnet.ps1 -Channel 11.0 -Quality preview -InstallDir "dotnetcli"
 build_script:
 - dotnet --info
 before_test:
