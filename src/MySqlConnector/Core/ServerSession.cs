@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -345,34 +346,21 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 	public void SetTimeout(int timeoutMilliseconds) => m_payloadHandler!.ByteHandler.RemainingTimeout = timeoutMilliseconds;
 
-	public Activity? StartActivity(MySqlConnectorSemanticConventionsKinds conventionsKinds, string name, string? commandText = null, CommandType commandType = CommandType.Text, string? operationName = null, string? storedProcedureName = null, int batchSize = 0)
+	public Activity? StartActivity(string name, string? commandText = null, CommandType commandType = CommandType.Text, string? operationName = null, string? storedProcedureName = null, int batchSize = 0)
 	{
-		var activity = ActivitySourceHelper.StartActivity(name, conventionsKinds, m_activityTags);
+		var activity = ActivitySourceHelper.StartActivity(name, m_activityTags);
 		if (activity is { IsAllDataRequested: true })
 		{
 			if (DatabaseOverride is not null)
-			{
-				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-					activity.SetTag(ActivitySourceHelper.DatabaseNamespaceTagNameExperimental, DatabaseOverride);
-				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
-					activity.SetTag(ActivitySourceHelper.DatabaseNamespaceTagNameStable, DatabaseOverride);
-			}
-			if (commandText is not null)
-			{
-				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-					activity.SetTag(ActivitySourceHelper.DatabaseStatementTagName, commandText);
-				if (commandType != CommandType.StoredProcedure && conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
-					activity.SetTag(ActivitySourceHelper.DatabaseQueryTextTagName, commandText);
-			}
-			if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
-			{
-				if (operationName is not null)
-					activity.SetTag(ActivitySourceHelper.DatabaseOperationNameTagName, operationName);
-				if (storedProcedureName is not null)
-					activity.SetTag(ActivitySourceHelper.DatabaseStoredProcedureNameTagName, storedProcedureName);
-				if (batchSize > 1)
-					activity.SetTag(ActivitySourceHelper.DatabaseOperationBatchSizeTagName, batchSize);
-			}
+				activity.SetTag(ActivitySourceHelper.DatabaseNamespaceTagName, DatabaseOverride);
+			if (commandText is not null && commandType != CommandType.StoredProcedure)
+				activity.SetTag(ActivitySourceHelper.DatabaseQueryTextTagName, commandText);
+			if (operationName is not null)
+				activity.SetTag(ActivitySourceHelper.DatabaseOperationNameTagName, operationName);
+			if (storedProcedureName is not null)
+				activity.SetTag(ActivitySourceHelper.DatabaseStoredProcedureNameTagName, storedProcedureName);
+			if (batchSize > 1)
+				activity.SetTag(ActivitySourceHelper.DatabaseOperationBatchSizeTagName, batchSize);
 		}
 		return activity;
 	}
@@ -434,55 +422,16 @@ internal sealed partial class ServerSession : IServerCapabilities
 				m_state = State.Connecting;
 			}
 
-			var conventionsKinds = connection.TracingOptions.SemanticConventionsKinds;
-
-			// set activity tags
-			{
-				var connectionString = cs.ConnectionStringBuilder.GetConnectionString(cs.ConnectionStringBuilder.PersistSecurityInfo);
-				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-					m_activityTags.Add(ActivitySourceHelper.DatabaseSystemTagNameExperimental, ActivitySourceHelper.DatabaseSystemValue);
-				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
-					m_activityTags.Add(ActivitySourceHelper.DatabaseSystemTagNameStable, ActivitySourceHelper.DatabaseSystemValue);
-				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-				{
-					m_activityTags.Add(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionString);
-					m_activityTags.Add(ActivitySourceHelper.DatabaseUserTagName, cs.UserID);
-				}
-				if (cs.Database.Length != 0)
-				{
-					if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-						m_activityTags.Add(ActivitySourceHelper.DatabaseNamespaceTagNameExperimental, cs.Database);
-					if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
-						m_activityTags.Add(ActivitySourceHelper.DatabaseNamespaceTagNameStable, cs.Database);
-				}
-				if (activity is { IsAllDataRequested: true })
-				{
-					if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-						activity.SetTag(ActivitySourceHelper.DatabaseSystemTagNameExperimental, ActivitySourceHelper.DatabaseSystemValue);
-					if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
-						activity.SetTag(ActivitySourceHelper.DatabaseSystemTagNameStable, ActivitySourceHelper.DatabaseSystemValue);
-					if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-					{
-						activity
-							.SetTag(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionString)
-							.SetTag(ActivitySourceHelper.DatabaseUserTagName, cs.UserID);
-					}
-					if (cs.Database.Length != 0)
-					{
-						if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-							activity.SetTag(ActivitySourceHelper.DatabaseNamespaceTagNameExperimental, cs.Database);
-						if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
-							activity.SetTag(ActivitySourceHelper.DatabaseNamespaceTagNameStable, cs.Database);
-					}
-				}
-			}
+			SetActivityTag(activity, ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue);
+			if (cs.Database.Length != 0)
+				SetActivityTag(activity, ActivitySourceHelper.DatabaseNamespaceTagName, cs.Database);
 
 			Conditions = MySqlConnectionOpenedConditions.New;
 			var connected = cs.ConnectionProtocol switch
 			{
-				MySqlConnectionProtocol.Sockets => await OpenTcpSocketAsync(cs, loadBalancer ?? throw new ArgumentNullException(nameof(loadBalancer)), conventionsKinds, activity, ioBehavior, cancellationToken).ConfigureAwait(false),
-				MySqlConnectionProtocol.UnixSocket => await OpenUnixSocketAsync(cs, conventionsKinds, activity, ioBehavior, cancellationToken).ConfigureAwait(false),
-				MySqlConnectionProtocol.NamedPipe => await OpenNamedPipeAsync(cs, startingTimestamp, conventionsKinds, activity, ioBehavior, cancellationToken).ConfigureAwait(false),
+				MySqlConnectionProtocol.Sockets => await OpenTcpSocketAsync(cs, loadBalancer ?? throw new ArgumentNullException(nameof(loadBalancer)), activity, ioBehavior, cancellationToken).ConfigureAwait(false),
+				MySqlConnectionProtocol.UnixSocket => await OpenUnixSocketAsync(cs, activity, ioBehavior, cancellationToken).ConfigureAwait(false),
+				MySqlConnectionProtocol.NamedPipe => await OpenNamedPipeAsync(cs, startingTimestamp, activity, ioBehavior, cancellationToken).ConfigureAwait(false),
 				_ => false,
 			};
 			if (!connected)
@@ -521,13 +470,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			CancellationTimeout = cs.CancellationTimeout;
 			UserID = cs.UserID;
 
-			// set activity tags
-			{
-				var connectionId = ConnectionId.ToString(CultureInfo.InvariantCulture);
-				m_activityTags[ActivitySourceHelper.DatabaseConnectionIdTagName] = connectionId;
-				if (activity is { IsAllDataRequested: true })
-					activity.SetTag(ActivitySourceHelper.DatabaseConnectionIdTagName, connectionId);
-			}
+			SetActivityTag(activity, ActivitySourceHelper.DatabaseConnectionIdTagName, ConnectionId.ToString(CultureInfo.InvariantCulture));
 
 			m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
 			SupportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
@@ -1257,28 +1200,19 @@ internal sealed partial class ServerSession : IServerCapabilities
 		}
 	}
 
-	private async Task<bool> OpenTcpSocketAsync(ConnectionSettings cs, ILoadBalancer loadBalancer, MySqlConnectorSemanticConventionsKinds conventionsKinds, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task<bool> OpenTcpSocketAsync(ConnectionSettings cs, ILoadBalancer loadBalancer, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		// set activity tags for TCP/IP
-		{
-			if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-				m_activityTags.Add(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportTcpIpValue);
-			string? port = cs.Port == 3306 ? default : cs.Port.ToString(CultureInfo.InvariantCulture);
-			if (port is not null && conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-				m_activityTags.Add(ActivitySourceHelper.NetPeerPortTagName, port);
-			if (activity is { IsAllDataRequested: true })
-			{
-				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-					activity.SetTag(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportTcpIpValue);
-				if (port is not null && conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-					activity.SetTag(ActivitySourceHelper.NetPeerPortTagName, port);
-			}
-		}
-
 		var hostNames = loadBalancer.LoadBalance(cs.HostNames!);
 		for (var hostNameIndex = 0; hostNameIndex < hostNames.Count; hostNameIndex++)
 		{
 			var hostName = hostNames[hostNameIndex];
+
+			// set activity tags for the current hostname (before resolving it, so they are set even if name resolution fails)
+			SetActivityTag(activity, ActivitySourceHelper.ServerAddressTagName, hostName);
+			SetActivityTag(activity, ActivitySourceHelper.ServerPortTagName, cs.Port != MySqlConnectionStringBuilder.DefaultServerPort ? cs.Port : null);
+			SetActivityTag(activity, ActivitySourceHelper.NetworkPeerAddressTagName, null);
+			SetActivityTag(activity, ActivitySourceHelper.NetworkPeerPortTagName, null);
+
 			IPAddress[] ipAddresses;
 			try
 			{
@@ -1311,49 +1245,9 @@ internal sealed partial class ServerSession : IServerCapabilities
 				var ipAddressString = ipAddress.ToString();
 				Log.ConnectingToIpAddress(m_logger, Id, ipAddressString, ipAddressIndex + 1, ipAddresses.Length, hostName, hostNameIndex + 1, hostNames.Count);
 
-				// set activity tags for the current IP address/hostname
-				{
-					if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-					{
-						m_activityTags[ActivitySourceHelper.NetPeerIpTagName] = ipAddressString;
-						if (ipAddressString != hostName)
-							m_activityTags[ActivitySourceHelper.NetPeerNameTagName] = hostName;
-						else
-							m_activityTags.Remove(ActivitySourceHelper.NetPeerNameTagName);
-					}
-					if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
-					{
-						m_activityTags[ActivitySourceHelper.ServerAddressTagName] = hostName;
-						m_activityTags[ActivitySourceHelper.NetworkPeerAddressTagName] = ipAddressString;
-						m_activityTags[ActivitySourceHelper.NetworkPeerPortTagName] = cs.Port;
-						if (cs.Port != 3306)
-							m_activityTags[ActivitySourceHelper.ServerPortTagName] = cs.Port;
-						else
-							m_activityTags.Remove(ActivitySourceHelper.ServerPortTagName);
-					}
-
-					if (activity is { IsAllDataRequested: true })
-					{
-						if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-						{
-							activity.SetTag(ActivitySourceHelper.NetPeerIpTagName, ipAddressString);
-							if (ipAddressString != hostName)
-								activity.SetTag(ActivitySourceHelper.NetPeerNameTagName, hostName);
-							else
-								activity.SetTag(ActivitySourceHelper.NetPeerNameTagName, null);
-						}
-						if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
-						{
-							activity.SetTag(ActivitySourceHelper.ServerAddressTagName, hostName)
-								.SetTag(ActivitySourceHelper.NetworkPeerAddressTagName, ipAddressString)
-								.SetTag(ActivitySourceHelper.NetworkPeerPortTagName, cs.Port);
-							if (cs.Port != 3306)
-								activity.SetTag(ActivitySourceHelper.ServerPortTagName, cs.Port);
-							else
-								activity.SetTag(ActivitySourceHelper.ServerPortTagName, null);
-						}
-					}
-				}
+				// set activity tags for the current IP address
+				SetActivityTag(activity, ActivitySourceHelper.NetworkPeerAddressTagName, ipAddressString);
+				SetActivityTag(activity, ActivitySourceHelper.NetworkPeerPortTagName, cs.Port);
 
 				TcpClient? tcpClient = null;
 				try
@@ -1454,30 +1348,11 @@ internal sealed partial class ServerSession : IServerCapabilities
 		return false;
 	}
 
-	private async Task<bool> OpenUnixSocketAsync(ConnectionSettings cs, MySqlConnectorSemanticConventionsKinds conventionsKinds, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task<bool> OpenUnixSocketAsync(ConnectionSettings cs, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		Log.ConnectingToUnixSocket(m_logger, Id, cs.UnixSocket!);
 
-		// set activity tags
-		{
-			if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-			{
-				m_activityTags.Add(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportUnixValue);
-				m_activityTags.Add(ActivitySourceHelper.NetPeerNameTagName, cs.UnixSocket);
-			}
-			if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
-				m_activityTags.Add(ActivitySourceHelper.ServerAddressTagName, cs.UnixSocket);
-			if (activity is { IsAllDataRequested: true })
-			{
-				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-				{
-					activity.SetTag(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportUnixValue)
-						.SetTag(ActivitySourceHelper.NetPeerNameTagName, cs.UnixSocket);
-				}
-				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
-					activity.SetTag(ActivitySourceHelper.ServerAddressTagName, cs.UnixSocket);
-			}
-		}
+		SetActivityTag(activity, ActivitySourceHelper.ServerAddressTagName, cs.UnixSocket);
 
 		var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.IP);
 		var unixEp = new UnixDomainSocketEndPoint(cs.UnixSocket!);
@@ -1522,32 +1397,11 @@ internal sealed partial class ServerSession : IServerCapabilities
 		return false;
 	}
 
-	private async Task<bool> OpenNamedPipeAsync(ConnectionSettings cs, long startingTimestamp, MySqlConnectorSemanticConventionsKinds conventionsKinds, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task<bool> OpenNamedPipeAsync(ConnectionSettings cs, long startingTimestamp, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		Log.ConnectingToNamedPipe(m_logger, Id, cs.PipeName, cs.HostNames![0]);
 
-		// set activity tags
-		{
-			// see https://docs.microsoft.com/en-us/windows/win32/ipc/pipe-names for pipe name format
-			var pipeName = $@"\\{cs.HostNames![0]}\pipe\{cs.PipeName}";
-			if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-			{
-				m_activityTags.Add(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportNamedPipeValue);
-				m_activityTags.Add(ActivitySourceHelper.NetPeerNameTagName, pipeName);
-			}
-			if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
-				m_activityTags.Add(ActivitySourceHelper.ServerAddressTagName, cs.HostNames[0]);
-			if (activity is { IsAllDataRequested: true })
-			{
-				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
-				{
-					activity.SetTag(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportNamedPipeValue);
-					activity.SetTag(ActivitySourceHelper.NetPeerNameTagName, pipeName);
-				}
-				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
-					activity.SetTag(ActivitySourceHelper.ServerAddressTagName, cs.HostNames[0]);
-			}
-		}
+		SetActivityTag(activity, ActivitySourceHelper.ServerAddressTagName, cs.HostNames[0]);
 
 		var namedPipeStream = new NamedPipeClientStream(cs.HostNames![0], cs.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
 		var timeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - Utility.GetElapsedMilliseconds(startingTimestamp));
@@ -2266,6 +2120,18 @@ internal sealed partial class ServerSession : IServerCapabilities
 		}
 
 		return "";
+	}
+
+	/// <summary>
+	/// Sets (or, if <paramref name="value"/> is <c>null</c>, removes) a tag on this session's activity tags, which are used
+	/// to start all activities for this session, and on <paramref name="activity"/> if it is recording.
+	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void SetActivityTag(Activity? activity, string name, object? value)
+	{
+		m_activityTags[name] = value;
+		if (activity is { IsAllDataRequested: true })
+			activity.SetTag(name, value);
 	}
 
 	private enum State

@@ -16,29 +16,19 @@ public sealed class MySqlConnectorTracingOptionsBuilder
 	}
 
 	/// <summary>
-	/// Sets the kinds of database conventions emitted for tracing spans.
+	/// Formerly used to set the kinds of database conventions emitted for tracing spans.
 	/// </summary>
 	/// <param name="kinds">The kinds of semantic conventions to emit.</param>
 	/// <returns>This builder, so options can be chained.</returns>
-	/// <remarks>The default is controlled by the <c>OTEL_SEMCONV_STABILITY_OPT_IN</c> environment variable.</remarks>
-	public MySqlConnectorTracingOptionsBuilder WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds kinds)
-	{
-		if (kinds is not (MySqlConnectorSemanticConventionsKinds.Experimental or MySqlConnectorSemanticConventionsKinds.Stable or
-				MySqlConnectorSemanticConventionsKinds.Experimental | MySqlConnectorSemanticConventionsKinds.Stable))
-		{
-			throw new ArgumentOutOfRangeException(nameof(kinds), "kinds must be Experimental or Stable conventions (or both).");
-		}
-		m_semanticConventionsKinds = kinds;
-		return this;
-	}
+	/// <remarks>This method only exists for backwards compatibility with MySqlConnector 2.6.x and has no effect.</remarks>
+	[Obsolete("Only Stable conventions are supported; calling this method has no effect.")]
+	public MySqlConnectorTracingOptionsBuilder WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds kinds) => this;
 
 	internal MySqlConnectorTracingOptions Build() =>
 		new()
 		{
 			EnableResultSetHeaderEvent = m_enableResultSetHeaderEvent,
-			SemanticConventionsKinds = m_semanticConventionsKinds,
 		};
 
 	private bool m_enableResultSetHeaderEvent = MySqlConnectorTracingOptions.Default.EnableResultSetHeaderEvent;
-	private MySqlConnectorSemanticConventionsKinds m_semanticConventionsKinds = MySqlConnectorTracingOptions.Default.SemanticConventionsKinds;
 }

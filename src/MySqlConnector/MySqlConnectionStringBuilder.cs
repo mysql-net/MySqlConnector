@@ -57,7 +57,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	/// The TCP port on which MySQL Server is listening for connections.
 	/// </summary>
 	[Category("Connection")]
-	[DefaultValue(3306u)]
+	[DefaultValue((uint) DefaultServerPort)]
 	[Description("The TCP port on which MySQL Server is listening for connections.")]
 	[DisplayName("Port")]
 	public uint Port
@@ -905,6 +905,8 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 			propertyDescriptors.Remove(property.DisplayName);
 	}
 
+	internal const int DefaultServerPort = 3306;
+
 	private string? m_cachedConnectionString;
 	private string? m_cachedConnectionStringWithoutPassword;
 }
@@ -1016,7 +1018,7 @@ internal abstract partial class MySqlConnectionStringOption
 
 		AddOption(options, Port = new(
 			keys: ["Port"],
-			defaultValue: 3306u));
+			defaultValue: MySqlConnectionStringBuilder.DefaultServerPort));
 
 		AddOption(options, UserID = new(
 			keys: ["User ID", "UserID", "Username", "Uid", "User name", "User"],

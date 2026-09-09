@@ -2,6 +2,7 @@
 #if NET5_0_OR_GREATER
 using System.Diagnostics;
 using System.Globalization;
+using MySqlConnector.Utilities;
 
 namespace IntegrationTests;
 
@@ -46,17 +47,16 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		Assert.Equal("Open", activity.OperationName);
 		Assert.Equal(ActivityStatusCode.Unset, activity.Status);
 
-		AssertTags(activity.Tags, csb);
+		AssertTags(activity, csb);
 	}
 
 	[Fact]
-	public void OpenTagsStableConvention()
+	public void OpenTagsWithDataSource()
 	{
-		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
-			.ConfigureTracing(o => o.WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds.Stable));
+		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString);
 		using var dataSource = dataSourceBuilder.Build();
 
-		using var parentActivity = new Activity(nameof(OpenTagsStableConvention));
+		using var parentActivity = new Activity(nameof(OpenTags));
 		parentActivity.Start();
 
 		Activity activity = null;
@@ -81,7 +81,7 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		Assert.Equal("Open", activity.OperationName);
 		Assert.Equal(ActivityStatusCode.Unset, activity.Status);
 
-		AssertStableTags(activity, csb);
+		AssertTags(activity, csb);
 	}
 
 	[Fact]
@@ -143,7 +143,138 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		Assert.Equal("Open", activity.OperationName);
 		Assert.Equal(ActivityStatusCode.Error, activity.Status);
 
-		AssertTags(activity.Tags, csb);
+		AssertTags(activity, csb);
+	}
+
+	[Fact]
+	public void OpenFailedUnresolvableHostTags()
+	{
+		using var parentActivity = new Activity(nameof(OpenFailedUnresolvableHostTags));
+		parentActivity.Start();
+
+		Activity activity = null;
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = x => activity = x,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		var csb = new MySqlConnectionStringBuilder("Server=invalid.example.com;User Id=invaliduser;Database=invaliddb;Connection Timeout=1");
+		using (var connection = new MySqlConnection(csb.ConnectionString))
+		{
+			var exception = Assert.Throws<MySqlException>(connection.Open);
+			Assert.Equal(MySqlErrorCode.UnableToConnectToHost, exception.ErrorCode);
+		}
+
+		Assert.NotNull(activity);
+		Assert.Equal(ActivityKind.Client, activity.Kind);
+		Assert.Equal("Open", activity.OperationName);
+		Assert.Equal(ActivityStatusCode.Error, activity.Status);
+
+		// the configured server is identified even though its name could not be resolved
+		AssertTag(activity.Tags, "db.system.name", "mysql");
+		AssertTag(activity.Tags, "db.namespace", csb.Database);
+		AssertTag(activity.Tags, "server.address", csb.Server);
+		AssertNoTag(activity.Tags, "server.port");
+		AssertNoTag(activity.Tags, "network.peer.address");
+		AssertNoTag(activity.Tags, "network.peer.port");
+		AssertTag(activity.Tags, "error.type", "1042");
+		AssertTag(activity.Tags, "db.response.status_code", "1042");
+	}
+
+	[Fact]
+	public void OpenFailedPoolExhaustedTags()
+	{
+		// create a unique pool that allows only one connection
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.Pooling = true;
+		csb.MinimumPoolSize = 0;
+		csb.MaximumPoolSize = 1;
+		csb.ConnectionTimeout = 1;
+		var connectionString = csb.ConnectionString;
+
+		// hold the pool's only connection so that the next Open times out waiting for it
+		using var pooledConnection = new MySqlConnection(connectionString);
+		pooledConnection.Open();
+
+		using var parentActivity = new Activity(nameof(OpenFailedPoolExhaustedTags));
+		parentActivity.Start();
+
+		Activity activity = null;
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = x => activity = x,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		using (var connection = new MySqlConnection(connectionString))
+		{
+			var exception = Assert.Throws<MySqlException>(connection.Open);
+			Assert.Equal(MySqlErrorCode.UnableToConnectToHost, exception.ErrorCode);
+		}
+
+		Assert.NotNull(activity);
+		Assert.Equal(ActivityKind.Client, activity.Kind);
+		Assert.Equal("Open", activity.OperationName);
+		Assert.Equal(ActivityStatusCode.Error, activity.Status);
+
+		// no session was created, but the required tags and the tags derived from the connection string are set
+		AssertTag(activity.Tags, "db.system.name", "mysql");
+		AssertTag(activity.Tags, "db.namespace", csb.Database);
+		AssertTag(activity.Tags, "server.address", csb.Server);
+		if (csb.Port == MySqlConnectionStringBuilder.DefaultServerPort)
+			AssertNoTag(activity.Tags, "server.port");
+		else
+			AssertTagObject(activity.TagObjects, "server.port", csb.Port);
+		AssertNoTag(activity.Tags, "network.peer.address");
+		AssertNoTag(activity.Tags, "db.connection_id");
+		AssertTag(activity.Tags, "error.type", "1042");
+		AssertTag(activity.Tags, "db.response.status_code", "1042");
+	}
+
+	[Fact]
+	public void OpenFailedInvalidSettingsTags()
+	{
+		using var parentActivity = new Activity(nameof(OpenFailedInvalidSettingsTags));
+		parentActivity.Start();
+
+		Activity activity = null;
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = x => activity = x,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		// this combination of settings is only validated when the connection is opened
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.MinimumPoolSize = 2;
+		csb.MaximumPoolSize = 1;
+		MySqlException exception;
+		using (var connection = new MySqlConnection(csb.ConnectionString))
+			exception = Assert.Throws<MySqlException>(connection.Open);
+		Assert.Equal(MySqlErrorCode.None, exception.ErrorCode);
+
+		Assert.NotNull(activity);
+		Assert.Equal(ActivityKind.Client, activity.Kind);
+		Assert.Equal("Open", activity.OperationName);
+		Assert.Equal(ActivityStatusCode.Error, activity.Status);
+		Assert.Equal(exception.Message, activity.StatusDescription);
+
+		// 'db.system.name' is required, so it is set even though the connection string could not be used
+		AssertTag(activity.Tags, "db.system.name", "mysql");
+
+		// a MySqlException without a MySQL error number has no status code; the exception type is the error type
+		AssertTag(activity.Tags, "error.type", typeof(MySqlException).FullName);
+		AssertNoTag(activity.Tags, "db.response.status_code");
 	}
 
 	[Fact]
@@ -176,67 +307,24 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		Assert.Equal("Execute", activity.OperationName);
 		Assert.Equal(ActivityStatusCode.Unset, activity.Status);
 
-		AssertTags(activity.Tags, csb);
-		AssertTag(activity.Tags, "db.connection_id", connection.ServerThread.ToString(CultureInfo.InvariantCulture));
-		AssertTag(activity.Tags, "db.statement", "SELECT 1;");
-	}
-
-	[Fact]
-	public void UseConventionKindsNone()
-	{
-		Assert.Throws<ArgumentOutOfRangeException>(() => new MySqlDataSourceBuilder(AppConfig.ConnectionString)
-			.ConfigureTracing(o => o.WithSemanticConventionsKinds(default))
-			.Build());
-	}
-
-	[Fact]
-	public void SelectTagsStableConvention()
-	{
-		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
-			.ConfigureTracing(o => o.WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds.Stable));
-		using var dataSource = dataSourceBuilder.Build();
-		using var connection = dataSource.OpenConnection();
-		var csb = new MySqlConnectionStringBuilder(connection.ConnectionString);
-
-		using var parentActivity = new Activity(nameof(SelectTagsStableConvention));
-		parentActivity.Start();
-
-		Activity activity = null;
-		using var listener = new ActivityListener
-		{
-			ShouldListenTo = x => x.Name == "MySqlConnector",
-			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
-				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
-			ActivityStopped = x => activity = x,
-		};
-		ActivitySource.AddActivityListener(listener);
-
-		using (var command = new MySqlCommand("SELECT 1;", connection))
-		{
-			command.ExecuteScalar();
-		}
-
-		Assert.NotNull(activity);
-		Assert.Equal(ActivityKind.Client, activity.Kind);
-		Assert.Equal("Execute", activity.OperationName);
-		Assert.Equal(ActivityStatusCode.Unset, activity.Status);
-
-		AssertStableTags(activity, csb);
+		AssertTags(activity, csb);
 		AssertTag(activity.Tags, "db.connection_id", connection.ServerThread.ToString(CultureInfo.InvariantCulture));
 		AssertTag(activity.Tags, "db.query.text", "SELECT 1;");
 		AssertNoTag(activity.Tags, "db.statement");
 	}
 
 	[Fact]
-	public void SelectTagsDupConvention()
+	public void SelectTagsDupConventionEmitsOnlyStable()
 	{
+#pragma warning disable CS0618 // Experimental is obsolete and ignored
 		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
 			.ConfigureTracing(o => o.WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds.Experimental | MySqlConnectorSemanticConventionsKinds.Stable));
+#pragma warning restore CS0618
 		using var dataSource = dataSourceBuilder.Build();
 		using var connection = dataSource.OpenConnection();
 		var csb = new MySqlConnectionStringBuilder(connection.ConnectionString);
 
-		using var parentActivity = new Activity(nameof(SelectTagsDupConvention));
+		using var parentActivity = new Activity(nameof(SelectTagsDupConventionEmitsOnlyStable));
 		parentActivity.Start();
 
 		Activity activity = null;
@@ -259,22 +347,20 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		Assert.Equal("Execute", activity.OperationName);
 		Assert.Equal(ActivityStatusCode.Unset, activity.Status);
 
-		AssertTags(activity.Tags, csb);
-		AssertStableTags(activity, csb, assertNoLegacyTags: false);
+		AssertTags(activity, csb);
 		AssertTag(activity.Tags, "db.connection_id", connection.ServerThread.ToString(CultureInfo.InvariantCulture));
-		AssertTag(activity.Tags, "db.statement", "SELECT 1;");
 		AssertTag(activity.Tags, "db.query.text", "SELECT 1;");
+		AssertNoTag(activity.Tags, "db.statement");
 	}
 
 	[Fact]
-	public void ErrorTagsStableConvention()
+	public void ErrorTags()
 	{
-		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
-			.ConfigureTracing(o => o.WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds.Stable));
+		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString);
 		using var dataSource = dataSourceBuilder.Build();
 		using var connection = dataSource.OpenConnection();
 
-		using var parentActivity = new Activity(nameof(ErrorTagsStableConvention));
+		using var parentActivity = new Activity(nameof(ErrorTags));
 		parentActivity.Start();
 
 		Activity activity = null;
@@ -300,17 +386,58 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		AssertTag(activity.Tags, "error.type", statusCode);
 		AssertTagObject(activity.TagObjects, "db.response.status_code", statusCode);
 		AssertTagObject(activity.TagObjects, "error.type", statusCode);
+		Assert.Empty(activity.Events);
 	}
 
 	[Fact]
-	public void BatchTagsStableConvention()
+	public void ErrorTagsCommandTimeout()
 	{
-		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
-			.ConfigureTracing(o => o.WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds.Stable));
+		// CancellationTimeout=-1 closes the connection when CommandTimeout elapses (instead of sending KILL QUERY), which throws
+		// MySqlException regardless of whether the server reports a cancelled SLEEP as an error or as a result set
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.Pooling = false;
+		csb.CancellationTimeout = -1;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+
+		using var parentActivity = new Activity(nameof(ErrorTagsCommandTimeout));
+		parentActivity.Start();
+
+		Activity activity = null;
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = x => activity = x,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		using (var command = new MySqlCommand("SELECT SLEEP(5);", connection) { CommandTimeout = 1 })
+		{
+			var exception = Assert.Throws<MySqlException>(() => command.ExecuteScalar());
+			Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, exception.ErrorCode);
+		}
+
+		Assert.NotNull(activity);
+		Assert.Equal(ActivityKind.Client, activity.Kind);
+		Assert.Equal("Execute", activity.OperationName);
+		Assert.Equal(ActivityStatusCode.Error, activity.Status);
+
+		// a client-side timeout has no MySQL error number
+		AssertTag(activity.Tags, "error.type", "timeout");
+		AssertNoTag(activity.Tags, "db.response.status_code");
+		AssertTag(activity.Tags, "db.query.text", "SELECT SLEEP(5);");
+	}
+
+	[Fact]
+	public void BatchTags()
+	{
+		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString);
 		using var dataSource = dataSourceBuilder.Build();
 		using var connection = dataSource.OpenConnection();
 
-		using var parentActivity = new Activity(nameof(BatchTagsStableConvention));
+		using var parentActivity = new Activity(nameof(BatchTags));
 		parentActivity.Start();
 
 		Activity activity = null;
@@ -345,12 +472,11 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 	}
 
 	[Fact]
-	public void StoredProcedureTagsStableConvention()
+	public void StoredProcedureTags()
 	{
 		const string procedureName = "activity_tags_test";
 
-		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
-			.ConfigureTracing(o => o.WithSemanticConventionsKinds(MySqlConnectorSemanticConventionsKinds.Stable));
+		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString);
 		using var dataSource = dataSourceBuilder.Build();
 		using var connection = dataSource.OpenConnection();
 		using (var command = new MySqlCommand($"DROP PROCEDURE IF EXISTS {procedureName};", connection))
@@ -360,7 +486,7 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 
 		try
 		{
-			using var parentActivity = new Activity(nameof(StoredProcedureTagsStableConvention));
+			using var parentActivity = new Activity(nameof(StoredProcedureTags));
 			parentActivity.Start();
 
 			Activity activity = null;
@@ -555,25 +681,14 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		}
 	}
 
-	private void AssertTags(IEnumerable<KeyValuePair<string, string>> tags, MySqlConnectionStringBuilder csb)
-	{
-		AssertTag(tags, "db.system", "mysql");
-		AssertTag(tags, "db.connection_string", csb.ConnectionString);
-		AssertTag(tags, "db.user", csb.UserID);
-		if (csb.Server[0] is >= 'a' and <= 'z' or >= 'A' and <= 'Z')
-			AssertTag(tags, "net.peer.name", csb.Server);
-		AssertTag(tags, "net.transport", "ip_tcp");
-		AssertTag(tags, "db.name", csb.Database);
-	}
-
-	private void AssertStableTags(Activity activity, MySqlConnectionStringBuilder csb, bool assertNoLegacyTags = true)
+	private void AssertTags(Activity activity, MySqlConnectionStringBuilder csb)
 	{
 		AssertTag(activity.Tags, "db.system.name", "mysql");
 		AssertTag(activity.Tags, "db.namespace", csb.Database);
 		AssertTag(activity.Tags, "server.address", csb.Server);
 		AssertHasTag(activity.Tags, "network.peer.address");
 		AssertTagObject(activity.TagObjects, "network.peer.port", csb.Port);
-		if (csb.Port == 3306)
+		if (csb.Port == MySqlConnectionStringBuilder.DefaultServerPort)
 		{
 			AssertNoTag(activity.Tags, "server.port");
 		}
@@ -582,18 +697,15 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 			AssertTagObject(activity.TagObjects, "server.port", csb.Port);
 		}
 
-		if (assertNoLegacyTags)
-		{
-			AssertNoTag(activity.Tags, "db.connection_string");
-			AssertNoTag(activity.Tags, "db.user");
-			AssertNoTag(activity.Tags, "db.system");
-			AssertNoTag(activity.Tags, "db.name");
-			AssertNoTag(activity.Tags, "thread.id");
-			AssertNoTag(activity.Tags, "net.transport");
-			AssertNoTag(activity.Tags, "net.peer.name");
-			AssertNoTag(activity.Tags, "net.peer.ip");
-			AssertNoTag(activity.Tags, "net.peer.port");
-		}
+		AssertNoTag(activity.Tags, "db.connection_string");
+		AssertNoTag(activity.Tags, "db.user");
+		AssertNoTag(activity.Tags, "db.system");
+		AssertNoTag(activity.Tags, "db.name");
+		AssertNoTag(activity.Tags, "thread.id");
+		AssertNoTag(activity.Tags, "net.transport");
+		AssertNoTag(activity.Tags, "net.peer.name");
+		AssertNoTag(activity.Tags, "net.peer.ip");
+		AssertNoTag(activity.Tags, "net.peer.port");
 	}
 
 	private string AssertHasTag(IEnumerable<KeyValuePair<string, string>> tags, string expectedTag)

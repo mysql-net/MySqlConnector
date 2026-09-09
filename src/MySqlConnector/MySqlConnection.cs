@@ -527,8 +527,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		if (State != ConnectionState.Closed)
 			throw new InvalidOperationException($"Cannot Open when State is {State}.");
 
-		var conventionsKinds = TracingOptions.SemanticConventionsKinds;
-		using var activity = ActivitySourceHelper.StartActivity(ActivitySourceHelper.OpenActivityName, conventionsKinds);
+		using var activity = ActivitySourceHelper.StartActivity(ActivitySourceHelper.OpenActivityName, ActivitySourceHelper.DefaultActivityTags);
 		try
 		{
 			SetState(ConnectionState.Connecting);
@@ -536,6 +535,34 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			var pool = m_dataSource?.Pool ??
 				ConnectionPool.GetPool(m_connectionString, LoggingConfiguration, createIfNotFound: true);
 			m_connectionSettings ??= pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
+
+			// set the tags that are known before connecting, so they are present even if a session cannot be created (e.g., the pool is exhausted)
+			if (activity is { IsAllDataRequested: true })
+			{
+				if (m_connectionSettings.Database.Length != 0)
+					activity.SetTag(ActivitySourceHelper.DatabaseNamespaceTagName, m_connectionSettings.Database);
+
+				switch (m_connectionSettings.ConnectionProtocol)
+				{
+					case MySqlConnectionProtocol.Sockets:
+						// with multiple hosts, 'server.address' is set to the selected host when connecting
+						if (m_connectionSettings.HostNames is { Count: 1 } hostNames)
+						{
+							activity.SetTag(ActivitySourceHelper.ServerAddressTagName, hostNames[0]);
+							if (m_connectionSettings.Port != MySqlConnectionStringBuilder.DefaultServerPort)
+								activity.SetTag(ActivitySourceHelper.ServerPortTagName, m_connectionSettings.Port);
+						}
+						break;
+
+					case MySqlConnectionProtocol.UnixSocket:
+						activity.SetTag(ActivitySourceHelper.ServerAddressTagName, m_connectionSettings.UnixSocket);
+						break;
+
+					case MySqlConnectionProtocol.NamedPipe:
+						activity.SetTag(ActivitySourceHelper.ServerAddressTagName, m_connectionSettings.HostNames![0]);
+						break;
+				}
+			}
 
 			// check if there is an open session (in the current transaction) that can be adopted
 			if (m_connectionSettings.AutoEnlist && System.Transactions.Transaction.Current is not null)
@@ -594,10 +621,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
-			// none of the other activity tags may have been set, so add the connection string when emitting legacy attributes
-			if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental) && m_connectionSettings?.ConnectionStringBuilder is { } connectionStringBuilder)
-				activity.SetTag(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionStringBuilder.GetConnectionString(connectionStringBuilder.PersistSecurityInfo));
-			activity.SetException(ex, conventionsKinds);
+			activity.SetException(ex);
 			throw;
 		}
 	}
