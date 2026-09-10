@@ -49,6 +49,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 	public int ActiveCommandId { get; private set; }
 	public int CancellationTimeout { get; private set; }
 	public int ConnectionId { get; set; }
+	public string? ServerHostname { get; set; }
 	public byte[]? AuthPluginData { get; set; }
 	public long CreatedTimestamp { get; }
 	public ConnectionPool? Pool { get; }
@@ -121,6 +122,15 @@ internal sealed partial class ServerSession : IServerCapabilities
 			if (ActiveCommandId != commandToCancel.CommandId)
 			{
 				Log.IgnoringCancellationForInactiveCommand(m_logger, Id, ActiveCommandId, commandToCancel.CommandId);
+				return;
+			}
+
+			// if the hostnames don't match, a load balancer may have routed the new connection to a different server, on
+			// which the connection ID would identify a different session; don't kill it: https://github.com/mysql-net/MySqlConnector/issues/1574
+			var killSession = killCommand.Connection!.Session;
+			if (killSession.ServerHostname != ServerHostname)
+			{
+				Log.IgnoringCancellationForDifferentServer(m_logger, Id, killSession.Id, ServerHostname, killSession.ServerHostname);
 				return;
 			}
 
@@ -631,6 +641,9 @@ internal sealed partial class ServerSession : IServerCapabilities
 				Log.ChangingConnectionId(m_logger, Id, ConnectionId, newConnectionId, ServerVersion.OriginalString, ServerVersion.OriginalString);
 				ConnectionId = newConnectionId;
 			}
+
+			// get server hostname for KILL QUERY verification
+			await GetServerHostnameAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 
 			m_payloadHandler.ByteHandler.RemainingTimeout = Constants.InfiniteTimeout;
 			return redirectionUrl;
@@ -1955,6 +1968,49 @@ internal sealed partial class ServerSession : IServerCapabilities
 		}
 	}
 
+	private async Task GetServerHostnameAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+	{
+		Log.GettingServerHostname(m_logger, Id);
+		try
+		{
+			var payload = SupportsQueryAttributes ? s_selectHostnameWithAttributesPayload : s_selectHostnameNoAttributesPayload;
+			await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+
+			// column count: 1
+			_ = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
+			// @@hostname column
+			_ = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+
+			if (!SupportsDeprecateEof)
+			{
+				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+				_ = EofPayload.Create(payload.Span);
+			}
+
+			// first (and only) row
+			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+
+			var reader = new ByteArrayReader(payload.Span);
+			var length = reader.ReadLengthEncodedIntegerOrNull();
+			var hostname = length > 0 ? Encoding.UTF8.GetString(reader.ReadByteString(length)) : null;
+
+			// OK/EOF payload
+			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+			if (OkPayload.IsOk(payload.Span, this))
+				OkPayload.Verify(payload.Span, this);
+			else
+				EofPayload.Create(payload.Span);
+
+			ServerHostname = hostname;
+			Log.RetrievedServerHostname(m_logger, Id, hostname);
+		}
+		catch (MySqlException ex)
+		{
+			Log.FailedToGetServerHostname(m_logger, ex, Id);
+		}
+	}
+
 	private void ShutdownSocket()
 	{
 		Log.ClosingStreamSocket(m_logger, Id);
@@ -2198,6 +2254,8 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private static readonly PayloadData s_sleepWithAttributesPayload = QueryPayload.Create(true, "SELECT SLEEP(0) INTO @__MySqlConnector__Sleep;"u8);
 	private static readonly PayloadData s_selectConnectionIdVersionNoAttributesPayload = QueryPayload.Create(false, "SELECT CONNECTION_ID(), VERSION();"u8);
 	private static readonly PayloadData s_selectConnectionIdVersionWithAttributesPayload = QueryPayload.Create(true, "SELECT CONNECTION_ID(), VERSION();"u8);
+	private static readonly PayloadData s_selectHostnameNoAttributesPayload = QueryPayload.Create(false, "SELECT @@hostname;"u8);
+	private static readonly PayloadData s_selectHostnameWithAttributesPayload = QueryPayload.Create(true, "SELECT @@hostname;"u8);
 
 	private readonly ILogger m_logger;
 #if NET9_0_OR_GREATER
