@@ -87,7 +87,7 @@ The goals of this project are:
 3. **High performance:** Avoid unnecessary allocations and copies when reading data.
 4. **Lightweight:** Only the core of ADO.NET is implemented, not EF or Designer types.
 5. **Managed:** Managed code only, no native code.
-6. **Independent:** This is a clean-room reimplementation of the [MySQL Protocol](https://dev.mysql.com/doc/internals/en/client-server-protocol.html), not based on Connector/NET.
+6. **Independent:** This is a clean-room reimplementation of the [MySQL Protocol](https://dev.mysql.com/doc/dev/mysql-server/latest/PAGE_PROTOCOL.html), not based on Connector/NET.
 
 Cloning the full API of Connector/NET is not a goal of this project, although
 it will try not to be gratuitously incompatible. For typical scenarios, [migrating to this package](https://mysqlconnector.net/tutorials/migrating-from-connector-net/) should
