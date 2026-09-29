@@ -12,6 +12,7 @@ public sealed class FakeMySqlServer
 		m_lock = new();
 		m_connections = [];
 		m_tasks = [];
+		m_receivedCommands = [];
 		m_clearPasswordResponse = new(TaskCreationOptions.RunContinuationsAsynchronously);
 	}
 
@@ -73,6 +74,39 @@ public sealed class FakeMySqlServer
 	public TimeSpan? ConnectDelay { get; set; }
 	public TimeSpan? ResetDelay { get; set; }
 
+	// When set, COM_INIT_DB for this database name fails with ER_BAD_DB_ERROR (as though the database had been dropped).
+	public string UnknownDatabase { get; set; }
+
+	// The commands received from all clients, e.g., "ResetConnection", "Query SET NAMES utf8mb4;", "InitDatabase db1".
+	public IReadOnlyList<string> ReceivedCommands
+	{
+		get
+		{
+			lock (m_lock)
+				return [.. m_receivedCommands];
+		}
+	}
+
+	// The number of received commands for which the client waited for the reply before sending another command, i.e., the
+	// number of network round trips; pipelined commands (sent together in one write) count as one round trip.
+	public int RoundTrips
+	{
+		get
+		{
+			lock (m_lock)
+				return m_roundTrips;
+		}
+	}
+
+	public void ClearReceivedCommands()
+	{
+		lock (m_lock)
+		{
+			m_receivedCommands.Clear();
+			m_roundTrips = 0;
+		}
+	}
+
 	// When set, the server advertises TLS support in its initial handshake and performs the server side of a TLS
 	// handshake (using this certificate) when the client requests it.
 	public X509Certificate2 ServerCertificate { get; set; }
@@ -95,6 +129,16 @@ public sealed class FakeMySqlServer
 	}
 
 	internal void ClientDisconnected() => Interlocked.Decrement(ref m_activeConnections);
+
+	internal void AddReceivedCommand(string command, bool nextCommandAlreadyReceived)
+	{
+		lock (m_lock)
+		{
+			m_receivedCommands.Add(command);
+			if (!nextCommandAlreadyReceived)
+				m_roundTrips++;
+		}
+	}
 
 	internal void SetClearPasswordResponse(byte[] response) => m_clearPasswordResponse.TrySetResult(response);
 
@@ -119,7 +163,9 @@ public sealed class FakeMySqlServer
 	private readonly TcpListener m_tcpListener;
 	private readonly List<FakeMySqlServerConnection> m_connections;
 	private readonly List<Task> m_tasks;
+	private readonly List<string> m_receivedCommands;
 	private readonly TaskCompletionSource<byte[]> m_clearPasswordResponse;
 	private CancellationTokenSource m_cts;
 	private int m_activeConnections;
+	private int m_roundTrips;
 }

@@ -62,7 +62,13 @@ internal sealed class FakeMySqlServerConnection
 						break;
 					}
 
-					switch ((CommandKind) bytes[0])
+					// record the command (with its text, for COM_QUERY and COM_INIT_DB) and whether the client has already sent the next one (i.e., pipelined it)
+					var commandKind = (CommandKind) bytes[0];
+					var receivedCommand = commandKind is CommandKind.Query or CommandKind.InitDatabase ?
+						$"{commandKind} {Encoding.UTF8.GetString(bytes, 1, bytes.Length - 1)}" : commandKind.ToString();
+					m_server.AddReceivedCommand(receivedCommand, nextCommandAlreadyReceived: stream.DataAvailable);
+
+					switch (commandKind)
 					{
 						case CommandKind.Quit:
 							await SendAsync(stream, 1, WriteOk);
@@ -76,6 +82,19 @@ internal sealed class FakeMySqlServerConnection
 						case CommandKind.ResetConnection:
 							if (m_server.ResetDelay is { } resetDelay)
 								await Task.Delay(resetDelay);
+							await SendAsync(stream, 1, WriteOk);
+							break;
+
+						case CommandKind.InitDatabase:
+							var databaseName = Encoding.UTF8.GetString(bytes, 1, bytes.Length - 1);
+							if (databaseName == m_server.UnknownDatabase)
+								await SendAsync(stream, 1, x => WriteError(x, $"Unknown database '{databaseName}'", MySqlErrorCode.UnknownDatabase));
+							else
+								await SendAsync(stream, 1, WriteOk);
+							break;
+
+						case CommandKind.ChangeUser:
+							// accept any credentials
 							await SendAsync(stream, 1, WriteOk);
 							break;
 
@@ -222,7 +241,7 @@ internal sealed class FakeMySqlServerConnection
 							break;
 
 						default:
-							Console.WriteLine("** UNHANDLED ** {0}", (CommandKind) bytes[0]);
+							Console.WriteLine("** UNHANDLED ** {0}", commandKind);
 							await SendAsync(stream, 1, x => WriteError(x));
 							break;
 					}
@@ -361,10 +380,10 @@ internal sealed class FakeMySqlServerConnection
 		writer.Write((ushort) 0); // warning count
 	}
 
-	private static void WriteError(BinaryWriter writer, string message = "An unknown error occurred")
+	private static void WriteError(BinaryWriter writer, string message = "An unknown error occurred", MySqlErrorCode errorCode = MySqlErrorCode.UnknownError)
 	{
 		writer.Write((byte) 0xFF); // signature
-		writer.Write((ushort) MySqlErrorCode.UnknownError); // error code
+		writer.Write((ushort) errorCode); // error code
 		writer.WriteRaw("#ERROR");
 		writer.WriteRaw(message);
 	}

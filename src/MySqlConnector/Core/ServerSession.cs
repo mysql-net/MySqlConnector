@@ -779,24 +779,49 @@ internal sealed partial class ServerSession : IServerCapabilities
 			ClearPreparedStatements();
 
 			PayloadData payload;
-			if (DatabaseOverride is null &&
-				((!ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0) ||
-				(ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0)))
+			var supportsResetConnection = (!ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0) ||
+				(ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0);
+
+			// COM_RESET_CONNECTION doesn't change the current database, so if it was changed, the connection string's database is
+			// selected again with COM_INIT_DB; COM_CHANGE_USER is only needed if the connection string doesn't specify a database
+			// (because reauthenticating is the only way to deselect the current database) or the server can't reset the connection;
+			// if the database was changed back to the connection string's database, COM_RESET_CONNECTION alone keeps it selected
+			var databaseChanged = DatabaseOverride is not null && !string.Equals(DatabaseOverride, cs.Database, StringComparison.Ordinal);
+			var restoreDatabase = supportsResetConnection && databaseChanged && !string.IsNullOrWhiteSpace(cs.Database);
+			if (supportsResetConnection && (!databaseChanged || restoreDatabase))
 			{
+				if (restoreDatabase)
+					Log.SendingResetConnectionRequestDueToChangedDatabase(m_logger, Id, DatabaseOverride!, cs.Database);
+
 				if (m_supportsPipelining)
 				{
 					Log.SendingPipelinedResetConnectionRequest(m_logger, Id, ServerVersion.OriginalString);
 
-					// send both packets at once
-					await SendRawAsync(m_pipelinedResetConnectionBytes, ioBehavior, cancellationToken).ConfigureAwait(false);
+					// send all packets at once
+					var pipelinedBytes = m_pipelinedResetConnectionBytes;
+					if (restoreDatabase)
+					{
+						// 'cs' is always the pool's (immutable) ConnectionSettings, so this session always restores the same database
+						Debug.Assert(ReferenceEquals(cs, Pool?.ConnectionSettings), "ReferenceEquals(cs, Pool?.ConnectionSettings)");
+						pipelinedBytes = m_pipelinedResetConnectionAndInitDatabaseBytes ??= CreatePipelinedResetConnectionAndInitDatabaseBytes(cs.Database);
+					}
+					await SendRawAsync(pipelinedBytes, ioBehavior, cancellationToken).ConfigureAwait(false);
 
-					// read two OK replies
+					// read the OK replies to COM_RESET_CONNECTION and SET NAMES
 					payload = await ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
 					OkPayload.Verify(payload.Span, this);
 
 					payload = await ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
 					OkPayload.Verify(payload.Span, this);
 
+					// read the reply to COM_INIT_DB; if it's an error, the exception is thrown to the caller, which discards this session
+					if (restoreDatabase)
+					{
+						payload = await ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
+						OkPayload.Verify(payload.Span, this);
+					}
+
+					DatabaseOverride = null;
 					return true;
 				}
 
@@ -804,6 +829,8 @@ internal sealed partial class ServerSession : IServerCapabilities
 				await SendAsync(ResetConnectionPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				OkPayload.Verify(payload.Span, this);
+				if (!restoreDatabase)
+					DatabaseOverride = null;
 			}
 			else
 			{
@@ -835,6 +862,17 @@ internal sealed partial class ServerSession : IServerCapabilities
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			OkPayload.Verify(payload.Span, this);
 
+			// COM_INIT_DB must follow SET NAMES: the server decodes the database name with 'character_set_client', which COM_RESET_CONNECTION
+			// sets back to the server default (https://bugs.mysql.com/bug.php?id=97633); clear DatabaseOverride only once the database is selected
+			if (restoreDatabase)
+			{
+				using (var initDatabasePayload = InitDatabasePayload.Create(cs.Database))
+					await SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				OkPayload.Verify(payload.Span, this);
+				DatabaseOverride = null;
+			}
+
 			return true;
 		}
 		catch (IOException ex)
@@ -856,6 +894,23 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 		Conditions &= ~MySqlConnectionOpenedConditions.Reset;
 		return false;
+	}
+
+	// Appends a COM_INIT_DB packet to the pipelined COM_RESET_CONNECTION and SET NAMES packets. COM_INIT_DB goes last because the
+	// server decodes the database name with 'character_set_client', which COM_RESET_CONNECTION resets and SET NAMES restores.
+	// The result is cached per session: a pooled session is always reset with its pool's ConnectionSettings, so 'database' doesn't change.
+	private byte[] CreatePipelinedResetConnectionAndInitDatabaseBytes(string database)
+	{
+		using var initDatabasePayload = InitDatabasePayload.Create(database);
+		var initDatabase = initDatabasePayload.Span;
+		var resetConnection = m_pipelinedResetConnectionBytes!;
+		var bytes = new byte[resetConnection.Length + 4 + initDatabase.Length];
+		resetConnection.CopyTo(bytes, 0);
+
+		// third packet: COM_INIT_DB, with a three-byte payload length and sequence number 0
+		SerializationUtility.WriteUInt32((uint) initDatabase.Length, bytes, resetConnection.Length, 3);
+		initDatabase.CopyTo(bytes.AsSpan(resetConnection.Length + 4));
+		return bytes;
 	}
 
 	// Whether the server's identity has been established well enough to send it the account password.
@@ -2238,6 +2293,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private CharacterSet m_characterSet;
 	private PayloadData m_setNamesPayload;
 	private byte[]? m_pipelinedResetConnectionBytes;
+	private byte[]? m_pipelinedResetConnectionAndInitDatabaseBytes;
 	private Dictionary<string, PreparedStatements>? m_preparedStatements;
 	private byte[]? m_passwordHash;
 	private byte[]? m_remoteCertificateSha2Thumbprint;
