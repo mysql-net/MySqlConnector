@@ -1214,11 +1214,20 @@ internal sealed partial class ServerSession : IServerCapabilities
 			SetActivityTag(activity, ActivitySourceHelper.NetworkPeerPortTagName, null);
 
 			IPAddress[] ipAddresses;
+
+			// if set, ipAddresses came from this pool's cache; if they can't be connected to, the pool should check whether they're stale
+			ConnectionPool? cachedAddressesPool = null;
 			try
 			{
 				if (cs.IPAddress is { } ipAddress)
 				{
 					ipAddresses = [ipAddress];
+				}
+				else if (Pool?.CachedDnsHostAddresses is { } cachedDnsHostAddresses && cachedDnsHostAddresses.ContainsHostName(hostName))
+				{
+					// NOTE: ContainsHostName may be false in a server redirection scenario; the redirected host name may not be in the pool's cached DNS host addresses
+					ipAddresses = await cachedDnsHostAddresses.GetHostAddressesAsync(hostName, ioBehavior, cancellationToken).ConfigureAwait(false);
+					cachedAddressesPool = Pool;
 				}
 				else
 				{
@@ -1289,6 +1298,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 						{
 							SafeDispose(ref tcpClient);
 							Log.ConnectTimeoutExpired(m_logger, ex, Id, ipAddressString, hostName);
+							cachedAddressesPool?.RequestDnsCheck();
 							throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 						}
 					}
@@ -1296,6 +1306,10 @@ internal sealed partial class ServerSession : IServerCapabilities
 				catch (SocketException ex)
 				{
 					SafeDispose(ref tcpClient);
+
+					// if none of this host's cached addresses could be connected to, check for DNS changes now instead of waiting for the next periodic check
+					if (ipAddressIndex == ipAddresses.Length - 1)
+						cachedAddressesPool?.RequestDnsCheck();
 
 					// if this is the final IP address in the list, throw a fatal exception; otherwise try the next IP address
 					if (hostNameIndex == hostNames.Count - 1 && ipAddressIndex == ipAddresses.Length - 1)
@@ -1317,6 +1331,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				{
 					SafeDispose(ref tcpClient);
 					Log.ConnectTimeoutExpired(m_logger, null, Id, ipAddressString, hostName);
+					cachedAddressesPool?.RequestDnsCheck();
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 				}
 

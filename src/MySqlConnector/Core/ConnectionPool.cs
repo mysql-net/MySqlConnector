@@ -22,6 +22,8 @@ internal sealed class ConnectionPool : IConnectionPoolMetadata, IDisposable
 
 	public ConnectionSettings ConnectionSettings { get; }
 
+	public DnsHostAddressCache? CachedDnsHostAddresses { get; }
+
 	public async ValueTask<ServerSession> GetSessionAsync(MySqlConnection connection, long startingTimestamp, int timeoutMilliseconds, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
@@ -206,6 +208,14 @@ internal sealed class ConnectionPool : IConnectionPoolMetadata, IDisposable
 	}
 
 	public async Task ClearAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+	{
+		// resolve host names again for new connections instead of using (possibly stale) cached addresses, then clear
+		// the pool (which increments its generation)
+		CachedDnsHostAddresses?.Invalidate();
+		await DoClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+	}
+
+	private async Task DoClearAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		// increment the generation of the connection pool
 		Log.ClearingConnectionPool(m_logger, Id);
@@ -536,6 +546,8 @@ internal sealed class ConnectionPool : IConnectionPoolMetadata, IDisposable
 		m_sessionSemaphore = new(cs.MaximumPoolSize);
 		m_sessions = new();
 		m_leasedSessions = [];
+		if (cs.ConnectionProtocol == MySqlConnectionProtocol.Tcp && cs.DnsCheckInterval > 0)
+			CachedDnsHostAddresses = new(cs.HostNames!);
 		if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets && cs.LoadBalance == MySqlLoadBalance.LeastConnections)
 		{
 			m_hostSessions = [];
@@ -614,11 +626,8 @@ internal sealed class ConnectionPool : IConnectionPoolMetadata, IDisposable
 
 	private void StartDnsCheckTimer()
 	{
-		if (ConnectionSettings.ConnectionProtocol != MySqlConnectionProtocol.Tcp || ConnectionSettings.DnsCheckInterval <= 0)
+		if (CachedDnsHostAddresses is null)
 			return;
-
-		var hostNames = ConnectionSettings.HostNames!;
-		var hostAddresses = new IPAddress[hostNames.Count][];
 
 #if NET6_0_OR_GREATER
 		m_dnsCheckTimer = new PeriodicTimer(TimeSpan.FromSeconds(ConnectionSettings.DnsCheckInterval));
@@ -627,57 +636,56 @@ internal sealed class ConnectionPool : IConnectionPoolMetadata, IDisposable
 		async Task RunTimer()
 		{
 			while (await m_dnsCheckTimer.WaitForNextTickAsync().ConfigureAwait(false))
-			{
-				Log.CheckingForDnsChanges(m_logger, Id);
-				var hostNamesChanged = false;
-				for (var hostNameIndex = 0; hostNameIndex < hostNames.Count; hostNameIndex++)
-				{
-					try
-					{
-						var ipAddresses = await Dns.GetHostAddressesAsync(hostNames[hostNameIndex]).ConfigureAwait(false);
-						if (hostAddresses[hostNameIndex] is null)
-						{
-							hostAddresses[hostNameIndex] = ipAddresses;
-						}
-						else if (hostAddresses[hostNameIndex].Except(ipAddresses).Any())
-						{
-							Log.DetectedDnsChange(m_logger, Id, hostNames[hostNameIndex], string.Join<IPAddress>(',', hostAddresses[hostNameIndex]), string.Join<IPAddress>(',', ipAddresses));
-							hostAddresses[hostNameIndex] = ipAddresses;
-							hostNamesChanged = true;
-						}
-					}
-					catch (Exception ex)
-					{
-						// do nothing; we'll try again later
-						Log.DnsCheckFailed(m_logger, ex, Id, hostNames[hostNameIndex], ex.Message);
-					}
-				}
-				if (hostNamesChanged)
-				{
-					Log.ClearingPoolDueToDnsChanges(m_logger, Id);
-					await ClearAsync(IOBehavior.Asynchronous, CancellationToken.None).ConfigureAwait(false);
-				}
-			}
+				await CheckForDnsChangesAsync(IOBehavior.Asynchronous).ConfigureAwait(false);
 		}
 #else
 		var interval = Math.Min(int.MaxValue / 1000, ConnectionSettings.DnsCheckInterval) * 1000;
 		m_dnsCheckTimer = new Timer(t =>
 		{
+			CheckForDnsChangesAsync(IOBehavior.Synchronous).GetAwaiter().GetResult();
+			((Timer) t!).Change(interval, -1);
+		});
+		m_dnsCheckTimer.Change(interval, -1);
+#endif
+	}
+
+	/// <summary>
+	/// Checks for DNS changes in the background (unless a requested check is already running), instead of waiting for the next periodic check.
+	/// This is called when a new session can't connect to a host's cached addresses, which may be stale.
+	/// </summary>
+	public void RequestDnsCheck()
+	{
+		if (Interlocked.CompareExchange(ref m_isDnsCheckRequested, 1, 0) != 0)
+			return;
+
+		_ = Task.Run(async () =>
+		{
+			try
+			{
+				await CheckForDnsChangesAsync(IOBehavior.Asynchronous).ConfigureAwait(false);
+			}
+			finally
+			{
+				Volatile.Write(ref m_isDnsCheckRequested, 0);
+			}
+		});
+	}
+
+	private async Task CheckForDnsChangesAsync(IOBehavior ioBehavior)
+	{
+		try
+		{
 			Log.CheckingForDnsChanges(m_logger, Id);
+			var hostNames = ConnectionSettings.HostNames!;
 			var hostNamesChanged = false;
 			for (var hostNameIndex = 0; hostNameIndex < hostNames.Count; hostNameIndex++)
 			{
 				try
 				{
-					var ipAddresses = Dns.GetHostAddresses(hostNames[hostNameIndex]);
-					if (hostAddresses[hostNameIndex] is null)
+					var (previousAddresses, currentAddresses) = await CachedDnsHostAddresses!.RefreshAsync(hostNames[hostNameIndex], ioBehavior).ConfigureAwait(false);
+					if (previousAddresses is not null && previousAddresses.Except(currentAddresses).Any())
 					{
-						hostAddresses[hostNameIndex] = ipAddresses;
-					}
-					else if (hostAddresses[hostNameIndex].Except(ipAddresses).Any())
-					{
-						Log.DetectedDnsChange(m_logger, Id, hostNames[hostNameIndex], string.Join<IPAddress>(",", hostAddresses[hostNameIndex]), string.Join<IPAddress>(",", ipAddresses));
-						hostAddresses[hostNameIndex] = ipAddresses;
+						Log.DetectedDnsChange(m_logger, Id, hostNames[hostNameIndex], string.Join<IPAddress>(",", previousAddresses), string.Join<IPAddress>(",", currentAddresses));
 						hostNamesChanged = true;
 					}
 				}
@@ -689,13 +697,15 @@ internal sealed class ConnectionPool : IConnectionPoolMetadata, IDisposable
 			}
 			if (hostNamesChanged)
 			{
+				// cached addresses have been updated on the pool; clear the pool so that new connections will be created using the updated addresses
 				Log.ClearingPoolDueToDnsChanges(m_logger, Id);
-				ClearAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+				await DoClearAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			}
-			((Timer) t!).Change(interval, -1);
-		});
-		m_dnsCheckTimer.Change(interval, -1);
-#endif
+		}
+		catch
+		{
+			// do nothing; we'll check again later
+		}
 	}
 
 	private void AdjustHostConnectionCount(ServerSession session, int delta)
@@ -765,6 +775,7 @@ internal sealed class ConnectionPool : IConnectionPoolMetadata, IDisposable
 	private readonly ILoadBalancer? m_loadBalancer;
 	private readonly Dictionary<string, int>? m_hostSessions;
 	private int m_generation;
+	private int m_isDnsCheckRequested;
 	private uint m_lastRecoveryTime;
 	private int m_lastSessionId;
 	private Dictionary<string, CachedProcedure?>? m_procedureCache;
