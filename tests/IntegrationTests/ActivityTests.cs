@@ -364,12 +364,17 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		parentActivity.Start();
 
 		Activity activity = null;
+		var statusAtStop = ActivityStatusCode.Unset;
 		using var listener = new ActivityListener
 		{
 			ShouldListenTo = x => x.Name == "MySqlConnector",
 			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
 				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
-			ActivityStopped = x => activity = x,
+			ActivityStopped = x =>
+			{
+				activity = x;
+				statusAtStop = x.Status;
+			},
 		};
 		ActivitySource.AddActivityListener(listener);
 
@@ -379,7 +384,7 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		Assert.NotNull(activity);
 		Assert.Equal(ActivityKind.Client, activity.Kind);
 		Assert.Equal("Execute", activity.OperationName);
-		Assert.Equal(ActivityStatusCode.Error, activity.Status);
+		Assert.Equal(ActivityStatusCode.Error, statusAtStop);
 
 		var statusCode = AssertHasTag(activity.Tags, "db.response.status_code");
 		Assert.True(int.TryParse(statusCode, NumberStyles.None, CultureInfo.InvariantCulture, out _));

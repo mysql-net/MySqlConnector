@@ -500,6 +500,8 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		}
 		catch (Exception)
 		{
+			// the caller records the exception on the activity before stopping it
+			Activity = null;
 			Dispose();
 			throw;
 		}
