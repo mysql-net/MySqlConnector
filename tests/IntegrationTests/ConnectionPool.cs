@@ -105,7 +105,7 @@ public class ConnectionPool : IClassFixture<DatabaseFixture>
 			var stopwatch = Stopwatch.StartNew();
 			Assert.Throws<MySqlException>(() => extraConnection.Open());
 			stopwatch.Stop();
-			Assert.InRange(stopwatch.ElapsedMilliseconds, 4500, 6000);
+			TestUtilities.AssertDuration(stopwatch, 4500, 1500);
 		}
 
 		foreach (var connection in connections)
