@@ -280,11 +280,24 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 		Assert.IsType<MySqlException>(exception.InnerException); // The periodic password provider failed
 		Assert.IsType<ApplicationException>(exception.InnerException.InnerException); // First-time failure
 
-		// succeeds after failure retry
+		// succeeds after failure retry; the new password is stored after the provider returns, so retry until it's available
 		barrier.SignalAndWait();
-		Thread.Sleep(10);
-		using var connection = dataSource.OpenConnection();
-		Assert.Equal(ConnectionState.Open, connection.State);
+		var stopwatch = Stopwatch.StartNew();
+		MySqlConnection connection;
+		while (true)
+		{
+			try
+			{
+				connection = dataSource.OpenConnection();
+				break;
+			}
+			catch (MySqlException) when (stopwatch.Elapsed < TimeSpan.FromSeconds(10))
+			{
+				Thread.Sleep(10);
+			}
+		}
+		using (connection)
+			Assert.Equal(ConnectionState.Open, connection.State);
 	}
 }
 #endif
