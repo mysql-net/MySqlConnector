@@ -721,6 +721,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// Clears the connection pool that <paramref name="connection"/> belongs to.
 	/// </summary>
 	/// <param name="connection">The <see cref="MySqlConnection"/> whose connection pool will be cleared.</param>
+	/// <remarks>Idle connections are closed immediately; connections that are currently in use will be closed (instead
+	/// of being returned to the pool) when they are closed or disposed.</remarks>
 	public static void ClearPool(MySqlConnection connection) => ClearPoolAsync(connection, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 	/// <summary>
@@ -729,11 +731,15 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// <param name="connection">The <see cref="MySqlConnection"/> whose connection pool will be cleared.</param>
 	/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+	/// <remarks>Idle connections are closed immediately; connections that are currently in use will be closed (instead
+	/// of being returned to the pool) when they are closed or disposed.</remarks>
 	public static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken = default) => ClearPoolAsync(connection, connection.AsyncIOBehavior, cancellationToken);
 
 	/// <summary>
 	/// Clears all connection pools.
 	/// </summary>
+	/// <remarks>This only clears pools used by connections that were not created from a <see cref="MySqlDataSource"/>.
+	/// Pools created for a <see cref="MySqlDataSource"/> should be cleared by calling <see cref="MySqlDataSource.Clear"/>.</remarks>
 	public static void ClearAllPools() => ConnectionPool.ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 	/// <summary>
@@ -741,13 +747,16 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// </summary>
 	/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+	/// <remarks>This only clears pools used by connections that were not created from a <see cref="MySqlDataSource"/>.
+	/// Pools created for a <see cref="MySqlDataSource"/> should be cleared by calling <see cref="MySqlDataSource.ClearAsync(CancellationToken)"/>.</remarks>
 	public static Task ClearAllPoolsAsync(CancellationToken cancellationToken = default) => ConnectionPool.ClearPoolsAsync(IOBehavior.Asynchronous, cancellationToken);
 
 	private static async Task ClearPoolAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(connection);
 
-		var pool = ConnectionPool.GetPool(connection.m_connectionString, null, createIfNotFound: false);
+		var pool = connection.m_dataSource?.Pool ??
+			ConnectionPool.GetPool(connection.m_connectionString, null, createIfNotFound: false);
 		if (pool is not null)
 			await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 	}

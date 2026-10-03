@@ -62,6 +62,61 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 	}
 
 	[Fact]
+	public void ClearClosesIdleConnections()
+	{
+		using var dbSource = new MySqlDataSource(AppConfig.ConnectionString);
+
+		int serverThread;
+		using (var connection = dbSource.OpenConnection())
+		{
+			serverThread = connection.ServerThread;
+		}
+
+		dbSource.Clear();
+
+		using (var connection = dbSource.OpenConnection())
+		{
+			Assert.NotEqual(serverThread, connection.ServerThread);
+		}
+	}
+
+	[Fact]
+	public async Task ClearAsyncDiscardsInUseConnections()
+	{
+		using var dbSource = new MySqlDataSource(AppConfig.ConnectionString);
+
+		int serverThread;
+		using (var connection = await dbSource.OpenConnectionAsync())
+		{
+			serverThread = connection.ServerThread;
+			await dbSource.ClearAsync();
+		}
+
+		using (var connection = await dbSource.OpenConnectionAsync())
+		{
+			Assert.NotEqual(serverThread, connection.ServerThread);
+		}
+	}
+
+	[Fact]
+	public void ClearPoolClearsDataSourcePool()
+	{
+		using var dbSource = new MySqlDataSource(AppConfig.ConnectionString);
+
+		int serverThread;
+		using (var connection = dbSource.OpenConnection())
+		{
+			serverThread = connection.ServerThread;
+			MySqlConnection.ClearPool(connection);
+		}
+
+		using (var connection = dbSource.OpenConnection())
+		{
+			Assert.NotEqual(serverThread, connection.ServerThread);
+		}
+	}
+
+	[Fact]
 	public void CloneReusesDataSource()
 	{
 		using var dbSource = new MySqlDataSource(AppConfig.ConnectionString);

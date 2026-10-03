@@ -133,6 +133,25 @@ public sealed class MySqlDataSource : DbDataSource
 	}
 #pragma warning restore CA1044 // Properties should not be write only
 
+	/// <summary>
+	/// Clears the connection pool used by this <see cref="MySqlDataSource"/>.
+	/// </summary>
+	/// <remarks>Idle connections are closed immediately; connections that are currently in use will be closed (instead
+	/// of being returned to the pool) when they are closed or disposed.</remarks>
+	public void Clear() => ClearAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+
+	/// <summary>
+	/// Asynchronously clears the connection pool used by this <see cref="MySqlDataSource"/>.
+	/// </summary>
+	/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+	/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+	/// <remarks>Idle connections are closed immediately; connections that are currently in use will be closed (instead
+	/// of being returned to the pool) when they are closed or disposed.</remarks>
+	public Task ClearAsync(CancellationToken cancellationToken = default) => ClearAsync(IOBehavior.Asynchronous, cancellationToken);
+
+	private Task ClearAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) =>
+		Pool?.ClearAsync(ioBehavior, cancellationToken) ?? Task.CompletedTask;
+
 	protected override DbConnection CreateDbConnection()
 	{
 #if NET7_0_OR_GREATER
