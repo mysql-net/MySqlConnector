@@ -244,11 +244,16 @@ Connection pooling is enabled by default. These options are used to configure it
   <tr id="DnsCheckInterval">
     <td>DNS Check Interval, DnsCheckInterval</td>
     <td>0</td>
-    <td>The number of seconds between checks for DNS changes, or 0 to disable periodic checks.
+    <td><p>The number of seconds between checks for DNS changes, or 0 to disable periodic checks.
     If the periodic check determines that one of the <code>Server</code> hostnames resolves to a different IP address, the pool will be cleared.
     This is useful in HA scenarios where failover is accomplished by changing the IP address to which a hostname resolves.
     Existing connections in the pool may have valid TCP connections to a server that is no longer responding or has been marked readonly;
-    clearing the pool (when DNS changes) forces all these existing connections to be reestablished.</td>
+    clearing the pool (when DNS changes) forces all these existing connections to be reestablished.</p>
+    <p>If periodic checks are enabled, new connections use the addresses from the pool's latest DNS check instead of resolving the hostname independently.
+    Thus, DNS updates are normally observed only every <code>DnsCheckInterval</code> seconds.
+    However, if a new connection can't connect to any of a hostname's cached addresses, a DNS check is started immediately;
+    and clearing the pool (e.g., with <code>MySqlConnection.ClearPool</code>) causes hostnames to be resolved again for new connections.
+    The operating system or DNS resolver may still cache answers; the connector does not read DNS record TTLs directly.</p></td>
   </tr>
 </table>
 

@@ -91,6 +91,22 @@ internal static class Utility
 #if !NET6_0_OR_GREATER
 	public static StringBuilder AppendLine(this StringBuilder stringBuilder, IFormatProvider formatProvider, FormattableString message) =>
 		stringBuilder.AppendLine(message.ToString(formatProvider));
+
+	public static async Task<T> WaitAsync<T>(this Task<T> task, CancellationToken cancellationToken)
+	{
+		if (cancellationToken.CanBeCanceled && !task.IsCompleted)
+		{
+			var cancellationSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			using (cancellationToken.Register(static state => ((TaskCompletionSource<bool>) state!).TrySetResult(true), cancellationSource))
+			{
+				// if it wasn't the task that completed, then we must have been canceled
+				if (await Task.WhenAny(task, cancellationSource.Task).ConfigureAwait(false) != task)
+					cancellationToken.ThrowIfCancellationRequested();
+			}
+		}
+
+		return await task.ConfigureAwait(false);
+	}
 #endif
 
 #if NET5_0_OR_GREATER
