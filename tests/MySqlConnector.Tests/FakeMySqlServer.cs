@@ -87,23 +87,14 @@ public sealed class FakeMySqlServer
 		}
 	}
 
-	// The number of received commands for which the client waited for the reply before sending another command, i.e., the
-	// number of network round trips; pipelined commands (sent together in one write) count as one round trip.
-	public int RoundTrips
-	{
-		get
-		{
-			lock (m_lock)
-				return m_roundTrips;
-		}
-	}
+	// For the next reset, wait for this many commands before replying to prove pipelining.
+	public int PipelinedResetCommandCount { get; set; }
 
 	public void ClearReceivedCommands()
 	{
 		lock (m_lock)
 		{
 			m_receivedCommands.Clear();
-			m_roundTrips = 0;
 		}
 	}
 
@@ -130,13 +121,11 @@ public sealed class FakeMySqlServer
 
 	internal void ClientDisconnected() => Interlocked.Decrement(ref m_activeConnections);
 
-	internal void AddReceivedCommand(string command, bool nextCommandAlreadyReceived)
+	internal void AddReceivedCommand(string command)
 	{
 		lock (m_lock)
 		{
 			m_receivedCommands.Add(command);
-			if (!nextCommandAlreadyReceived)
-				m_roundTrips++;
 		}
 	}
 
@@ -167,5 +156,4 @@ public sealed class FakeMySqlServer
 	private readonly TaskCompletionSource<byte[]> m_clearPasswordResponse;
 	private CancellationTokenSource m_cts;
 	private int m_activeConnections;
-	private int m_roundTrips;
 }

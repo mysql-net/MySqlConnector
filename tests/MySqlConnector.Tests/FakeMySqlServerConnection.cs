@@ -49,24 +49,37 @@ internal sealed class FakeMySqlServerConnection
 
 				await SendAsync(stream, 2, WriteOk);
 
+				var pendingCommands = new Queue<byte[]>();
 				var keepRunning = true;
 				while (keepRunning)
 				{
 					byte[] bytes;
 					try
 					{
-						bytes = await ReadPayloadAsync(stream, token);
+						bytes = pendingCommands.Count > 0 ? pendingCommands.Dequeue() : await ReadPayloadAsync(stream, token);
 					}
 					catch (EndOfStreamException)
 					{
 						break;
 					}
 
-					// record the command (with its text, for COM_QUERY and COM_INIT_DB) and whether the client has already sent the next one (i.e., pipelined it)
+					// record the command (with its text, for COM_QUERY and COM_INIT_DB)
 					var commandKind = (CommandKind) bytes[0];
 					var receivedCommand = commandKind is CommandKind.Query or CommandKind.InitDatabase ?
 						$"{commandKind} {Encoding.UTF8.GetString(bytes, 1, bytes.Length - 1)}" : commandKind.ToString();
-					m_server.AddReceivedCommand(receivedCommand, nextCommandAlreadyReceived: stream.DataAvailable);
+					m_server.AddReceivedCommand(receivedCommand);
+
+					if (commandKind == CommandKind.ResetConnection && m_server.PipelinedResetCommandCount > 1)
+					{
+						var commandCount = m_server.PipelinedResetCommandCount;
+						m_server.PipelinedResetCommandCount = 0;
+						using var pipelineTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+						pipelineTimeout.CancelAfter(TimeSpan.FromSeconds(10));
+
+						// Withhold the first reply until the entire batch arrives. TCP read boundaries do not identify client writes.
+						for (var i = 1; i < commandCount; i++)
+							pendingCommands.Enqueue(await ReadPayloadAsync(stream, pipelineTimeout.Token));
+					}
 
 					switch (commandKind)
 					{

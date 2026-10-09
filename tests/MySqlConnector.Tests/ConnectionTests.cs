@@ -236,15 +236,13 @@ public class ConnectionTests : IDisposable
 		connection.Close();
 
 		m_server.ClearReceivedCommands();
+		m_server.PipelinedResetCommandCount = pipelining ? 3 : 0;
 		connection.Open();
 		Assert.Equal(serverThread, connection.ServerThread);
 		Assert.Equal("db1", connection.Database);
 
 		// no COM_CHANGE_USER; COM_INIT_DB has to follow SET NAMES because the server decodes the database name using 'character_set_client'
 		Assert.Equal(["ResetConnection", "Query SET NAMES utf8mb4;", "InitDatabase db1"], m_server.ReceivedCommands);
-
-		// with pipelining, all three commands are sent at once
-		Assert.Equal(pipelining ? 1 : 3, m_server.RoundTrips);
 
 		// every reply was read, so the connection is still usable
 		using (var command = new MySqlCommand("SELECT 1;", connection))
@@ -276,11 +274,11 @@ public class ConnectionTests : IDisposable
 		await connection.CloseAsync();
 
 		m_server.ClearReceivedCommands();
+		m_server.PipelinedResetCommandCount = pipelining ? 3 : 0;
 		await connection.OpenAsync();
 		Assert.Equal(serverThread, connection.ServerThread);
 		Assert.Equal("db1", connection.Database);
 		Assert.Equal(["ResetConnection", "Query SET NAMES utf8mb4;", "InitDatabase db1"], m_server.ReceivedCommands);
-		Assert.Equal(pipelining ? 1 : 3, m_server.RoundTrips);
 
 		using var command = new MySqlCommand("SELECT 1;", connection);
 		Assert.Equal(1, await command.ExecuteScalarAsync());
@@ -340,10 +338,10 @@ public class ConnectionTests : IDisposable
 		connection.Close();
 
 		m_server.ClearReceivedCommands();
+		m_server.PipelinedResetCommandCount = pipelining ? 3 : 0;
 		connection.Open();
 		Assert.Equal(database, connection.Database);
 		Assert.Equal(["ResetConnection", "Query SET NAMES utf8mb4;", "InitDatabase " + database], m_server.ReceivedCommands);
-		Assert.Equal(pipelining ? 1 : 3, m_server.RoundTrips);
 		using var command = new MySqlCommand("SELECT 1;", connection);
 		Assert.Equal(1, command.ExecuteScalar());
 	}
