@@ -215,6 +215,211 @@ public class ConnectionTests : IDisposable
 		Assert.Equal(MySqlErrorCode.UnableToConnectToHost, (MySqlErrorCode) ex.Number);
 	}
 
+	[Theory]
+	[InlineData(true, true)]
+	[InlineData(true, false)]
+	[InlineData(false, true)]
+	[InlineData(false, false)]
+	public void ReopenAfterChangeDatabaseResetsConnectionAndRestoresDatabase(bool connectionReset, bool pipelining)
+	{
+		var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString)
+		{
+			Database = "db1",
+			ConnectionReset = connectionReset,
+			Pipelining = pipelining,
+		};
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+		var serverThread = connection.ServerThread;
+		connection.ChangeDatabase("db2");
+		Assert.Equal("db2", connection.Database);
+		connection.Close();
+
+		m_server.ClearReceivedCommands();
+		m_server.PipelinedResetCommandCount = pipelining ? 3 : 0;
+		connection.Open();
+		Assert.Equal(serverThread, connection.ServerThread);
+		Assert.Equal("db1", connection.Database);
+
+		// no COM_CHANGE_USER; COM_INIT_DB has to follow SET NAMES because the server decodes the database name using 'character_set_client'
+		Assert.Equal(["ResetConnection", "Query SET NAMES utf8mb4;", "InitDatabase db1"], m_server.ReceivedCommands);
+
+		// every reply was read, so the connection is still usable
+		using (var command = new MySqlCommand("SELECT 1;", connection))
+			Assert.Equal(1, command.ExecuteScalar());
+
+		// the database is only restored once
+		connection.Close();
+		m_server.ClearReceivedCommands();
+		connection.Open();
+		Assert.Equal(connectionReset ? ["ResetConnection", "Query SET NAMES utf8mb4;"] : [], m_server.ReceivedCommands);
+		using (var command = new MySqlCommand("SELECT 1;", connection))
+			Assert.Equal(1, command.ExecuteScalar());
+	}
+
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public async Task ReopenAfterChangeDatabaseResetsConnectionAndRestoresDatabaseAsync(bool pipelining)
+	{
+		var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString)
+		{
+			Database = "db1",
+			Pipelining = pipelining,
+		};
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		await connection.OpenAsync();
+		var serverThread = connection.ServerThread;
+		await connection.ChangeDatabaseAsync("db2");
+		await connection.CloseAsync();
+
+		m_server.ClearReceivedCommands();
+		m_server.PipelinedResetCommandCount = pipelining ? 3 : 0;
+		await connection.OpenAsync();
+		Assert.Equal(serverThread, connection.ServerThread);
+		Assert.Equal("db1", connection.Database);
+		Assert.Equal(["ResetConnection", "Query SET NAMES utf8mb4;", "InitDatabase db1"], m_server.ReceivedCommands);
+
+		using var command = new MySqlCommand("SELECT 1;", connection);
+		Assert.Equal(1, await command.ExecuteScalarAsync());
+	}
+
+	[Theory]
+	[InlineData(true, true)]
+	[InlineData(true, false)]
+	[InlineData(false, true)]
+	[InlineData(false, false)]
+	public void ReopenAfterChangeDatabaseToSameDatabaseDoesNotSendInitDatabase(bool connectionReset, bool pipelining)
+	{
+		var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString)
+		{
+			Database = "db1",
+			ConnectionReset = connectionReset,
+			Pipelining = pipelining,
+		};
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+		var serverThread = connection.ServerThread;
+		connection.ChangeDatabase("db1");
+		connection.Close();
+
+		m_server.ClearReceivedCommands();
+		connection.Open();
+		Assert.Equal(serverThread, connection.ServerThread);
+		Assert.Equal("db1", connection.Database);
+
+		// COM_RESET_CONNECTION keeps the current database, which is already the connection string's database
+		Assert.Equal(["ResetConnection", "Query SET NAMES utf8mb4;"], m_server.ReceivedCommands);
+		using (var command = new MySqlCommand("SELECT 1;", connection))
+			Assert.Equal(1, command.ExecuteScalar());
+
+		// the database is no longer marked as changed
+		connection.Close();
+		m_server.ClearReceivedCommands();
+		connection.Open();
+		Assert.Equal(connectionReset ? ["ResetConnection", "Query SET NAMES utf8mb4;"] : [], m_server.ReceivedCommands);
+	}
+
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void ReopenAfterChangeDatabaseRestoresNonAsciiDatabase(bool pipelining)
+	{
+		// 200 x U+00E9 ('e' with an acute accent) is 400 UTF-8 bytes, so the length of the COM_INIT_DB packet doesn't fit in one byte
+		var database = new string('\u00E9', 200);
+		var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString)
+		{
+			Database = database,
+			Pipelining = pipelining,
+		};
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+		connection.ChangeDatabase("db2");
+		connection.Close();
+
+		m_server.ClearReceivedCommands();
+		m_server.PipelinedResetCommandCount = pipelining ? 3 : 0;
+		connection.Open();
+		Assert.Equal(database, connection.Database);
+		Assert.Equal(["ResetConnection", "Query SET NAMES utf8mb4;", "InitDatabase " + database], m_server.ReceivedCommands);
+		using var command = new MySqlCommand("SELECT 1;", connection);
+		Assert.Equal(1, command.ExecuteScalar());
+	}
+
+	[Theory]
+	[InlineData("5.7.3-test")]
+	[InlineData("5.5.5-10.2.4-MariaDB")]
+	public void ReopenAfterChangeDatabaseResetsConnectionOnMinimumServerVersion(string serverVersion)
+	{
+		m_server.ServerVersion = serverVersion;
+		var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString)
+		{
+			Database = "db1",
+		};
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+		connection.ChangeDatabase("db2");
+		connection.Close();
+
+		m_server.ClearReceivedCommands();
+		connection.Open();
+		Assert.Equal("db1", connection.Database);
+		Assert.Equal(["ResetConnection", "Query SET NAMES utf8mb4;", "InitDatabase db1"], m_server.ReceivedCommands);
+	}
+
+	[Theory]
+	[InlineData("5.7.10-test", "")] // COM_CHANGE_USER is the only way to deselect the current database
+	[InlineData("5.7.2-test", "db1")] // server doesn't support COM_RESET_CONNECTION
+	[InlineData("5.5.5-10.2.3-MariaDB", "db1")] // server doesn't support COM_RESET_CONNECTION
+	public void ReopenAfterChangeDatabaseUsesChangeUser(string serverVersion, string database)
+	{
+		m_server.ServerVersion = serverVersion;
+		var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString)
+		{
+			Database = database,
+		};
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+		var serverThread = connection.ServerThread;
+		connection.ChangeDatabase("db2");
+		connection.Close();
+
+		m_server.ClearReceivedCommands();
+		connection.Open();
+		Assert.Equal(serverThread, connection.ServerThread);
+		Assert.Equal(database, connection.Database);
+		Assert.Equal(["ChangeUser", "Query SET NAMES utf8mb4;"], m_server.ReceivedCommands);
+	}
+
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void ReopenAfterChangeDatabaseThrowsIfDatabaseCannotBeRestored(bool pipelining)
+	{
+		var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString)
+		{
+			Database = "db1",
+			Pipelining = pipelining,
+		};
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+		var serverThread = connection.ServerThread;
+		connection.ChangeDatabase("db2");
+		connection.Close();
+
+		// as when COM_CHANGE_USER fails, the error is thrown from Open
+		m_server.UnknownDatabase = "db1";
+		var ex = Assert.Throws<MySqlException>(connection.Open);
+		Assert.Equal(MySqlErrorCode.UnknownDatabase, ex.ErrorCode);
+		Assert.Equal(ConnectionState.Closed, connection.State);
+
+		// the session that couldn't be reset was discarded
+		m_server.UnknownDatabase = null;
+		connection.Open();
+		Assert.NotEqual(serverThread, connection.ServerThread);
+		Assert.Equal("db1", connection.Database);
+	}
+
 	[Fact]
 	public void ReadInfinity()
 	{

@@ -271,6 +271,74 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		await connection.OpenAsync();
 		Assert.Equal((int) csb.MinimumPoolSize, invocationCount);
 	}
+
+	[SkippableTheory(ServerFeatures.ResetConnection, ConfigSettings.SecondaryDatabase)]
+	[InlineData(true, 26)]
+	[InlineData(false, 27)]
+	public async Task ChangeDatabaseConnectionPoolingDoesNotReauthenticate(bool connectionReset, int poolSize)
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = null;
+		csb.Pooling = true;
+		csb.MinimumPoolSize = 0;
+		csb.MaximumPoolSize = (uint) poolSize; // use a unique pool size to create a unique connection string to force a unique pool to be created
+		csb.ConnectionReset = connectionReset;
+		csb.AllowUserVariables = true;
+
+		// the password is needed to open a new connection or to reauthenticate with COM_CHANGE_USER, but not to reset a connection
+		var invocationCount = 0;
+		string ProvidePassword(MySqlProvidePasswordContext context)
+		{
+			invocationCount++;
+			return password;
+		}
+
+		int serverThread;
+		using (var connection = new MySqlConnection(csb.ConnectionString) { ProvidePasswordCallback = ProvidePassword })
+		{
+			await connection.OpenAsync();
+			serverThread = connection.ServerThread;
+
+			using var command = connection.CreateCommand();
+			command.CommandText = "set @tmp_changed_database = 1;";
+			await command.ExecuteNonQueryAsync();
+
+			await connection.ChangeDatabaseAsync(AppConfig.SecondaryDatabase);
+			Assert.Equal(AppConfig.SecondaryDatabase, connection.Database);
+			Assert.Equal(AppConfig.SecondaryDatabase, await QueryCurrentDatabaseAsync(connection));
+		}
+
+		// the database was changed, so the session is reset (even if ConnectionReset=false) and the connection string's database is selected again
+		using (var connection = new MySqlConnection(csb.ConnectionString) { ProvidePasswordCallback = ProvidePassword })
+		{
+			await connection.OpenAsync();
+			Assert.Equal(serverThread, connection.ServerThread);
+			Assert.Equal(csb.Database, connection.Database);
+			Assert.Equal(csb.Database, await QueryCurrentDatabaseAsync(connection));
+
+			using var command = connection.CreateCommand();
+			command.CommandText = "select @tmp_changed_database;";
+			Assert.Equal(DBNull.Value, await command.ExecuteScalarAsync());
+			command.CommandText = "set @tmp_restored_database = 1;";
+			await command.ExecuteNonQueryAsync();
+		}
+
+		// the database was restored, so the session is reset only if ConnectionReset=true
+		using (var connection = new MySqlConnection(csb.ConnectionString) { ProvidePasswordCallback = ProvidePassword })
+		{
+			await connection.OpenAsync();
+			Assert.Equal(serverThread, connection.ServerThread);
+			Assert.Equal(csb.Database, await QueryCurrentDatabaseAsync(connection));
+
+			using var command = connection.CreateCommand();
+			command.CommandText = "select @tmp_restored_database;";
+			var actual = await command.ExecuteScalarAsync();
+			Assert.Equal(connectionReset ? null : 1L, actual is DBNull ? null : actual);
+		}
+
+		Assert.Equal(1, invocationCount);
+	}
 #endif
 
 	[Fact]

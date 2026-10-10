@@ -49,20 +49,39 @@ internal sealed class FakeMySqlServerConnection
 
 				await SendAsync(stream, 2, WriteOk);
 
+				var pendingCommands = new Queue<byte[]>();
 				var keepRunning = true;
 				while (keepRunning)
 				{
 					byte[] bytes;
 					try
 					{
-						bytes = await ReadPayloadAsync(stream, token);
+						bytes = pendingCommands.Count > 0 ? pendingCommands.Dequeue() : await ReadPayloadAsync(stream, token);
 					}
 					catch (EndOfStreamException)
 					{
 						break;
 					}
 
-					switch ((CommandKind) bytes[0])
+					// record the command (with its text, for COM_QUERY and COM_INIT_DB)
+					var commandKind = (CommandKind) bytes[0];
+					var receivedCommand = commandKind is CommandKind.Query or CommandKind.InitDatabase ?
+						$"{commandKind} {Encoding.UTF8.GetString(bytes, 1, bytes.Length - 1)}" : commandKind.ToString();
+					m_server.AddReceivedCommand(receivedCommand);
+
+					if (commandKind == CommandKind.ResetConnection && m_server.PipelinedResetCommandCount > 1)
+					{
+						var commandCount = m_server.PipelinedResetCommandCount;
+						m_server.PipelinedResetCommandCount = 0;
+						using var pipelineTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+						pipelineTimeout.CancelAfter(TimeSpan.FromSeconds(10));
+
+						// Withhold the first reply until the entire batch arrives. TCP read boundaries do not identify client writes.
+						for (var i = 1; i < commandCount; i++)
+							pendingCommands.Enqueue(await ReadPayloadAsync(stream, pipelineTimeout.Token));
+					}
+
+					switch (commandKind)
 					{
 						case CommandKind.Quit:
 							await SendAsync(stream, 1, WriteOk);
@@ -76,6 +95,19 @@ internal sealed class FakeMySqlServerConnection
 						case CommandKind.ResetConnection:
 							if (m_server.ResetDelay is { } resetDelay)
 								await Task.Delay(resetDelay);
+							await SendAsync(stream, 1, WriteOk);
+							break;
+
+						case CommandKind.InitDatabase:
+							var databaseName = Encoding.UTF8.GetString(bytes, 1, bytes.Length - 1);
+							if (databaseName == m_server.UnknownDatabase)
+								await SendAsync(stream, 1, x => WriteError(x, $"Unknown database '{databaseName}'", MySqlErrorCode.UnknownDatabase));
+							else
+								await SendAsync(stream, 1, WriteOk);
+							break;
+
+						case CommandKind.ChangeUser:
+							// accept any credentials
 							await SendAsync(stream, 1, WriteOk);
 							break;
 
@@ -222,7 +254,7 @@ internal sealed class FakeMySqlServerConnection
 							break;
 
 						default:
-							Console.WriteLine("** UNHANDLED ** {0}", (CommandKind) bytes[0]);
+							Console.WriteLine("** UNHANDLED ** {0}", commandKind);
 							await SendAsync(stream, 1, x => WriteError(x));
 							break;
 					}
@@ -361,10 +393,10 @@ internal sealed class FakeMySqlServerConnection
 		writer.Write((ushort) 0); // warning count
 	}
 
-	private static void WriteError(BinaryWriter writer, string message = "An unknown error occurred")
+	private static void WriteError(BinaryWriter writer, string message = "An unknown error occurred", MySqlErrorCode errorCode = MySqlErrorCode.UnknownError)
 	{
 		writer.Write((byte) 0xFF); // signature
-		writer.Write((ushort) MySqlErrorCode.UnknownError); // error code
+		writer.Write((ushort) errorCode); // error code
 		writer.WriteRaw("#ERROR");
 		writer.WriteRaw(message);
 	}
