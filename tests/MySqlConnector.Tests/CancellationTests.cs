@@ -171,6 +171,65 @@ public class CancellationTests : IDisposable
 		}
 	}
 
+	[Collection(nameof(CancelWithServerHostnameVerification))]
+	public class CancelWithServerHostnameVerification : CancellationTests
+	{
+		[SkipCIFact]
+		public void QueryIsKilledWhenHostnamesMatch()
+		{
+			// both the original session and the 'KILL QUERY' session report the same hostname, so cancellation proceeds
+			m_server.GetHostname = _ => "mysql-1";
+			using var connection = new MySqlConnection(m_csb.ConnectionString);
+			connection.Open();
+			using var command = connection.CreateCommand();
+			command.CommandTimeout = 10;
+			command.CommandText = "SELECT 0, 4000, 1, 0;";
+			var task = Task.Run(async () =>
+			{
+				await Task.Delay(TimeSpan.FromSeconds(1));
+				command.Cancel();
+			});
+			var stopwatch = Stopwatch.StartNew();
+			var ex = Assert.Throws<MySqlException>(() => command.ExecuteScalar());
+			Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
+			Assert.Equal(MySqlErrorCode.QueryInterrupted, ex.ErrorCode);
+			task.Wait();
+
+			// connection should still be usable
+			Assert.Equal(ConnectionState.Open, connection.State);
+			command.CommandText = "SELECT 1;";
+			Assert.Equal(1, command.ExecuteScalar());
+		}
+
+		[SkipCIFact]
+		public void CancellationIsIgnoredWhenHostnamesDiffer()
+		{
+			// each connection reports a unique hostname, simulating a load balancer that routes the 'KILL QUERY'
+			// connection to a different server; the cancellation should be ignored
+			m_server.GetHostname = connectionId => $"mysql-{connectionId}";
+			using var connection = new MySqlConnection(m_csb.ConnectionString);
+			connection.Open();
+			using var command = connection.CreateCommand();
+			command.CommandTimeout = 10;
+			command.CommandText = "SELECT 42, 2000, 1, 0;";
+			var task = Task.Run(async () =>
+			{
+				await Task.Delay(TimeSpan.FromSeconds(1));
+				command.Cancel();
+			});
+			var stopwatch = Stopwatch.StartNew();
+			var result = command.ExecuteScalar();
+			Assert.Equal(42, result);
+			Assert.InRange(stopwatch.ElapsedMilliseconds, 1900, 2500);
+			task.Wait();
+
+			// connection should still be usable
+			Assert.Equal(ConnectionState.Open, connection.State);
+			command.CommandText = "SELECT 1;";
+			Assert.Equal(1, command.ExecuteScalar());
+		}
+	}
+
 	public class CancelExecuteXAsyncWithCancellationToken : CancellationTests
 	{
 		[SkipCITheory]
@@ -463,4 +522,11 @@ public class CancellationTests : IDisposable
 
 	private readonly FakeMySqlServer m_server;
 	private readonly MySqlConnectionStringBuilder m_csb;
+}
+
+// The KILL QUERY tests run in this sequential collection so that their multi-second queries and extra
+// 'KILL QUERY' connections don't perturb the timing-sensitive tests in the parallel collections above.
+[CollectionDefinition(nameof(CancellationTests.CancelWithServerHostnameVerification), DisableParallelization = true)]
+public class CancelWithServerHostnameVerificationCollection
+{
 }
