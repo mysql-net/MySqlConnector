@@ -31,7 +31,7 @@
     <PackageReference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETCoreApp' OR '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETCoreApp' ">
     <PackageReference Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>
 

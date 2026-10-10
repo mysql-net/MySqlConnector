@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net462;net472;netstandard2.0;netstandard2.1;net6.0</TargetFrameworks>
+    <TargetFrameworks>net462;net472;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
     <Title>MySqlConnector Ed25519 Authentication Plugin</Title>
     <Description>Implements the client_ed25519 and parsec authentication plugins for MariaDB.</Description>
     <Copyright>Copyright 2019–2026 Bradley Grainger</Copyright>
@@ -19,7 +19,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'netstandard2.1' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'netstandard2.1' ">
     <Compile Remove="Chaos.NaCl\CryptoBytes.cs" />
   </ItemGroup>
 
