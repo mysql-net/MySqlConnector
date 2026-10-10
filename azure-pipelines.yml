@@ -16,6 +16,11 @@ jobs:
     vmimage: 'windows-2022'
   steps:
   - template: '.ci/build-steps.yml'
+  - task: PowerShell@2
+    displayName: '.NET Framework package binding redirect test'
+    inputs:
+      targetType: 'filePath'
+      filePath: '.ci\verify-framework-package.ps1'
 
 - job: windows_mysql_data
   displayName: 'MySql.Data Tests'
