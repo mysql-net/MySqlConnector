@@ -786,7 +786,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			// selected again with COM_INIT_DB; COM_CHANGE_USER is only needed if the connection string doesn't specify a database
 			// (because reauthenticating is the only way to deselect the current database) or the server can't reset the connection;
 			// if the database was changed back to the connection string's database, COM_RESET_CONNECTION alone keeps it selected
-			var databaseChanged = DatabaseOverride is not null && !string.Equals(DatabaseOverride, cs.Database, StringComparison.Ordinal);
+			var databaseChanged = DatabaseOverride is not null && DatabaseOverride != cs.Database;
 			var restoreDatabase = supportsResetConnection && databaseChanged && !string.IsNullOrWhiteSpace(cs.Database);
 			if (supportsResetConnection && (!databaseChanged || restoreDatabase))
 			{
