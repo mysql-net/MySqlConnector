@@ -201,6 +201,23 @@ SELECT @'var' as R")]
 		Assert.Equal("ALTER USER 'root'@'localhost' IDENTIFIED BY 'P@ssw0rd';", parsedSql);
 	}
 
+	// https://github.com/mysql-net/MySqlConnector/issues/1480
+	[Theory]
+	[InlineData("ALTER USER test@'%' IDENTIFIED BY 'password';")]
+	[InlineData("ALTER USER test@localhost IDENTIFIED BY 'password';")]
+	[InlineData("CREATE USER test@localhost IDENTIFIED BY 'password';")]
+	[InlineData("ALTER USER 'test' @'%' IDENTIFIED BY 'password';")]
+	[InlineData("ALTER USER 'test' @'localhost' IDENTIFIED BY 'password';")]
+	[InlineData("ALTER USER 'test' @localhost IDENTIFIED BY 'password';")]
+	[InlineData("ALTER USER 'test'\n@'%' IDENTIFIED BY 'password';")]
+	[InlineData("CREATE USER 'test' @'%' IDENTIFIED BY 'password';")]
+	[InlineData("CREATE USER 'test' @localhost IDENTIFIED BY 'password';")]
+	public void Bug1480(string sql)
+	{
+		var parsedSql = GetParsedSql(sql);
+		Assert.Equal(sql, parsedSql);
+	}
+
 	public static IEnumerable<object[]> FormatParameterData =>
 		new[]
 		{
