@@ -771,14 +771,35 @@ internal sealed partial class ServerSession : IServerCapabilities
 	public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		VerifyState(State.Connected);
-		Conditions |= MySqlConnectionOpenedConditions.Reset;
 
 		try
 		{
+			PayloadData payload;
+			var databaseChanged = DatabaseOverride is not null && DatabaseOverride != cs.Database;
+
+			// with ConnectionReset=false, the pool only calls this if the database was changed; select the connection string's database
+			// again without resetting the session state (which ConnectionReset=false keeps), unless the connection string doesn't specify
+			// a database, which requires COM_CHANGE_USER below (because reauthenticating is the only way to deselect the current database)
+			if (!cs.ConnectionReset && (!databaseChanged || !string.IsNullOrWhiteSpace(cs.Database)))
+			{
+				if (databaseChanged)
+				{
+					Log.SendingInitDatabaseRequestDueToChangedDatabase(m_logger, Id, DatabaseOverride!, cs.Database);
+					using (var initDatabasePayload = InitDatabasePayload.Create(cs.Database))
+						await SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
+					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					OkPayload.Verify(payload.Span, this);
+				}
+
+				DatabaseOverride = null;
+				return true;
+			}
+
+			Conditions |= MySqlConnectionOpenedConditions.Reset;
+
 			// clear all prepared statements; resetting the connection will clear them on the server
 			ClearPreparedStatements();
 
-			PayloadData payload;
 			var supportsResetConnection = (!ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0) ||
 				(ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0);
 
@@ -786,7 +807,6 @@ internal sealed partial class ServerSession : IServerCapabilities
 			// selected again with COM_INIT_DB; COM_CHANGE_USER is only needed if the connection string doesn't specify a database
 			// (because reauthenticating is the only way to deselect the current database) or the server can't reset the connection;
 			// if the database was changed back to the connection string's database, COM_RESET_CONNECTION alone keeps it selected
-			var databaseChanged = DatabaseOverride is not null && DatabaseOverride != cs.Database;
 			var restoreDatabase = supportsResetConnection && databaseChanged && !string.IsNullOrWhiteSpace(cs.Database);
 			if (supportsResetConnection && (!databaseChanged || restoreDatabase))
 			{

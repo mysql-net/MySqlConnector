@@ -90,6 +90,7 @@ internal static class EventIds
 	public const int CertificateErrorValidThumbprint = 2160;
 	public const int ValidateRemoteCertificateErrorDetails = 2161;
 	public const int SendingResetConnectionRequestDueToChangedDatabase = 2162;
+	public const int SendingInitDatabaseRequestDueToChangedDatabase = 2163;
 
 	// Command execution events, 2200-2299
 	public const int CannotExecuteNewCommandInState = 2200;

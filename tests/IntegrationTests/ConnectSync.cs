@@ -446,7 +446,7 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 			Assert.Equal(AppConfig.SecondaryDatabase, QueryCurrentDatabase(connection));
 		}
 
-		// the database was changed, so the session is reset (even if ConnectionReset=false) and the connection string's database is selected again
+		// the database was changed, so the connection string's database is selected again; the session is reset only if ConnectionReset=true
 		using (var connection = new MySqlConnection(csb.ConnectionString) { ProvidePasswordCallback = ProvidePassword })
 		{
 			connection.Open();
@@ -456,7 +456,8 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 
 			using var command = connection.CreateCommand();
 			command.CommandText = "select @tmp_changed_database;";
-			Assert.Equal(DBNull.Value, command.ExecuteScalar());
+			var actual = command.ExecuteScalar();
+			Assert.Equal(connectionReset ? null : 1L, actual is DBNull ? null : actual);
 			command.CommandText = "set @tmp_restored_database = 1;";
 			command.ExecuteNonQuery();
 		}

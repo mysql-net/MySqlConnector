@@ -230,6 +230,9 @@ internal static partial class Log
 	[LoggerMessage(EventIds.SendingResetConnectionRequestDueToChangedDatabase, LogLevel.Debug, "Session {SessionId} sending reset connection request due to changed database {Database}; restoring database {ConnectionStringDatabase}")]
 	public static partial void SendingResetConnectionRequestDueToChangedDatabase(ILogger logger, string sessionId, string database, string connectionStringDatabase);
 
+	[LoggerMessage(EventIds.SendingInitDatabaseRequestDueToChangedDatabase, LogLevel.Debug, "Session {SessionId} sending init database request due to changed database {Database}; restoring database {ConnectionStringDatabase} without resetting connection")]
+	public static partial void SendingInitDatabaseRequestDueToChangedDatabase(ILogger logger, string sessionId, string database, string connectionStringDatabase);
+
 	[LoggerMessage(EventIds.IgnoringCancellationForCommand, LogLevel.Trace, "Ignoring cancellation for closed connection or invalid command {CommandId}")]
 	public static partial void IgnoringCancellationForCommand(ILogger logger, int commandId);
 
