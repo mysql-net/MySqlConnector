@@ -156,6 +156,23 @@ public class ConnectionTests : IDisposable
 	}
 
 	[Fact]
+	public void ServerHostnameIsRetrieved()
+	{
+		m_server.GetHostname = _ => "mysql-1";
+		using var connection = new MySqlConnection(m_csb.ConnectionString);
+		connection.Open();
+		Assert.Equal("mysql-1", connection.Session.ServerHostname);
+	}
+
+	[Fact]
+	public void ServerHostnameIsNullWhenNotSupported()
+	{
+		using var connection = new MySqlConnection(m_csb.ConnectionString);
+		connection.Open();
+		Assert.Null(connection.Session.ServerHostname);
+	}
+
+	[Fact]
 	public void Ping()
 	{
 		using var connection = new MySqlConnection(m_csb.ConnectionString);
