@@ -345,7 +345,7 @@ public class ConnectionTests : IDisposable
 		using (var command = new MySqlCommand("SELECT 1;", connection))
 			Assert.Equal(1, command.ExecuteScalar());
 
-		// the database is no longer marked as changed
+		// reopening again doesn't send COM_INIT_DB either
 		connection.Close();
 		m_server.ClearReceivedCommands();
 		connection.Open();

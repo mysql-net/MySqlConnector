@@ -780,7 +780,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			// with ConnectionReset=false, the pool only calls this if the database was changed; select the connection string's database
 			// again without resetting the session state (which ConnectionReset=false keeps), unless the connection string doesn't specify
 			// a database, which requires COM_CHANGE_USER below (because reauthenticating is the only way to deselect the current database)
-			if (!cs.ConnectionReset && (!databaseChanged || !string.IsNullOrWhiteSpace(cs.Database)))
+			if (!cs.ConnectionReset && (!databaseChanged || cs.Database.Length != 0))
 			{
 				if (databaseChanged)
 				{
@@ -791,6 +791,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 					OkPayload.Verify(payload.Span, this);
 				}
 
+				// cleared even if the database wasn't changed, because the pool calls this whenever DatabaseOverride is set
 				DatabaseOverride = null;
 				return true;
 			}
@@ -807,7 +808,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			// selected again with COM_INIT_DB; COM_CHANGE_USER is only needed if the connection string doesn't specify a database
 			// (because reauthenticating is the only way to deselect the current database) or the server can't reset the connection;
 			// if the database was changed back to the connection string's database, COM_RESET_CONNECTION alone keeps it selected
-			var restoreDatabase = supportsResetConnection && databaseChanged && !string.IsNullOrWhiteSpace(cs.Database);
+			var restoreDatabase = supportsResetConnection && databaseChanged && cs.Database.Length != 0;
 			if (supportsResetConnection && (!databaseChanged || restoreDatabase))
 			{
 				if (restoreDatabase)
@@ -820,11 +821,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 					// send all packets at once
 					var pipelinedBytes = m_pipelinedResetConnectionBytes;
 					if (restoreDatabase)
-					{
-						// 'cs' is always the pool's (immutable) ConnectionSettings, so this session always restores the same database
-						Debug.Assert(ReferenceEquals(cs, Pool?.ConnectionSettings), "ReferenceEquals(cs, Pool?.ConnectionSettings)");
 						pipelinedBytes = m_pipelinedResetConnectionAndInitDatabaseBytes ??= CreatePipelinedResetConnectionAndInitDatabaseBytes(cs.Database);
-					}
 					await SendRawAsync(pipelinedBytes, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 					// read the OK replies to COM_RESET_CONNECTION and SET NAMES
@@ -834,14 +831,14 @@ internal sealed partial class ServerSession : IServerCapabilities
 					payload = await ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
 					OkPayload.Verify(payload.Span, this);
 
-					// read the reply to COM_INIT_DB; if it's an error, the exception is thrown to the caller, which discards this session
+					// read the reply to COM_INIT_DB
 					if (restoreDatabase)
 					{
 						payload = await ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
 						OkPayload.Verify(payload.Span, this);
+						DatabaseOverride = null;
 					}
 
-					DatabaseOverride = null;
 					return true;
 				}
 
@@ -849,8 +846,6 @@ internal sealed partial class ServerSession : IServerCapabilities
 				await SendAsync(ResetConnectionPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				OkPayload.Verify(payload.Span, this);
-				if (!restoreDatabase)
-					DatabaseOverride = null;
 			}
 			else
 			{
