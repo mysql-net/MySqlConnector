@@ -622,7 +622,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				OkPayload.Verify(payload.Span, this);
 			}
 
-			if (ShouldGetRealServerDetails(cs))
+			if (ShouldGetRealServerDetails())
 			{
 				await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			}
@@ -1896,28 +1896,11 @@ internal sealed partial class ServerSession : IServerCapabilities
 	// Some servers are exposed through a proxy, which handles the initial handshake and gives the proxy's
 	// server version and thread ID. Detect this situation and return `true` if the real server's details should
 	// be requested after connecting (which takes an extra roundtrip).
-	private bool ShouldGetRealServerDetails(ConnectionSettings cs)
+	private bool ShouldGetRealServerDetails()
 	{
-		// currently hardcoded to the version(s) returned by the Azure Database for MySQL proxy
-		if (ServerVersion.OriginalString is "5.6.47.0" or "5.6.42.0" or "5.6.39.0")
-			return true;
-
-		// detect Azure Database for MySQL DNS suffixes, if a "user@host" user ID is being used
-		if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets && cs.UserID.Contains('@'))
-		{
-			return HostName.EndsWith(".mysql.database.azure.com", StringComparison.OrdinalIgnoreCase) ||
-				HostName.EndsWith(".database.windows.net", StringComparison.OrdinalIgnoreCase) ||
-				HostName.EndsWith(".mysql.database.chinacloudapi.cn", StringComparison.OrdinalIgnoreCase);
-		}
-
 		// detect AWS RDS Proxy, if hostname like <name>.proxy-<random-chars>.<region>.rds.amazonaws.com
-		if (HostName.EndsWith(".rds.amazonaws.com", StringComparison.OrdinalIgnoreCase) &&
-			HostName.AsSpan().Contains(".proxy-".AsSpan(), StringComparison.OrdinalIgnoreCase))
-		{
-			return true;
-		}
-
-		return false;
+		return HostName.EndsWith(".rds.amazonaws.com", StringComparison.OrdinalIgnoreCase) &&
+			HostName.AsSpan().Contains(".proxy-".AsSpan(), StringComparison.OrdinalIgnoreCase);
 	}
 
 	private async Task GetRealServerDetailsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
