@@ -69,6 +69,7 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				}
 				else
 				{
+					var wasNamedParameter = isNamedParameter;
 					if (isNamedParameter)
 					{
 						OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
@@ -78,6 +79,10 @@ internal abstract class SqlParser(StatementPreparer preparer)
 					{
 						OnStatementEnd(index);
 						state = State.Beginning;
+					}
+					else if (!wasNamedParameter && IsWhitespace(ch))
+					{
+						state = State.PossibleAccountNameSeparator;
 					}
 					else
 					{
@@ -93,6 +98,7 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				}
 				else
 				{
+					var wasNamedParameter = isNamedParameter;
 					if (isNamedParameter)
 					{
 						OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
@@ -102,6 +108,10 @@ internal abstract class SqlParser(StatementPreparer preparer)
 					{
 						OnStatementEnd(index);
 						state = State.Beginning;
+					}
+					else if (!wasNamedParameter && IsWhitespace(ch))
+					{
+						state = State.PossibleAccountNameSeparator;
 					}
 					else
 					{
@@ -117,6 +127,7 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				}
 				else
 				{
+					var wasNamedParameter = isNamedParameter;
 					if (isNamedParameter)
 					{
 						OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
@@ -127,10 +138,33 @@ internal abstract class SqlParser(StatementPreparer preparer)
 						OnStatementEnd(index);
 						state = State.Beginning;
 					}
+					else if (!wasNamedParameter && IsWhitespace(ch))
+					{
+						state = State.PossibleAccountNameSeparator;
+					}
 					else
 					{
 						state = State.Statement;
 					}
+				}
+			}
+			else if (state == State.PossibleAccountNameSeparator)
+			{
+				// skip whitespace after a quoted value, looking for the '@' that separates the user and host
+				// parts of a MySQL account name (e.g., CREATE USER 'user' @'host'); if found, swallow it (and
+				// let the host name that follows be parsed as literal SQL) rather than starting a new parameter
+				if (IsWhitespace(ch))
+				{
+				}
+				else if (ch == '@')
+				{
+					state = State.Statement;
+				}
+				else
+				{
+					// no '@' was found; re-process this character as ordinary SQL text
+					state = State.Statement;
+					index--;
 				}
 			}
 			else if (state == State.SecondHyphen)
@@ -242,8 +276,13 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				}
 				else if (ch == '@')
 				{
-					state = State.AtSign;
-					parameterStartIndex = index;
+					// an '@' immediately after an unquoted name (e.g., CREATE USER user@host) separates the user and
+					// host parts of a MySQL account name; it can't start a parameter, so treat it as literal SQL
+					if (index == 0 || !IsVariableName(sql[index - 1]))
+					{
+						state = State.AtSign;
+						parameterStartIndex = index;
+					}
 				}
 				else if (ch == '#')
 				{
@@ -284,6 +323,10 @@ internal abstract class SqlParser(StatementPreparer preparer)
 		{
 			if (isNamedParameter)
 				OnNamedParameter(parameterStartIndex, sql.Length - parameterStartIndex);
+			state = State.Statement;
+		}
+		else if (state == State.PossibleAccountNameSeparator)
+		{
 			state = State.Statement;
 		}
 
@@ -371,5 +414,6 @@ internal abstract class SqlParser(StatementPreparer preparer)
 		QuestionMark,
 		AtSign,
 		NamedParameter,
+		PossibleAccountNameSeparator,
 	}
 }
