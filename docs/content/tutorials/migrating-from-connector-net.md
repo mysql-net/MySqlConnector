@@ -257,6 +257,8 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 * [#116257](https://bugs.mysql.com/bug.php?id=116257): `NullReferenceException` thrown when using prepared statement under OpenTelemetry
 * [#116382](https://bugs.mysql.com/bug.php?id=116382): `ExecuteNonQueryAsync` hangs with DDL if `UseCompression=True`
 * [#119211](https://bugs.mysql.com/bug.php?id=119211): `SSL Mode = None` no longer works in connection string.
+* [#120347](https://bugs.mysql.com/bug.php?id=120347): `IsAutoIncrement` in `GetSchemaTable` is False
+* [#121503](https://bugs.mysql.com/bug.php?id=121503): Concurrent TransactionScopes share one physical connection
 
 ### Fixed First by MySqlConnector
 
