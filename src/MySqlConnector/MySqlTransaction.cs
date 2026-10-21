@@ -160,6 +160,10 @@ public sealed class MySqlTransaction : DbTransaction
 		await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
 
+#if NET5_0_OR_GREATER
+	public override bool SupportsSavepoints => true;
+#endif
+
 	/// <summary>
 	/// Gets the <see cref="MySqlConnection"/> that this transaction is associated with.
 	/// </summary>
