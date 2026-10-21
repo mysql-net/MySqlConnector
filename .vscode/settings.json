@@ -7,5 +7,6 @@
 	"editor.insertSpaces": false,
 
 	"files.trimTrailingWhitespace": true,
-	"dotnet.defaultSolution": "MySqlConnector.sln"
+
+	"dotnet.defaultSolution": "MySqlConnector.slnx"
 }
