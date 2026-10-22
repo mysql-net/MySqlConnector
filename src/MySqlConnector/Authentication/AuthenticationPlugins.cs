@@ -10,6 +10,8 @@ public static class AuthenticationPlugins
 	/// <summary>
 	/// Registers the specified authentication plugin. The name of this plugin must be unique.
 	/// </summary>
+	/// <remarks>When the server switches to an authentication method that MySqlConnector does not implement itself,
+	/// a plugin registered under that method's name creates the response.</remarks>
 	/// <param name="plugin">The authentication plugin.</param>
 	public static void Register(IAuthenticationPlugin plugin)
 	{
