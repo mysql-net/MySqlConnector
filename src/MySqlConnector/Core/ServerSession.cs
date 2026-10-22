@@ -956,6 +956,20 @@ internal sealed partial class ServerSession : IServerCapabilities
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			default:
+				// a plugin registered under the requested name (e.g., from a separate package) answers it
+				if (AuthenticationPlugins.TryGetPlugin(switchRequest.Name, out var plugin))
+				{
+					byte[] response;
+					if (plugin is IAuthenticationPlugin3 plugin3)
+						plugin3.CreateResponseAndPasswordHash(password, switchRequest.Data, out response, out m_passwordHash);
+					else
+						response = plugin.CreateResponse(password, switchRequest.Data);
+
+					payload = new(response);
+					await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+					return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
+
 				Log.AuthenticationMethodNotSupported(m_logger, Id, switchRequest.Name);
 				throw new NotSupportedException($"Authentication method '{switchRequest.Name}' is not supported.");
 		}

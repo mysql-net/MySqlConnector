@@ -47,7 +47,26 @@ internal sealed class FakeMySqlServerConnection
 					return;
 				}
 
-				await SendAsync(stream, 2, WriteOk);
+				var okSequenceNumber = 2;
+				if (m_server.AuthSwitchMethod is { } authSwitchMethod)
+				{
+					// request a switch to the configured authentication method (sequence number 2), record the client's
+					// response (sequence number 3), then accept the login (sequence number 4)
+					await SendAsync(stream, 2, x => WriteAuthSwitchRequest(x, authSwitchMethod, m_server.AuthSwitchData));
+					try
+					{
+						m_server.SetAuthSwitchResponse(await ReadPayloadAsync(stream, token));
+					}
+					catch (Exception ex) when (ex is EndOfStreamException or IOException or OperationCanceledException or ObjectDisposedException)
+					{
+						m_server.SetAuthSwitchResponse(null);
+						return;
+					}
+
+					okSequenceNumber = 4;
+				}
+
+				await SendAsync(stream, okSequenceNumber, WriteOk);
 
 				var keepRunning = true;
 				while (keepRunning)
@@ -367,6 +386,13 @@ internal sealed class FakeMySqlServerConnection
 		writer.Write((ushort) MySqlErrorCode.UnknownError); // error code
 		writer.WriteRaw("#ERROR");
 		writer.WriteRaw(message);
+	}
+
+	private static void WriteAuthSwitchRequest(BinaryWriter writer, string method, byte[] data)
+	{
+		writer.Write(AuthenticationMethodSwitchRequestPayload.Signature);
+		writer.WriteNullTerminated(method);
+		writer.Write(data);
 	}
 
 	private static void WriteClearPasswordSwitchRequest(BinaryWriter writer)
