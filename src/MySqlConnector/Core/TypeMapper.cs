@@ -55,10 +55,6 @@ internal sealed class TypeMapper
 		AddColumnTypeMetadata(new("DOUBLE", typeDouble, MySqlDbType.Double));
 		AddColumnTypeMetadata(new("FLOAT", typeFloat, MySqlDbType.Float));
 
-		 // vector
-		var typeFloatReadOnlyMemory = AddDbTypeMapping(new(typeof(ReadOnlyMemory<float>), [DbType.Object]));
-		AddColumnTypeMetadata(new("VECTOR", typeFloatReadOnlyMemory, MySqlDbType.Vector, binary: true, simpleDataTypeName: "VECTOR", createFormat: "VECTOR({0})"));
-
 		// string
 		var typeFixedString = AddDbTypeMapping(new(typeof(string), [DbType.StringFixedLength, DbType.AnsiStringFixedLength], convert: Convert.ToString!));
 		var typeString = AddDbTypeMapping(new(typeof(string), [DbType.String, DbType.AnsiString, DbType.Xml], convert: Convert.ToString!));
@@ -126,6 +122,11 @@ internal sealed class TypeMapper
 		// null
 		var typeNull = AddDbTypeMapping(new(typeof(object), [DbType.Object]));
 		AddColumnTypeMetadata(new("NULL", typeNull, MySqlDbType.Null));
+
+		// vector: registered after NULL so that DbType.Object maps to MySqlDbType.Null in GetMySqlDbTypeForDbType;
+		// a ReadOnlyMemory<float> value still maps to VECTOR through GetMySqlDbTypeForDbTypeMapping
+		var typeFloatReadOnlyMemory = AddDbTypeMapping(new(typeof(ReadOnlyMemory<float>), [DbType.Object]));
+		AddColumnTypeMetadata(new("VECTOR", typeFloatReadOnlyMemory, MySqlDbType.Vector, binary: true, simpleDataTypeName: "VECTOR", createFormat: "VECTOR({0})"));
 	}
 
 	public IReadOnlyList<ColumnTypeMetadata> GetColumnTypeMetadata() => m_columnTypeMetadata.AsReadOnly();
@@ -133,6 +134,21 @@ internal sealed class TypeMapper
 	public ColumnTypeMetadata GetColumnTypeMetadata(MySqlDbType mySqlDbType) => m_mySqlDbTypeToColumnTypeMetadata[mySqlDbType];
 
 	public DbType GetDbTypeForMySqlDbType(MySqlDbType mySqlDbType) => m_mySqlDbTypeToColumnTypeMetadata[mySqlDbType].DbTypeMapping.DbTypes[0];
+
+	/// <summary>
+	/// The <see cref="MySqlDbType"/> registered for a value's own <see cref="DbTypeMapping"/>, so that two CLR types that
+	/// share a <see cref="DbType"/> (<c>object</c> and <c>ReadOnlyMemory&lt;float&gt;</c> are both <see cref="DbType.Object"/>)
+	/// each keep their own MySQL type.
+	/// </summary>
+	public MySqlDbType GetMySqlDbTypeForDbTypeMapping(DbTypeMapping dbTypeMapping)
+	{
+		foreach (var pair in m_mySqlDbTypeToColumnTypeMetadata)
+		{
+			if (ReferenceEquals(pair.Value.DbTypeMapping, dbTypeMapping))
+				return pair.Key;
+		}
+		return GetMySqlDbTypeForDbType(dbTypeMapping.DbTypes[0]);
+	}
 
 	public MySqlDbType GetMySqlDbTypeForDbType(DbType dbType)
 	{
