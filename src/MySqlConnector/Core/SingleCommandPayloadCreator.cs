@@ -305,8 +305,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			var typeMapping = (parameter.Value is null || parameter.Value == DBNull.Value) ? null : TypeMapper.Instance.GetDbTypeMapping(parameter.Value.GetType());
 			if (typeMapping is not null)
 			{
-				var dbType = typeMapping.DbTypes[0];
-				mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbType(dbType);
+				mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbTypeMapping(typeMapping);
 			}
 
 			// MYSQL_TYPE_STRING is required for W3C trace propagation attributes: https://github.com/mysql/mysql-server/blob/9.7/components/telemetry/tm_propagation.cc#L72-L74

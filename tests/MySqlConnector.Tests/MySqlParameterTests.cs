@@ -307,6 +307,34 @@ public class MySqlParameterTests
 		Assert.Equal(expectedMySqlDbType, parameter.MySqlDbType);
 	}
 
+#if !MYSQL_DATA
+	// DbType.Object is the type of a value with no specific mapping; it must not resolve to VECTOR, which a prepared
+	// statement would send for a NULL value and which MySQL Server before 9.0 rejects ("Incorrect arguments to
+	// mysqld_stmt_execute").
+	[Fact]
+	public void SetDbTypeObjectSetsMySqlDbTypeNull()
+	{
+		var parameter = new MySqlParameter { DbType = DbType.Object };
+		Assert.Equal(MySqlDbType.Null, parameter.MySqlDbType);
+	}
+
+	[Fact]
+	public void SetValueToObjectInfersNull()
+	{
+		var parameter = new MySqlParameter { Value = new object() };
+		Assert.Equal(DbType.Object, parameter.DbType);
+		Assert.Equal(MySqlDbType.Null, parameter.MySqlDbType);
+	}
+
+	[Fact]
+	public void SetValueToFloatMemoryInfersVector()
+	{
+		var parameter = new MySqlParameter { Value = new ReadOnlyMemory<float>([1.0f, 2.0f]) };
+		Assert.Equal(DbType.Object, parameter.DbType);
+		Assert.Equal(MySqlDbType.Vector, parameter.MySqlDbType);
+	}
+#endif
+
 	[Fact]
 	public void SetValueToByteArrayInfersType()
 	{
