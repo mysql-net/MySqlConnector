@@ -71,7 +71,7 @@ jobs:
           - image: mysql:9.7
             unsupported-features: *mysql-unsupported-features
             connection-string-extra: AllowPublicKeyRetrieval=True
-          - image: mysql:26.7
+          - image: mysql:26.10
             unsupported-features: *mysql-unsupported-features
             connection-string-extra: AllowPublicKeyRetrieval=True
           - image: mariadb:10.11
