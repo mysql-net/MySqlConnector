@@ -1,0 +1,37 @@
+name: Set up .NET
+description: Installs the .NET SDK specified by global.json, plus the .NET runtime needed to run a specific target framework.
+
+inputs:
+  target-framework:
+    description: A target framework (e.g., net8.0) whose runtime should also be installed.
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    # keep NuGet I/O on the runner's temp disk rather than the (slower) system drive on Windows
+    - name: Configure .NET environment
+      shell: pwsh
+      run: |
+        "DOTNET_NOLOGO=1" >> $env:GITHUB_ENV
+        "DOTNET_CLI_TELEMETRY_OPTOUT=1" >> $env:GITHUB_ENV
+        "NUGET_PACKAGES=$env:RUNNER_TEMP/nuget/packages" >> $env:GITHUB_ENV
+        "NUGET_HTTP_CACHE_PATH=$env:RUNNER_TEMP/nuget/http-cache" >> $env:GITHUB_ENV
+
+    - name: Determine .NET runtime version
+      id: runtime
+      shell: pwsh
+      env:
+        TARGET_FRAMEWORK: ${{ inputs.target-framework }}
+      run: |
+        # the SDK from global.json includes its own runtime; older .NET versions need to be installed separately
+        $sdkMajorVersion = (Get-Content global.json -Raw | ConvertFrom-Json).sdk.version.Split('.')[0]
+        $version = if ($env:TARGET_FRAMEWORK -match '^net(\d+)\.0$' -and $Matches[1] -ne $sdkMajorVersion) { "$($Matches[1]).0.x" } else { '' }
+        "version=$version" >> $env:GITHUB_OUTPUT
+
+    - name: Install .NET
+      uses: actions/setup-dotnet@v6
+      with:
+        global-json-file: global.json
+        dotnet-version: ${{ steps.runtime.outputs.version }}

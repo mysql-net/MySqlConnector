@@ -1,11 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Condition=" '$(Configuration)' != 'MySqlData' ">
-    <TargetFrameworks>net481;net8.0;net10.0;net11.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net10.0;net11.0</TargetFrameworks>
+    <TargetFrameworks Condition=" $([MSBuild]::IsOSPlatform('Windows')) ">net481;$(TargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
  <PropertyGroup Condition=" '$(Configuration)' == 'MySqlData' ">
-    <TargetFrameworks>net472</TargetFrameworks>
+    <TargetFrameworks>net11.0</TargetFrameworks>
+    <TargetFrameworks Condition=" $([MSBuild]::IsOSPlatform('Windows')) ">net481;$(TargetFrameworks)</TargetFrameworks>
     <DefineConstants>$(DefineConstants);MYSQL_DATA</DefineConstants>
     <NoWarn>$(NoWarn);MSB3246</NoWarn>
   </PropertyGroup>
@@ -18,7 +20,7 @@
     <NoWarn>$(NoWarn);SA1021</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' OR '$(APPVEYOR)' == 'True' OR '$(TF_BUILD)' == 'True' ">
+  <PropertyGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' ">
     <DefineConstants>$(DefineConstants);NO_METRICS_TESTS</DefineConstants>
   </PropertyGroup>
 

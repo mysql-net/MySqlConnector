@@ -1,0 +1,36 @@
+name: Test Results
+
+# Reports the test results from the CI workflow as a "Test Results" check run. This is a separate workflow (that runs from the
+# default branch) because CI runs for pull requests from forks have a read-only token that can't create check runs. The results
+# are only parsed, never executed. See https://github.com/dorny/test-reporter#recommended-setup-for-public-repositories
+on:
+  workflow_run:
+    workflows: [ CI ]
+    types: [ completed ]
+
+permissions: {}
+
+jobs:
+  report:
+    name: Report
+    if: github.event.workflow_run.conclusion == 'success' || github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-slim
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      checks: write
+      contents: read
+    steps:
+      - name: Report test results
+        uses: dorny/test-reporter@v3
+        with:
+          artifact: test-results
+          name: Test Results
+          path: '**/*.trx'
+          reporter: dotnet-trx
+          list-suites: failed
+          list-tests: failed
+          max-annotations: 50
+          # the CI workflow already fails for failed tests (or a failed build)
+          fail-on-error: false
+          fail-on-empty: false

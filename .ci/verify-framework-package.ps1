@@ -1,30 +1,27 @@
+# Verifies that the MySqlConnector package in the specified directory (e.g., created by 'dotnet pack') works on .NET Framework without binding redirects.
+param(
+	[Parameter(Mandatory)] [string] $PackagesPath
+)
+
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+$feedDirectory = [System.IO.Path]::GetFullPath($PackagesPath)
 $testDirectory = Join-Path $repoRoot 'artifacts\framework-package-test'
 $testRunDirectory = Join-Path $testDirectory ([guid]::NewGuid().ToString('N'))
-$feedDirectory = Join-Path $testRunDirectory 'feed'
 $testProject = 'tests\MySqlConnector.FrameworkPackageTests\MySqlConnector.FrameworkPackageTests.csproj'
 
 Push-Location $repoRoot
 try
 {
-	New-Item -ItemType Directory -Path $feedDirectory -Force | Out-Null
-
-	& dotnet pack src\MySqlConnector\MySqlConnector.csproj --configuration Release --no-restore --no-build --output $feedDirectory
-	if ($LASTEXITCODE -ne 0)
-	{
-		throw "dotnet pack failed with exit code $LASTEXITCODE"
-	}
-
-	$packages = @(Get-ChildItem -LiteralPath $feedDirectory -Filter 'MySqlConnector.*.nupkg' -File)
+	$packages = @(Get-ChildItem -LiteralPath $feedDirectory -Filter 'MySqlConnector.*.nupkg' -File | Where-Object { $_.Name -match '^MySqlConnector\.\d' })
 	if ($packages.Count -ne 1)
 	{
 		throw "Expected one MySqlConnector package in $feedDirectory but found $($packages.Count)"
 	}
 
 	$packageVersion = $packages[0].BaseName.Substring('MySqlConnector.'.Length)
-	& dotnet restore $testProject --source $feedDirectory --force "-p:MySqlConnectorTestPackageVersion=$packageVersion"
+	& dotnet restore $testProject "-p:RestoreAdditionalProjectSources=$feedDirectory" --force "-p:MySqlConnectorTestPackageVersion=$packageVersion"
 	if ($LASTEXITCODE -ne 0)
 	{
 		throw "dotnet restore failed with exit code $LASTEXITCODE"

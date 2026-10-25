@@ -1,0 +1,109 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: The runner to build on.
+        type: string
+        required: true
+      pack:
+        description: Whether to create NuGet packages.
+        type: boolean
+        default: false
+      mysql-data:
+        description: Whether to build the tests against MySql.Data (Connector/NET).
+        type: boolean
+        default: false
+    outputs:
+      unit-test-tfms:
+        description: JSON array of the target frameworks that the unit tests were built for.
+        value: ${{ jobs.build.outputs.unit-test-tfms }}
+      integration-test-tfms:
+        description: JSON array of the target frameworks that the integration tests were built for.
+        value: ${{ jobs.build.outputs.integration-test-tfms }}
+      mysql-data-integration-test-tfms:
+        description: JSON array of the target frameworks that the MySql.Data integration tests were built for.
+        value: ${{ jobs.build.outputs.mysql-data-integration-test-tfms }}
+      native-aot-tfms:
+        description: JSON array of the target frameworks that the Native AOT tests target.
+        value: ${{ jobs.build.outputs.native-aot-tfms }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ inputs.runs-on }}
+    timeout-minutes: 30
+    outputs:
+      unit-test-tfms: ${{ steps.tfms.outputs.unit-test-tfms }}
+      integration-test-tfms: ${{ steps.tfms.outputs.integration-test-tfms }}
+      mysql-data-integration-test-tfms: ${{ steps.tfms.outputs.mysql-data-integration-test-tfms }}
+      native-aot-tfms: ${{ steps.tfms.outputs.native-aot-tfms }}
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          # MinVer calculates the version from the git history
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: ./.github/actions/setup-dotnet
+
+      - name: Copy integration test configuration
+        run: Copy-Item .ci/config/config.json tests/IntegrationTests/config.json
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Pack
+        if: inputs.pack
+        run: dotnet pack --configuration Release --no-build --output artifacts/packages
+
+      # MySql.Data is a different configuration that needs its own restore, so it's built after packing
+      - name: Build MySql.Data tests
+        if: inputs.mysql-data
+        run: |
+          dotnet build tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj --configuration MySqlData
+          dotnet build tests/IntegrationTests/IntegrationTests.csproj --configuration MySqlData
+
+      - name: Find target frameworks
+        id: tfms
+        run: |
+          function Get-TargetFrameworks([string] $project, [string] $configuration = 'Release') {
+            $frameworks = dotnet msbuild "tests/$project/$project.csproj" -getProperty:TargetFrameworks "-p:Configuration=$configuration"
+            return ConvertTo-Json -InputObject @($frameworks.Split(';')) -Compress
+          }
+          "unit-test-tfms=$(Get-TargetFrameworks MySqlConnector.Tests)" >> $env:GITHUB_OUTPUT
+          "integration-test-tfms=$(Get-TargetFrameworks IntegrationTests)" >> $env:GITHUB_OUTPUT
+          "mysql-data-integration-test-tfms=$(Get-TargetFrameworks IntegrationTests MySqlData)" >> $env:GITHUB_OUTPUT
+          "native-aot-tfms=$(Get-TargetFrameworks MySqlConnector.NativeAot.Tests)" >> $env:GITHUB_OUTPUT
+          Get-Content $env:GITHUB_OUTPUT
+
+      # tar preserves the execute permissions that xUnit v3 test executables need on Linux
+      - name: Archive test binaries
+        run: tar -cf test-binaries.tar artifacts/bin/Conformance.Tests artifacts/bin/IntegrationTests artifacts/bin/MySqlConnector.DependencyInjection.Tests artifacts/bin/MySqlConnector.Tests
+
+      - name: Upload test binaries
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-binaries-${{ runner.os }}
+          path: test-binaries.tar
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Upload packages
+        if: inputs.pack
+        uses: actions/upload-artifact@v7
+        with:
+          name: packages
+          path: artifacts/packages/*.nupkg
+          if-no-files-found: error
