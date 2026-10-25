@@ -13,7 +13,6 @@ public sealed class FakeMySqlServer
 		m_connections = [];
 		m_tasks = [];
 		m_clearPasswordResponse = new(TaskCreationOptions.RunContinuationsAsynchronously);
-		m_authSwitchResponse = new(TaskCreationOptions.RunContinuationsAsynchronously);
 	}
 
 	public void Start()
@@ -86,15 +85,6 @@ public sealed class FakeMySqlServer
 	// null if the client refused to send its password and instead closed the connection.
 	public Task<byte[]> ClearPasswordResponse => m_clearPasswordResponse.Task;
 
-	// When set, the server requests a switch to this authentication method (with AuthSwitchData) right after the
-	// handshake response, records what the client sends in response (see AuthSwitchResponse), then accepts the login.
-	public string AuthSwitchMethod { get; set; }
-	public byte[] AuthSwitchData { get; set; } = [];
-
-	// Completes with the payload the client sends in response to the AuthSwitchMethod switch request, or with null if
-	// the client closed the connection instead.
-	public Task<byte[]> AuthSwitchResponse => m_authSwitchResponse.Task;
-
 	internal void CancelQuery(int connectionId)
 	{
 		lock (m_lock)
@@ -107,8 +97,6 @@ public sealed class FakeMySqlServer
 	internal void ClientDisconnected() => Interlocked.Decrement(ref m_activeConnections);
 
 	internal void SetClearPasswordResponse(byte[] response) => m_clearPasswordResponse.TrySetResult(response);
-
-	internal void SetAuthSwitchResponse(byte[] response) => m_authSwitchResponse.TrySetResult(response);
 
 	internal void SetServerException(Exception exception) => m_clearPasswordResponse.TrySetException(exception);
 
@@ -132,7 +120,6 @@ public sealed class FakeMySqlServer
 	private readonly List<FakeMySqlServerConnection> m_connections;
 	private readonly List<Task> m_tasks;
 	private readonly TaskCompletionSource<byte[]> m_clearPasswordResponse;
-	private readonly TaskCompletionSource<byte[]> m_authSwitchResponse;
 	private CancellationTokenSource m_cts;
 	private int m_activeConnections;
 }
