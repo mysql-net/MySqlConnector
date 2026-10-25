@@ -11,6 +11,10 @@ on:
         description: Whether to create NuGet packages.
         type: boolean
         default: false
+      mysql-data:
+        description: Whether to build the tests against MySql.Data (Connector/NET).
+        type: boolean
+        default: false
     outputs:
       unit-test-tfms:
         description: JSON array of the target frameworks that the unit tests were built for.
@@ -66,6 +70,7 @@ jobs:
 
       # MySql.Data is a different configuration that needs its own restore, so it's built after packing
       - name: Build MySql.Data tests
+        if: inputs.mysql-data
         run: |
           dotnet build tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj --configuration MySqlData
           dotnet build tests/IntegrationTests/IntegrationTests.csproj --configuration MySqlData

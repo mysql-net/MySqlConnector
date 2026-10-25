@@ -21,7 +21,7 @@ try
 	}
 
 	$packageVersion = $packages[0].BaseName.Substring('MySqlConnector.'.Length)
-	& dotnet restore $testProject --source $feedDirectory --source https://api.nuget.org/v3/index.json --force "-p:MySqlConnectorTestPackageVersion=$packageVersion"
+	& dotnet restore $testProject "-p:RestoreAdditionalProjectSources=$feedDirectory" --force "-p:MySqlConnectorTestPackageVersion=$packageVersion"
 	if ($LASTEXITCODE -ne 0)
 	{
 		throw "dotnet restore failed with exit code $LASTEXITCODE"

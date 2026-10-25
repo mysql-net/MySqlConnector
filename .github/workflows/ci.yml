@@ -24,12 +24,14 @@ jobs:
     with:
       runs-on: ubuntu-latest
 
+  # MySql.Data (Connector/NET) is only tested on Windows for now; it doesn't support some options (e.g., named pipes) on Linux
   build-windows:
     name: Build (Windows)
     uses: ./.github/workflows/build.yml
     with:
       runs-on: windows-latest
       pack: true
+      mysql-data: true
 
   unit-tests-linux:
     name: Unit tests (Linux, ${{ matrix.tfm }})
@@ -105,25 +107,6 @@ jobs:
       connection-string-extra: AllowPublicKeyRetrieval=True
       variants: '["nossl", "ssl"]'
 
-  mysql-data-tests-linux:
-    name: MySql.Data integration tests (Linux, ${{ matrix.tfm }})
-    needs: build-linux
-    strategy:
-      fail-fast: false
-      matrix:
-        tfm: ${{ fromJSON(needs.build-linux.outputs.mysql-data-integration-test-tfms) }}
-    uses: ./.github/workflows/integration-tests.yml
-    with:
-      runs-on: ubuntu-latest
-      tfm: ${{ matrix.tfm }}
-      configuration: MySqlData
-      docker-image: mysql:8.4
-      unsupported-features: &mysql-data-unsupported-features Ed25519,InsertReturning,QueryAttributes,ParsecAuthentication,StreamingResults,TlsFingerprintValidation,UnixDomainSocket,Vector
-      user: root
-      connection-string-extra: AllowPublicKeyRetrieval=True
-      variants: '["nossl"]'
-    secrets: inherit
-
   mysql-data-tests-windows:
     name: MySql.Data integration tests (Windows, ${{ matrix.tfm }})
     needs: build-windows
@@ -136,7 +119,7 @@ jobs:
       runs-on: windows-latest
       tfm: ${{ matrix.tfm }}
       configuration: MySqlData
-      unsupported-features: *mysql-data-unsupported-features
+      unsupported-features: Ed25519,InsertReturning,QueryAttributes,ParsecAuthentication,StreamingResults,TlsFingerprintValidation,UnixDomainSocket,Vector,ZeroDateTime
       user: root
       connection-string-extra: AllowPublicKeyRetrieval=True
       variants: '["nossl"]'
@@ -181,7 +164,7 @@ jobs:
         run: |
           $package = Get-ChildItem artifacts/packages -Filter 'MySqlConnector.*.nupkg' | Where-Object { $_.Name -match '^MySqlConnector\.\d' }
           $version = $package.BaseName.Substring('MySqlConnector.'.Length)
-          dotnet publish tests/MySqlConnector.NativeAot.Tests/MySqlConnector.NativeAot.Tests.csproj --configuration Release --runtime linux-x64 --framework $env:TFM "-p:MySqlConnectorTestPackageVersion=$version" --source artifacts/packages --source https://api.nuget.org/v3/index.json
+          dotnet publish tests/MySqlConnector.NativeAot.Tests/MySqlConnector.NativeAot.Tests.csproj --configuration Release --runtime linux-x64 --framework $env:TFM "-p:MySqlConnectorTestPackageVersion=$version" "-p:RestoreAdditionalProjectSources=$($package.DirectoryName)"
 
       - name: Test
         run: ./artifacts/publish/MySqlConnector.NativeAot.Tests/release_${{ matrix.tfm }}_linux-x64/MySqlConnector.NativeAot.Tests
@@ -239,7 +222,6 @@ jobs:
       - unit-tests-windows
       - integration-tests-linux
       - integration-tests-windows
-      - mysql-data-tests-linux
       - mysql-data-tests-windows
     runs-on: ubuntu-slim
     steps:
@@ -263,7 +245,6 @@ jobs:
       - unit-tests-windows
       - integration-tests-linux
       - integration-tests-windows
-      - mysql-data-tests-linux
       - mysql-data-tests-windows
       - native-aot-tests
       - framework-package-tests
