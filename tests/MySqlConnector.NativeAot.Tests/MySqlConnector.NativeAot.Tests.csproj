@@ -14,7 +14,15 @@
 
   <ItemGroup>
     <TrimmerRootAssembly Include="MySqlConnector" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(MySqlConnectorTestPackageVersion)' == '' ">
     <ProjectReference Include="..\..\src\MySqlConnector\MySqlConnector.csproj" />
+  </ItemGroup>
+
+  <!-- CI sets this to test the built NuGet package instead of the project -->
+  <ItemGroup Condition=" '$(MySqlConnectorTestPackageVersion)' != '' ">
+    <PackageReference Include="MySqlConnector" VersionOverride="$(MySqlConnectorTestPackageVersion)" />
   </ItemGroup>
 
 </Project>

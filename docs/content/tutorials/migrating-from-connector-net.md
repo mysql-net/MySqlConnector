@@ -259,6 +259,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 * [#119211](https://bugs.mysql.com/bug.php?id=119211): `SSL Mode = None` no longer works in connection string.
 * [#120347](https://bugs.mysql.com/bug.php?id=120347): `IsAutoIncrement` in `GetSchemaTable` is False
 * [#121503](https://bugs.mysql.com/bug.php?id=121503): Concurrent TransactionScopes share one physical connection
+* [#121599](https://bugs.mysql.com/bug.php?id=121599): Prepared command with `MySqlDbType.Date` parameter fails with "Malformed communication packet" on MySQL 8.4.13 and later
 
 ### Fixed First by MySqlConnector
 

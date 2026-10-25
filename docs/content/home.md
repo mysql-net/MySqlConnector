@@ -57,7 +57,7 @@ while (await reader.ReadAsync())
 ## Server Compatibility
 
 MySqlConnector is compatible with the following servers.
-Version numbers in **bold** indicate versions that are regularly tested by the [integration tests](https://dev.azure.com/mysqlnet/MySqlConnector/_build?definitionId=2&_a=summary) run on every commit.
+Version numbers in **bold** indicate versions that are regularly tested by the [integration tests](https://github.com/mysql-net/MySqlConnector/actions/workflows/ci.yml?query=branch%3Amaster) run on every commit.
 
 Server  | Versions | Notes
 --- | --- | ---

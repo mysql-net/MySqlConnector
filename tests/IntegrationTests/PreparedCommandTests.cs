@@ -81,6 +81,11 @@ CREATE TABLE reuse_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCREMEN
 	[MemberData(nameof(GetInsertAndQueryData))]
 	public void InsertAndQuery(bool isPrepared, string dataType, object dataValue, MySqlDbType dbType)
 	{
+#if MYSQL_DATA
+		// https://bugs.mysql.com/bug.php?id=121599
+		if (isPrepared && dbType == MySqlDbType.Date)
+			return;
+#endif
 		var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString);
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		connection.Open();
