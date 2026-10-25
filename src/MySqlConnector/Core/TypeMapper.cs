@@ -55,6 +55,10 @@ internal sealed class TypeMapper
 		AddColumnTypeMetadata(new("DOUBLE", typeDouble, MySqlDbType.Double));
 		AddColumnTypeMetadata(new("FLOAT", typeFloat, MySqlDbType.Float));
 
+		 // vector
+		var typeFloatReadOnlyMemory = AddDbTypeMapping(new(typeof(ReadOnlyMemory<float>), [DbType.Object], MySqlDbType.Vector));
+		AddColumnTypeMetadata(new("VECTOR", typeFloatReadOnlyMemory, MySqlDbType.Vector, binary: true, simpleDataTypeName: "VECTOR", createFormat: "VECTOR({0})"));
+
 		// string
 		var typeFixedString = AddDbTypeMapping(new(typeof(string), [DbType.StringFixedLength, DbType.AnsiStringFixedLength], MySqlDbType.String, convert: Convert.ToString!));
 		var typeString = AddDbTypeMapping(new(typeof(string), [DbType.String, DbType.AnsiString, DbType.Xml], MySqlDbType.VarChar, convert: Convert.ToString!));
@@ -122,10 +126,6 @@ internal sealed class TypeMapper
 		// null
 		var typeNull = AddDbTypeMapping(new(typeof(object), [DbType.Object], MySqlDbType.Null));
 		AddColumnTypeMetadata(new("NULL", typeNull, MySqlDbType.Null));
-
-		// vector
-		var typeFloatReadOnlyMemory = AddDbTypeMapping(new(typeof(ReadOnlyMemory<float>), [DbType.Object], MySqlDbType.Vector));
-		AddColumnTypeMetadata(new("VECTOR", typeFloatReadOnlyMemory, MySqlDbType.Vector, binary: true, simpleDataTypeName: "VECTOR", createFormat: "VECTOR({0})"));
 	}
 
 	public IReadOnlyList<ColumnTypeMetadata> GetColumnTypeMetadata() => m_columnTypeMetadata.AsReadOnly();
@@ -134,15 +134,7 @@ internal sealed class TypeMapper
 
 	public DbType GetDbTypeForMySqlDbType(MySqlDbType mySqlDbType) => m_mySqlDbTypeToColumnTypeMetadata[mySqlDbType].DbTypeMapping.DbTypes[0];
 
-	public MySqlDbType GetMySqlDbTypeForDbType(DbType dbType)
-	{
-		foreach (var pair in m_mySqlDbTypeToColumnTypeMetadata)
-		{
-			if (pair.Value.DbTypeMapping.DbTypes.Contains(dbType))
-				return pair.Key;
-		}
-		return MySqlDbType.VarChar;
-	}
+	public MySqlDbType GetMySqlDbTypeForDbType(DbType dbType) => GetDbTypeMapping(dbType)?.MySqlDbType ?? MySqlDbType.VarChar;
 
 	private DbTypeMapping AddDbTypeMapping(DbTypeMapping dbTypeMapping)
 	{
