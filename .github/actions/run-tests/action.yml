@@ -1,0 +1,29 @@
+name: Run tests
+description: Runs a test assembly from the build artifacts and reports any failures as annotations and in the job summary.
+
+inputs:
+  project:
+    description: The name of the test project (which is also its assembly name).
+    required: true
+  target-framework:
+    description: The target framework to test.
+    required: true
+  configuration:
+    description: The build configuration to test.
+    required: false
+    default: Release
+  title:
+    description: A descriptive name for this test run.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Run tests
+      shell: pwsh
+      env:
+        PROJECT: ${{ inputs.project }}
+        TARGET_FRAMEWORK: ${{ inputs.target-framework }}
+        CONFIGURATION: ${{ inputs.configuration }}
+        TITLE: ${{ inputs.title }}
+      run: '& "$env:GITHUB_ACTION_PATH/run-tests.ps1" -Project $env:PROJECT -TargetFramework $env:TARGET_FRAMEWORK -Configuration $env:CONFIGURATION -Title $env:TITLE'

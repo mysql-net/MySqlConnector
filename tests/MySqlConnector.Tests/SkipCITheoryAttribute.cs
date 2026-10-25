@@ -8,9 +8,5 @@ public class SkipCITheoryAttribute : TheoryAttribute
 			Skip = "Skipped for CI";
 	}
 
-	public static bool IsCiBuild =>
-		Environment.GetEnvironmentVariable("APPVEYOR") == "True" ||
-		Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true" ||
-		Environment.GetEnvironmentVariable("TRAVIS") == "true" ||
-		Environment.GetEnvironmentVariable("TF_BUILD") == "True";
+	public static bool IsCiBuild => Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
 }
