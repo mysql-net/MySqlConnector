@@ -536,4 +536,9 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 				command.Parameters.AddWithValue("@column", column);
 			}
 		}, cancellationToken);
+
+	// INFORMATION_SCHEMA.PROCESSLIST fails on MySQL 9.1 and later if any statement's text isn't valid UTF-8: https://bugs.mysql.com/bug.php?id=121434
+	// SHOW FULL PROCESSLIST returns the same columns (and MariaDB adds a Progress column, which is ignored).
+	private Task DoFillProcessListAsync(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken) =>
+		FillDataTableAsync(ioBehavior, dataTable, command => command.CommandText = "SHOW FULL PROCESSLIST;", cancellationToken);
 }
