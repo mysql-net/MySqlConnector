@@ -2,10 +2,11 @@ using System.Globalization;
 
 namespace MySqlConnector.Core;
 
-internal sealed class DbTypeMapping(Type clrType, DbType[] dbTypes, Func<object, object>? convert = null)
+internal sealed class DbTypeMapping(Type clrType, DbType[] dbTypes, MySqlDbType mySqlDbType, Func<object, object>? convert = null)
 {
 	public Type ClrType { get; } = clrType;
 	public DbType[] DbTypes { get; } = dbTypes;
+	public MySqlDbType MySqlDbType { get; } = mySqlDbType;
 
 	public object DoConversion(object obj)
 	{
