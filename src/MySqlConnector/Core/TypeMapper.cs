@@ -18,6 +18,7 @@ internal sealed class TypeMapper
 		m_dbTypeMappingsByDbType = [];
 		m_columnTypeMetadataLookup = new(StringComparer.OrdinalIgnoreCase);
 		m_mySqlDbTypeToColumnTypeMetadata = [];
+		m_dbTypeMappingToMySqlDbType = [];
 
 		// boolean
 		var typeBoolean = AddDbTypeMapping(new(typeof(bool), [DbType.Boolean], convert: static o => Convert.ToBoolean(o, CultureInfo.InvariantCulture)));
@@ -123,8 +124,7 @@ internal sealed class TypeMapper
 		var typeNull = AddDbTypeMapping(new(typeof(object), [DbType.Object]));
 		AddColumnTypeMetadata(new("NULL", typeNull, MySqlDbType.Null));
 
-		// vector: registered after NULL so that DbType.Object maps to MySqlDbType.Null in GetMySqlDbTypeForDbType;
-		// a ReadOnlyMemory<float> value still maps to VECTOR through GetMySqlDbTypeForDbTypeMapping
+		// vector
 		var typeFloatReadOnlyMemory = AddDbTypeMapping(new(typeof(ReadOnlyMemory<float>), [DbType.Object]));
 		AddColumnTypeMetadata(new("VECTOR", typeFloatReadOnlyMemory, MySqlDbType.Vector, binary: true, simpleDataTypeName: "VECTOR", createFormat: "VECTOR({0})"));
 	}
@@ -135,18 +135,10 @@ internal sealed class TypeMapper
 
 	public DbType GetDbTypeForMySqlDbType(MySqlDbType mySqlDbType) => m_mySqlDbTypeToColumnTypeMetadata[mySqlDbType].DbTypeMapping.DbTypes[0];
 
-	/// <summary>
-	/// The <see cref="MySqlDbType"/> registered for a value's own <see cref="DbTypeMapping"/>, so that two CLR types that
-	/// share a <see cref="DbType"/> (<c>object</c> and <c>ReadOnlyMemory&lt;float&gt;</c> are both <see cref="DbType.Object"/>)
-	/// each keep their own MySQL type.
-	/// </summary>
 	public MySqlDbType GetMySqlDbTypeForDbTypeMapping(DbTypeMapping dbTypeMapping)
 	{
-		foreach (var pair in m_mySqlDbTypeToColumnTypeMetadata)
-		{
-			if (ReferenceEquals(pair.Value.DbTypeMapping, dbTypeMapping))
-				return pair.Key;
-		}
+		if (m_dbTypeMappingToMySqlDbType.TryGetValue(dbTypeMapping, out var mySqlDbType))
+			return mySqlDbType;
 		return GetMySqlDbTypeForDbType(dbTypeMapping.DbTypes[0]);
 	}
 
@@ -180,12 +172,18 @@ internal sealed class TypeMapper
 #if !NETCOREAPP2_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 		if (!m_columnTypeMetadataLookup.ContainsKey(lookupKey))
 			m_columnTypeMetadataLookup.Add(lookupKey, columnTypeMetadata);
+		var addedMySqlDbType = false;
 		if (!m_mySqlDbTypeToColumnTypeMetadata.ContainsKey(columnTypeMetadata.MySqlDbType))
+		{
 			m_mySqlDbTypeToColumnTypeMetadata.Add(columnTypeMetadata.MySqlDbType, columnTypeMetadata);
+			addedMySqlDbType = true;
+		}
 #else
 		m_columnTypeMetadataLookup.TryAdd(lookupKey, columnTypeMetadata);
-		m_mySqlDbTypeToColumnTypeMetadata.TryAdd(columnTypeMetadata.MySqlDbType, columnTypeMetadata);
+		var addedMySqlDbType = m_mySqlDbTypeToColumnTypeMetadata.TryAdd(columnTypeMetadata.MySqlDbType, columnTypeMetadata);
 #endif
+		if (addedMySqlDbType && !m_dbTypeMappingToMySqlDbType.ContainsKey(columnTypeMetadata.DbTypeMapping))
+			m_dbTypeMappingToMySqlDbType.Add(columnTypeMetadata.DbTypeMapping, columnTypeMetadata.MySqlDbType);
 	}
 
 	internal DbTypeMapping? GetDbTypeMapping(Type clrType)
@@ -386,4 +384,5 @@ internal sealed class TypeMapper
 	private readonly Dictionary<DbType, DbTypeMapping> m_dbTypeMappingsByDbType;
 	private readonly Dictionary<string, ColumnTypeMetadata> m_columnTypeMetadataLookup;
 	private readonly Dictionary<MySqlDbType, ColumnTypeMetadata> m_mySqlDbTypeToColumnTypeMetadata;
+	private readonly Dictionary<DbTypeMapping, MySqlDbType> m_dbTypeMappingToMySqlDbType;
 }
