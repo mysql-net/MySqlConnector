@@ -143,7 +143,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 				if (typeMapping is not null)
 				{
 					m_dbType = typeMapping.DbTypes[0];
-					m_mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbTypeMapping(typeMapping);
+					m_mySqlDbType = typeMapping.MySqlDbType;
 				}
 			}
 		}
