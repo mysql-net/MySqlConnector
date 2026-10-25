@@ -1,57 +1,256 @@
-name: "Continuous Integration"
+name: CI
 
 on:
   push:
     branches: [ master, test ]
+    tags: [ '*' ]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+# Stage 1: build on Linux and Windows; the Windows build also creates the NuGet packages (as the "packages" artifact).
+# Stage 2: run the tests using the binaries and packages from stage 1.
 
 jobs:
-  component-detection:
-    name: Component Detection
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
+  build-linux:
+    name: Build (Linux)
+    uses: ./.github/workflows/build.yml
+    with:
+      runs-on: ubuntu-latest
 
-    steps:
-    - name: Check out repository
-      uses: actions/checkout@v7
+  # MySql.Data (Connector/NET) is only tested on Windows for now; it doesn't support some options (e.g., named pipes) on Linux
+  build-windows:
+    name: Build (Windows)
+    uses: ./.github/workflows/build.yml
+    with:
+      runs-on: windows-latest
+      pack: true
+      mysql-data: true
 
-    - name: Set up .NET
-      uses: actions/setup-dotnet@v6
-
-    - name: Restore
-      run: dotnet restore
-
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
-
-    - name: Component detection
-      uses: advanced-security/component-detection-dependency-submission-action@v0.2.0
-
-  native-aot:
-    name: Native AOT
-    runs-on: ubuntu-latest
+  unit-tests-linux:
+    name: Unit tests (Linux, ${{ matrix.tfm }})
+    needs: build-linux
     strategy:
+      fail-fast: false
       matrix:
-        tfm: [ 'net8.0', 'net10.0', 'net11.0' ]
+        tfm: ${{ fromJSON(needs.build-linux.outputs.unit-test-tfms) }}
+    uses: ./.github/workflows/unit-tests.yml
+    with:
+      runs-on: ubuntu-latest
+      tfm: ${{ matrix.tfm }}
+
+  unit-tests-windows:
+    name: Unit tests (Windows, ${{ matrix.tfm }})
+    needs: build-windows
+    strategy:
+      fail-fast: false
+      matrix:
+        tfm: ${{ fromJSON(needs.build-windows.outputs.unit-test-tfms) }}
+    uses: ./.github/workflows/unit-tests.yml
+    with:
+      runs-on: windows-latest
+      tfm: ${{ matrix.tfm }}
+
+  integration-tests-linux:
+    name: Integration tests (${{ matrix.server.image }}, ${{ matrix.tfm }})
+    needs: build-linux
+    strategy:
+      fail-fast: false
+      matrix:
+        tfm: ${{ fromJSON(needs.build-linux.outputs.integration-test-tfms) }}
+        server:
+          - image: mysql:8.4
+            unsupported-features: &mysql-unsupported-features Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime
+            connection-string-extra: AllowPublicKeyRetrieval=True
+          - image: mysql:9.7
+            unsupported-features: *mysql-unsupported-features
+            connection-string-extra: AllowPublicKeyRetrieval=True
+          - image: mysql:26.10
+            unsupported-features: *mysql-unsupported-features
+            connection-string-extra: AllowPublicKeyRetrieval=True
+          - image: mariadb:10.11
+            unsupported-features: CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,ParsecAuthentication,Redirection,Sha256Password,Tls11,TlsFingerprintValidation,UuidToBin,Vector
+          - image: mariadb:11.4
+            unsupported-features: CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,ParsecAuthentication,Redirection,Sha256Password,Tls11,UuidToBin,Vector
+          - image: mariadb:11.8
+            unsupported-features: &mariadb-unsupported-features CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Redirection,Sha256Password,Tls11,UuidToBin,VectorType
+          - image: mariadb:12.3
+            unsupported-features: *mariadb-unsupported-features
+    uses: ./.github/workflows/integration-tests.yml
+    with:
+      runs-on: ubuntu-latest
+      tfm: ${{ matrix.tfm }}
+      docker-image: ${{ matrix.server.image }}
+      unsupported-features: ${{ matrix.server.unsupported-features }}
+      connection-string-extra: ${{ matrix.server.connection-string-extra }}
+    secrets: inherit
+
+  # MySQL Server is installed by .ci/start-mysql-windows.ps1
+  integration-tests-windows:
+    name: Integration tests (Windows, ${{ matrix.tfm }})
+    needs: build-windows
+    strategy:
+      fail-fast: false
+      matrix:
+        tfm: ${{ fromJSON(needs.build-windows.outputs.integration-test-tfms) }}
+    uses: ./.github/workflows/integration-tests.yml
+    with:
+      runs-on: windows-latest
+      tfm: ${{ matrix.tfm }}
+      unsupported-features: Ed25519,InsertReturning,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,UnixDomainSocket,Vector,ZeroDateTime
+      connection-string-extra: AllowPublicKeyRetrieval=True
+      variants: '["nossl", "ssl"]'
+
+  mysql-data-tests-windows:
+    name: MySql.Data integration tests (Windows, ${{ matrix.tfm }})
+    needs: build-windows
+    strategy:
+      fail-fast: false
+      matrix:
+        tfm: ${{ fromJSON(needs.build-windows.outputs.mysql-data-integration-test-tfms) }}
+    uses: ./.github/workflows/integration-tests.yml
+    with:
+      runs-on: windows-latest
+      tfm: ${{ matrix.tfm }}
+      configuration: MySqlData
+      unsupported-features: Ed25519,InsertReturning,QueryAttributes,ParsecAuthentication,StreamingResults,TlsFingerprintValidation,UnixDomainSocket,Vector,ZeroDateTime
+      user: root
+      connection-string-extra: AllowPublicKeyRetrieval=True
+      variants: '["nossl"]'
+
+  # tests the NuGet package (not the project) with Native AOT
+  native-aot-tests:
+    name: Native AOT tests (${{ matrix.tfm }})
+    needs: [ build-linux, build-windows ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        tfm: ${{ fromJSON(needs.build-linux.outputs.native-aot-tfms) }}
     services:
       mysql:
-        image: mysql:9.4
+        image: mysql:9.7
         env:
-          MYSQL_DATABASE: testdb
           MYSQL_ROOT_PASSWORD: pass
         ports:
           - 3306:3306
-          # Before continuing, verify the mysql container is reachable from the ubuntu host
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
     steps:
-      - name: Check out repository
+      - name: Check out
         uses: actions/checkout@v7
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v6
+        uses: ./.github/actions/setup-dotnet
+        with:
+          target-framework: ${{ matrix.tfm }}
+
+      - name: Download packages
+        uses: actions/download-artifact@v8
+        with:
+          name: packages
+          path: artifacts/packages
 
       - name: Publish
-        run: dotnet publish -c Release -r linux-x64 -f ${{ matrix.tfm }} tests/MySqlConnector.NativeAot.Tests/MySqlConnector.NativeAot.Tests.csproj
+        shell: pwsh
+        env:
+          TFM: ${{ matrix.tfm }}
+        run: |
+          $package = Get-ChildItem artifacts/packages -Filter 'MySqlConnector.*.nupkg' | Where-Object { $_.Name -match '^MySqlConnector\.\d' }
+          $version = $package.BaseName.Substring('MySqlConnector.'.Length)
+          dotnet publish tests/MySqlConnector.NativeAot.Tests/MySqlConnector.NativeAot.Tests.csproj --configuration Release --runtime linux-x64 --framework $env:TFM "-p:MySqlConnectorTestPackageVersion=$version" "-p:RestoreAdditionalProjectSources=$($package.DirectoryName)"
 
-      - name: Test Native AOT
+      - name: Test
         run: ./artifacts/publish/MySqlConnector.NativeAot.Tests/release_${{ matrix.tfm }}_linux-x64/MySqlConnector.NativeAot.Tests
+
+  framework-package-tests:
+    name: .NET Framework package tests
+    needs: build-windows
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up .NET
+        uses: ./.github/actions/setup-dotnet
+
+      - name: Download packages
+        uses: actions/download-artifact@v8
+        with:
+          name: packages
+          path: artifacts/packages
+
+      - name: Verify package
+        run: ./.ci/verify-framework-package.ps1 -PackagesPath artifacts/packages
+        shell: pwsh
+
+  component-detection:
+    name: Component detection
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs: build-linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up .NET
+        uses: ./.github/actions/setup-dotnet
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Component detection
+        uses: advanced-security/component-detection-dependency-submission-action@v0.2.0
+
+  # combines all jobs' test results into one artifact, which test-results.yml reports as a single check run;
+  # that's a separate workflow because pull requests from forks don't get the "checks: write" permission
+  test-results:
+    name: Collect test results
+    if: ${{ !cancelled() && (contains(needs.*.result, 'success') || contains(needs.*.result, 'failure')) }}
+    needs:
+      - unit-tests-linux
+      - unit-tests-windows
+      - integration-tests-linux
+      - integration-tests-windows
+      - mysql-data-tests-windows
+    runs-on: ubuntu-slim
+    steps:
+      - name: Merge test results
+        uses: actions/upload-artifact/merge@v7
+        with:
+          name: test-results
+          pattern: test-results-*
+          separate-directories: true
+          delete-merged: true
+          retention-days: 7
+
+  # a single status check (whose name doesn't depend on the matrices) to require for merging pull requests
+  ci-passed:
+    name: CI passed
+    if: always()
+    needs:
+      - build-linux
+      - build-windows
+      - unit-tests-linux
+      - unit-tests-windows
+      - integration-tests-linux
+      - integration-tests-windows
+      - mysql-data-tests-windows
+      - native-aot-tests
+      - framework-package-tests
+      - component-detection
+    runs-on: ubuntu-slim
+    steps:
+      - name: Check results
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

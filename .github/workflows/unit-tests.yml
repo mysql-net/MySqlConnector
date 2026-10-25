@@ -1,0 +1,63 @@
+name: Unit Tests
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: The runner to test on.
+        type: string
+        required: true
+      tfm:
+        description: The target framework to test.
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    runs-on: ${{ inputs.runs-on }}
+    timeout-minutes: 20
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up .NET
+        uses: ./.github/actions/setup-dotnet
+        with:
+          target-framework: ${{ inputs.tfm }}
+
+      - name: Restore test binaries
+        uses: ./.github/actions/restore-test-binaries
+
+      - name: MySqlConnector tests
+        uses: ./.github/actions/run-tests
+        with:
+          project: MySqlConnector.Tests
+          target-framework: ${{ inputs.tfm }}
+          title: MySqlConnector.Tests
+
+      - name: Dependency injection tests
+        if: ${{ !cancelled() && hashFiles(format('artifacts/bin/MySqlConnector.DependencyInjection.Tests/release_{0}/*.dll', inputs.tfm)) != '' }}
+        uses: ./.github/actions/run-tests
+        with:
+          project: MySqlConnector.DependencyInjection.Tests
+          target-framework: ${{ inputs.tfm }}
+          title: MySqlConnector.DependencyInjection.Tests
+
+      - name: MySql.Data tests
+        if: ${{ !cancelled() && hashFiles(format('artifacts/bin/MySqlConnector.Tests/mysqldata_{0}/*.dll', inputs.tfm)) != '' }}
+        uses: ./.github/actions/run-tests
+        with:
+          project: MySqlConnector.Tests
+          target-framework: ${{ inputs.tfm }}
+          configuration: MySqlData
+          title: MySql.Data unit tests
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/upload-test-results
+        with:
+          name: unit ${{ runner.os }} ${{ inputs.tfm }}

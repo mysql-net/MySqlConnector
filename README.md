@@ -62,8 +62,7 @@ For ASP.NET Core health checks, use:
 
 ## Build Status
 
-[![AppVeyor](https://img.shields.io/appveyor/ci/mysqlnet/mysqlconnector/master.svg)](https://ci.appveyor.com/project/mysqlnet/mysqlconnector)
-[![Azure Pipelines](https://dev.azure.com/mysqlnet/MySqlConnector/_apis/build/status/mysql-net.MySqlConnector?branchName=master)](https://dev.azure.com/mysqlnet/MySqlConnector/_build/latest?definitionId=2&branchName=master)
+[![CI](https://github.com/mysql-net/MySqlConnector/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mysql-net/MySqlConnector/actions/workflows/ci.yml?query=branch%3Amaster)
 
 ## Building
 

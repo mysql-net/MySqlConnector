@@ -1,0 +1,28 @@
+name: Upload test results
+description: Uploads the TRX files from this job's test runs; ci.yml merges them into one "test-results" artifact for test-results.yml to report.
+
+inputs:
+  name:
+    description: A name that identifies this job's test results (unique within the workflow run).
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Determine artifact name
+      id: artifact
+      shell: pwsh
+      env:
+        NAME: ${{ inputs.name }}
+      run: |
+        # artifact names can't contain characters such as ':' (e.g., in Docker image names)
+        $name = ($env:NAME -replace '[^\w.-]+', '-').Trim('-')
+        "name=test-results-$name" >> $env:GITHUB_OUTPUT
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ steps.artifact.outputs.name }}
+        path: ${{ runner.temp }}/TestResults/*.trx
+        if-no-files-found: ignore
+        retention-days: 7

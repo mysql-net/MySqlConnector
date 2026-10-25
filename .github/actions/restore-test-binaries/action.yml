@@ -1,0 +1,17 @@
+name: Restore test binaries
+description: Downloads and extracts the test binaries that the build workflow produced for this runner's OS.
+
+runs:
+  using: composite
+  steps:
+    - name: Download test binaries
+      uses: actions/download-artifact@v8
+      with:
+        name: test-binaries-${{ runner.os }}
+
+    # the binaries are archived with tar to preserve execute permissions
+    - name: Extract test binaries
+      shell: pwsh
+      run: |
+        tar -xf test-binaries.tar
+        Remove-Item test-binaries.tar
