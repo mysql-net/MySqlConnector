@@ -73,6 +73,10 @@ public sealed class FakeMySqlServer
 	public TimeSpan? ConnectDelay { get; set; }
 	public TimeSpan? ResetDelay { get; set; }
 
+	// When set, maps a connection ID to the hostname that connection reports for 'SELECT @@hostname;'; when not
+	// set (the default), that query fails with an error.
+	public Func<int, string> GetHostname { get; set; }
+
 	// When set, the server advertises TLS support in its initial handshake and performs the server side of a TLS
 	// handshake (using this certificate) when the client requests it.
 	public X509Certificate2 ServerCertificate { get; set; }
