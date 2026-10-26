@@ -362,6 +362,39 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 	public void UseDatabaseConnectionPoolingDoesNotReauthenticate(bool connectionReset, int poolSize) =>
 		ChangedDatabaseIsRestoredWithoutReauthenticating(useStatement: true, connectionReset, poolSize);
 
+	[SkippableTheory(ServerFeatures.SessionTrack, ConfigSettings.SecondaryDatabase)]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void UntrackedUseAfterChangeDatabaseToSameDatabaseIsRestored(bool connectionReset)
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.Pooling = true;
+		csb.MaximumPoolSize = 1;
+		csb.ConnectionReset = connectionReset;
+
+		using var dataSource = new MySqlDataSource(csb.ConnectionString);
+
+		int serverThread;
+		using (var connection = dataSource.OpenConnection())
+		{
+			serverThread = connection.ServerThread;
+
+			// "change" to the connection string's database, then change the database without the server reporting it
+			connection.ChangeDatabase(csb.Database);
+			using var command = connection.CreateCommand();
+			command.CommandText = $"SET SESSION session_track_schema = OFF; USE {AppConfig.SecondaryDatabase};";
+			command.ExecuteNonQuery();
+			Assert.Equal(csb.Database, connection.Database);
+			Assert.Equal(AppConfig.SecondaryDatabase, QueryCurrentDatabase(connection));
+		}
+
+		using (var connection = dataSource.OpenConnection())
+		{
+			Assert.Equal(serverThread, connection.ServerThread);
+			Assert.Equal(csb.Database, QueryCurrentDatabase(connection));
+		}
+	}
+
 	[SkippableFact(ConfigSettings.SecondaryDatabase)]
 	public void ChangeDatabaseConnectionPoolingWithoutDatabaseReauthenticates()
 	{

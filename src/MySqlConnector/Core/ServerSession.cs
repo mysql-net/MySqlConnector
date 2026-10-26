@@ -790,23 +790,18 @@ internal sealed partial class ServerSession : IServerCapabilities
 		try
 		{
 			PayloadData payload;
-			var databaseChanged = DatabaseOverride is not null && DatabaseOverride != cs.Database;
 
-			// with ConnectionReset=false, the pool only calls this if the database was changed; select the connection string's database
-			// again without resetting the session state (which ConnectionReset=false keeps), unless the connection string doesn't specify
-			// a database, which requires COM_CHANGE_USER below (because reauthenticating is the only way to deselect the current database)
-			if (!cs.ConnectionReset && (!databaseChanged || cs.Database.Length != 0))
+			// If DatabaseOverride is set, always select the connection string's database again, even if they're equal,
+			// because a later USE statement might not have been tracked.
+			// With ConnectionReset=false, the pool only calls this if DatabaseOverride is set; select the database but don't
+			// reset the session (without a database in the connection string, COM_CHANGE_USER is used below to deselect it)
+			if (!cs.ConnectionReset && cs.Database.Length != 0)
 			{
-				if (databaseChanged)
-				{
-					Log.SendingInitDatabaseRequestDueToChangedDatabase(m_logger, Id, DatabaseOverride!, cs.Database);
-					using (var initDatabasePayload = InitDatabasePayload.Create(cs.Database))
-						await SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
-					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Verify(payload.Span, this);
-				}
-
-				// cleared even if the database wasn't changed, because the pool calls this whenever DatabaseOverride is set
+				Log.SendingInitDatabaseRequestDueToChangedDatabase(m_logger, Id, DatabaseOverride!, cs.Database);
+				using (var initDatabasePayload = InitDatabasePayload.Create(cs.Database))
+					await SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				OkPayload.Verify(payload.Span, this);
 				DatabaseOverride = null;
 				return true;
 			}
@@ -821,10 +816,9 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 			// COM_RESET_CONNECTION doesn't change the current database, so if it was changed, the connection string's database is
 			// selected again with COM_INIT_DB; COM_CHANGE_USER is only needed if the connection string doesn't specify a database
-			// (because reauthenticating is the only way to deselect the current database) or the server can't reset the connection;
-			// if the database was changed back to the connection string's database, COM_RESET_CONNECTION alone keeps it selected
-			var restoreDatabase = supportsResetConnection && databaseChanged && cs.Database.Length != 0;
-			if (supportsResetConnection && (!databaseChanged || restoreDatabase))
+			// (because reauthenticating is the only way to deselect the current database) or the server can't reset the connection
+			var restoreDatabase = supportsResetConnection && DatabaseOverride is not null && cs.Database.Length != 0;
+			if (supportsResetConnection && (DatabaseOverride is null || restoreDatabase))
 			{
 				if (restoreDatabase)
 					Log.SendingResetConnectionRequestDueToChangedDatabase(m_logger, Id, DatabaseOverride!, cs.Database);

@@ -321,7 +321,7 @@ public class ConnectionTests : IDisposable
 	[InlineData(true, false)]
 	[InlineData(false, true)]
 	[InlineData(false, false)]
-	public void ReopenAfterChangeDatabaseToSameDatabaseDoesNotSendInitDatabase(bool connectionReset, bool pipelining)
+	public void ReopenAfterChangeDatabaseToSameDatabaseRestoresDatabase(bool connectionReset, bool pipelining)
 	{
 		var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString)
 		{
@@ -336,16 +336,17 @@ public class ConnectionTests : IDisposable
 		connection.Close();
 
 		m_server.ClearReceivedCommands();
+		m_server.PipelinedResetCommandCount = connectionReset && pipelining ? 3 : 0;
 		connection.Open();
 		Assert.Equal(serverThread, connection.ServerThread);
 		Assert.Equal("db1", connection.Database);
 
-		// the current database is already the connection string's database, and COM_RESET_CONNECTION (if ConnectionReset=true) keeps it
-		Assert.Equal(connectionReset ? ["ResetConnection", "Query SET NAMES utf8mb4;"] : [], m_server.ReceivedCommands);
+		// a later USE statement might not have been tracked, so the database is selected again even though it was "changed" to the same one
+		Assert.Equal(connectionReset ? ["ResetConnection", "Query SET NAMES utf8mb4;", "InitDatabase db1"] : ["InitDatabase db1"], m_server.ReceivedCommands);
 		using (var command = new MySqlCommand("SELECT 1;", connection))
 			Assert.Equal(1, command.ExecuteScalar());
 
-		// reopening again doesn't send COM_INIT_DB either
+		// the database is only restored once
 		connection.Close();
 		m_server.ClearReceivedCommands();
 		connection.Open();
