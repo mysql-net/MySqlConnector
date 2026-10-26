@@ -2,6 +2,8 @@
 #pragma warning disable 0618
 #endif
 
+using System.Globalization;
+
 namespace IntegrationTests;
 
 public class PreparedCommandTests : IClassFixture<DatabaseFixture>
@@ -252,6 +254,123 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 			Assert.Equal("test", cmd.ExecuteScalar());
 		}
 	}
+
+	[SkippableFact(ConfigSettings.SecondaryDatabase)]
+	public void PreparedCommandIsNotUsedAfterChangeDatabase()
+	{
+		using var connection = CreateConnection();
+		CreateDatabaseTestTables(connection);
+
+		using (var cmd = new MySqlCommand("SELECT value FROM prepared_database_test;", connection))
+		{
+			cmd.Prepare();
+			Assert.Equal(1, cmd.ExecuteScalar());
+		}
+
+		connection.ChangeDatabase(AppConfig.SecondaryDatabase);
+
+		// the server would execute the statement in the database it was prepared in
+		using (var cmd = new MySqlCommand("SELECT value FROM prepared_database_test;", connection))
+		{
+			Assert.False(cmd.IsPrepared);
+			Assert.Equal(2, cmd.ExecuteScalar());
+
+			cmd.Prepare();
+			Assert.True(cmd.IsPrepared);
+			Assert.Equal(2, cmd.ExecuteScalar());
+		}
+	}
+
+	[SkippableFact(ServerFeatures.SessionTrack, ConfigSettings.SecondaryDatabase)]
+	public void PreparedCommandIsNotUsedAfterUseStatement()
+	{
+		using var connection = CreateConnection();
+		CreateDatabaseTestTables(connection);
+
+		using (var cmd = new MySqlCommand("SELECT value FROM prepared_database_test;", connection))
+		{
+			cmd.Prepare();
+			Assert.Equal(1, cmd.ExecuteScalar());
+		}
+
+		connection.Execute($"USE {AppConfig.SecondaryDatabase};");
+
+		using (var cmd = new MySqlCommand("SELECT value FROM prepared_database_test;", connection))
+		{
+			Assert.False(cmd.IsPrepared);
+			Assert.Equal(2, cmd.ExecuteScalar());
+		}
+	}
+
+#if !MYSQL_DATA // Connector/NET doesn't cache prepared commands
+	[SkippableFact(ConfigSettings.SecondaryDatabase)]
+	public void PreparedCommandExecutesInCurrentDatabase()
+	{
+		using var connection = CreateConnection();
+		CreateDatabaseTestTables(connection);
+		var database = connection.Database;
+
+		using var cmd = new MySqlCommand("SELECT value FROM prepared_database_test;", connection);
+		cmd.Prepare();
+		Assert.Equal(1, cmd.ExecuteScalar());
+
+		connection.ChangeDatabase(AppConfig.SecondaryDatabase);
+		Assert.False(cmd.IsPrepared);
+		Assert.Equal(2, cmd.ExecuteScalar());
+
+		connection.ChangeDatabase(database);
+		Assert.Equal(1, cmd.ExecuteScalar());
+	}
+
+	[SkippableFact(ConfigSettings.SecondaryDatabase)]
+	public async Task PreparingInOtherDatabaseClosesStatement()
+	{
+		using var connection = CreateConnection();
+		CreateDatabaseTestTables(connection);
+		var databases = new[] { connection.Database, AppConfig.SecondaryDatabase };
+		var (preparedBefore, closedBefore) = await GetStatementCountsAsync(connection);
+
+		for (var i = 0; i < 6; i++)
+		{
+			await connection.ChangeDatabaseAsync(databases[i % 2]);
+			using var cmd = new MySqlCommand("SELECT value FROM prepared_database_test;", connection);
+			await cmd.PrepareAsync();
+			Assert.Equal(i % 2 + 1, await cmd.ExecuteScalarAsync());
+		}
+
+		// each statement prepared in the other database was closed when the SQL was prepared again, so only one is left on the server
+		var (preparedAfter, closedAfter) = await GetStatementCountsAsync(connection);
+		Assert.Equal(6, preparedAfter - preparedBefore);
+		Assert.Equal(5, closedAfter - closedBefore);
+	}
+
+	[SkippableFact(ConfigSettings.SecondaryDatabase)]
+	public void PreparedCommandFromPooledSessionIsNotUsedInOtherDatabase()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.ConnectionReset = false;
+		csb.MaximumPoolSize = 1;
+
+		using (var connection = new MySqlConnection(csb.ConnectionString))
+		{
+			connection.Open();
+			CreateDatabaseTestTables(connection);
+			connection.ChangeDatabase(AppConfig.SecondaryDatabase);
+
+			using var cmd = new MySqlCommand("SELECT value FROM prepared_database_test;", connection);
+			cmd.Prepare();
+			Assert.Equal(2, cmd.ExecuteScalar());
+		}
+
+		// the pooled session's database is restored; a statement prepared in the other database must not be used
+		using (var connection = new MySqlConnection(csb.ConnectionString))
+		{
+			connection.Open();
+			using var cmd = new MySqlCommand("SELECT value FROM prepared_database_test;", connection);
+			Assert.Equal(1, cmd.ExecuteScalar());
+		}
+	}
+#endif
 
 	[SkippableFact(ServerFeatures.InsertReturning)]
 	public void InsertReturningPreparedStatement()
@@ -527,5 +646,23 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		var connection = new MySqlConnection(AppConfig.ConnectionString);
 		connection.Open();
 		return connection;
+	}
+
+	// creates a table with the same name, but a different value, in the connection's database and the secondary database
+	private static void CreateDatabaseTestTables(MySqlConnection connection) =>
+		connection.Execute($"""
+			DROP TABLE IF EXISTS prepared_database_test;
+			CREATE TABLE prepared_database_test(value INT NOT NULL);
+			INSERT INTO prepared_database_test(value) VALUES(1);
+			DROP TABLE IF EXISTS {AppConfig.SecondaryDatabase}.prepared_database_test;
+			CREATE TABLE {AppConfig.SecondaryDatabase}.prepared_database_test(value INT NOT NULL);
+			INSERT INTO {AppConfig.SecondaryDatabase}.prepared_database_test(value) VALUES(2);
+			""");
+
+	private static async Task<(long Prepared, long Closed)> GetStatementCountsAsync(MySqlConnection connection)
+	{
+		var status = (await connection.QueryAsync<(string Name, string Value)>("SHOW SESSION STATUS WHERE Variable_name IN ('Com_stmt_prepare', 'Com_stmt_close');"))
+			.ToDictionary(x => x.Name, x => long.Parse(x.Value, CultureInfo.InvariantCulture));
+		return (status["Com_stmt_prepare"], status["Com_stmt_close"]);
 	}
 }

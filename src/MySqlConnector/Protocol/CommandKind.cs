@@ -10,5 +10,6 @@ internal enum CommandKind
 	StatementPrepare = 22,
 	StatementExecute = 23,
 	StatementSendLongData = 24,
+	StatementClose = 25,
 	ResetConnection = 31,
 }

@@ -209,6 +209,20 @@ internal sealed partial class ServerSession : IServerCapabilities
 			commandToPrepare = commandText;
 		}
 
+		// this SQL was prepared in a different database (see TryGetPreparedStatement); close those statements on the server before replacing them
+		if (m_preparedStatements is not null && m_preparedStatements.TryGetValue(commandText, out var stalePreparedStatements))
+		{
+			Log.ClosingPreparedStatementsFromOtherDatabase(m_logger, Id, stalePreparedStatements.DatabaseOverride, DatabaseOverride, commandText);
+			m_preparedStatements.Remove(commandText);
+			foreach (var stalePreparedStatement in stalePreparedStatements.Statements)
+			{
+				// COM_STMT_CLOSE has no reply
+				using var statementClosePayload = StatementClosePayload.Create(stalePreparedStatement.StatementId);
+				await SendAsync(statementClosePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
+			}
+			stalePreparedStatements.Dispose();
+		}
+
 		var statementPreparer = new StatementPreparer(commandToPrepare, command.RawParameters, command.CreateStatementPreparerOptions());
 		var parsedStatements = statementPreparer.SplitStatements();
 
@@ -276,11 +290,12 @@ internal sealed partial class ServerSession : IServerCapabilities
 		}
 
 		m_preparedStatements ??= [];
-		m_preparedStatements.Add(commandText, new(preparedStatements, parsedStatements));
+		m_preparedStatements.Add(commandText, new(preparedStatements, parsedStatements, DatabaseOverride));
 	}
 
+	// the server executes a prepared statement in the database that was selected when it was prepared
 	public PreparedStatements? TryGetPreparedStatement(string commandText) =>
-		m_preparedStatements is not null && m_preparedStatements.TryGetValue(commandText, out var statement) ? statement : null;
+		m_preparedStatements is not null && m_preparedStatements.TryGetValue(commandText, out var statement) && statement.DatabaseOverride == DatabaseOverride ? statement : null;
 
 	public void StartQuerying(ICancellableCommand command)
 	{
