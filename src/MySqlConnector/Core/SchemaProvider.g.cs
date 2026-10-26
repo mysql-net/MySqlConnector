@@ -515,7 +515,7 @@ internal sealed partial class SchemaProvider
 			new("INFO", typeof(string)),
 		]);
 
-		await FillDataTableAsync(ioBehavior, dataTable, "PROCESSLIST", null, cancellationToken).ConfigureAwait(false);
+		await DoFillProcessListAsync(ioBehavior, dataTable, cancellationToken).ConfigureAwait(false);
 	}
 
 	private async Task FillProfilingAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)

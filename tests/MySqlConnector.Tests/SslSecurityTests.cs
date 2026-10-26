@@ -11,7 +11,7 @@ public class SslSecurityTests
 	public async Task DoesNotSendCleartextPasswordToServerWithUnverifiedCertificate()
 	{
 		// skip this test on Windows CI builds because it fails for as-yet-unknown reasons
-		if (Utility.IsWindows() && (string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase) || Environment.GetEnvironmentVariable("TF_BUILD") == "True"))
+		if (Utility.IsWindows() && SkipCITheoryAttribute.IsCiBuild)
 			return;
 
 		// Regression test for GHSA-473q-m89c-ghf8.

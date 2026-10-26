@@ -425,7 +425,7 @@
     type: string
 
 - name: ProcessList
-  table: PROCESSLIST
+  custom: DoFillProcessListAsync
   columns:
   - name: ID
     type: long

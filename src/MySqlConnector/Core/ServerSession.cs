@@ -209,6 +209,20 @@ internal sealed partial class ServerSession : IServerCapabilities
 			commandToPrepare = commandText;
 		}
 
+		// this SQL was prepared in a different database (see TryGetPreparedStatement); close those statements on the server before replacing them
+		if (m_preparedStatements is not null && m_preparedStatements.TryGetValue(commandText, out var stalePreparedStatements))
+		{
+			Log.ClosingPreparedStatementsFromOtherDatabase(m_logger, Id, stalePreparedStatements.DatabaseOverride, DatabaseOverride, commandText);
+			m_preparedStatements.Remove(commandText);
+			foreach (var stalePreparedStatement in stalePreparedStatements.Statements)
+			{
+				// COM_STMT_CLOSE has no reply
+				using var statementClosePayload = StatementClosePayload.Create(stalePreparedStatement.StatementId);
+				await SendAsync(statementClosePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
+			}
+			stalePreparedStatements.Dispose();
+		}
+
 		var statementPreparer = new StatementPreparer(commandToPrepare, command.RawParameters, command.CreateStatementPreparerOptions());
 		var parsedStatements = statementPreparer.SplitStatements();
 
@@ -276,11 +290,12 @@ internal sealed partial class ServerSession : IServerCapabilities
 		}
 
 		m_preparedStatements ??= [];
-		m_preparedStatements.Add(commandText, new(preparedStatements, parsedStatements));
+		m_preparedStatements.Add(commandText, new(preparedStatements, parsedStatements, DatabaseOverride));
 	}
 
+	// the server executes a prepared statement in the database that was selected when it was prepared
 	public PreparedStatements? TryGetPreparedStatement(string commandText) =>
-		m_preparedStatements is not null && m_preparedStatements.TryGetValue(commandText, out var statement) ? statement : null;
+		m_preparedStatements is not null && m_preparedStatements.TryGetValue(commandText, out var statement) && statement.DatabaseOverride == DatabaseOverride ? statement : null;
 
 	public void StartQuerying(ICancellableCommand command)
 	{
@@ -622,7 +637,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				OkPayload.Verify(payload.Span, this);
 			}
 
-			if (ShouldGetRealServerDetails(cs))
+			if (ShouldGetRealServerDetails())
 			{
 				await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			}
@@ -1026,6 +1041,20 @@ internal sealed partial class ServerSession : IServerCapabilities
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			default:
+				// a plugin registered under the requested name (e.g., from a separate package) answers it
+				if (AuthenticationPlugins.TryGetPlugin(switchRequest.Name, out var plugin))
+				{
+					byte[] response;
+					if (plugin is IAuthenticationPlugin3 plugin3)
+						plugin3.CreateResponseAndPasswordHash(password, switchRequest.Data, out response, out m_passwordHash);
+					else
+						response = plugin.CreateResponse(password, switchRequest.Data);
+
+					payload = new(response);
+					await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+					return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
+
 				Log.AuthenticationMethodNotSupported(m_logger, Id, switchRequest.Name);
 				throw new NotSupportedException($"Authentication method '{switchRequest.Name}' is not supported.");
 		}
@@ -1966,28 +1995,11 @@ internal sealed partial class ServerSession : IServerCapabilities
 	// Some servers are exposed through a proxy, which handles the initial handshake and gives the proxy's
 	// server version and thread ID. Detect this situation and return `true` if the real server's details should
 	// be requested after connecting (which takes an extra roundtrip).
-	private bool ShouldGetRealServerDetails(ConnectionSettings cs)
+	private bool ShouldGetRealServerDetails()
 	{
-		// currently hardcoded to the version(s) returned by the Azure Database for MySQL proxy
-		if (ServerVersion.OriginalString is "5.6.47.0" or "5.6.42.0" or "5.6.39.0")
-			return true;
-
-		// detect Azure Database for MySQL DNS suffixes, if a "user@host" user ID is being used
-		if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets && cs.UserID.Contains('@'))
-		{
-			return HostName.EndsWith(".mysql.database.azure.com", StringComparison.OrdinalIgnoreCase) ||
-				HostName.EndsWith(".database.windows.net", StringComparison.OrdinalIgnoreCase) ||
-				HostName.EndsWith(".mysql.database.chinacloudapi.cn", StringComparison.OrdinalIgnoreCase);
-		}
-
 		// detect AWS RDS Proxy, if hostname like <name>.proxy-<random-chars>.<region>.rds.amazonaws.com
-		if (HostName.EndsWith(".rds.amazonaws.com", StringComparison.OrdinalIgnoreCase) &&
-			HostName.AsSpan().Contains(".proxy-".AsSpan(), StringComparison.OrdinalIgnoreCase))
-		{
-			return true;
-		}
-
-		return false;
+		return HostName.EndsWith(".rds.amazonaws.com", StringComparison.OrdinalIgnoreCase) &&
+			HostName.AsSpan().Contains(".proxy-".AsSpan(), StringComparison.OrdinalIgnoreCase);
 	}
 
 	private async Task GetRealServerDetailsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)

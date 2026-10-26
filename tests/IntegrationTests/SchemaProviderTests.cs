@@ -178,6 +178,23 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 		Assert.Contains("latin1_general_ci", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
 		Assert.Contains("ascii_bin", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
 	}
+
+	[Fact]
+	public async Task GetProcessListSchemaWithBinaryQuery()
+	{
+		// a query whose text isn't valid UTF-8 makes INFORMATION_SCHEMA.PROCESSLIST fail on MySQL 9.1 and later: https://bugs.mysql.com/bug.php?id=121434
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		await connection.OpenAsync();
+		using var command = new MySqlCommand("SELECT SLEEP(3), @data;", connection);
+		command.Parameters.AddWithValue("@data", new byte[] { 0x9D, 0x86, 0xBA, 0x31, 0x8D, 0xFB });
+		var queryTask = command.ExecuteScalarAsync();
+		await Task.Delay(TimeSpan.FromSeconds(1));
+
+		var table = await m_database.Connection.GetSchemaAsync("ProcessList");
+		Assert.Contains(table.Rows.Cast<DataRow>(), x => (long) x["ID"] == connection.ServerThread);
+
+		await queryTask;
+	}
 #endif
 
 	[Fact]

@@ -102,6 +102,7 @@ internal static class EventIds
 	public const int QueryAttributesNotSupported = 2206;
 	public const int QueryAttributesNotSupportedWithId = 2207;
 	public const int IgnoringExceptionInDisposeAsync = 2208;
+	public const int ClosingPreparedStatementsFromOtherDatabase = 2209;
 
 	// Command cancellation events, 2300-2399
 	public const int IgnoringCancellationForCommand = 2300;

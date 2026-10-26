@@ -335,6 +335,9 @@ internal static partial class Log
 	[LoggerMessage(EventIds.IgnoringExceptionInDisposeAsync, LogLevel.Warning, "Session {SessionId} ignoring exception in MySqlDataReader.DisposeAsync. Message: {ExceptionMessage}. CommandText: {CommandText}")]
 	public static partial void IgnoringExceptionInDisposeAsync(ILogger logger, Exception exception, string sessionId, string exceptionMessage, string commandText);
 
+	[LoggerMessage(EventIds.ClosingPreparedStatementsFromOtherDatabase, LogLevel.Debug, "Session {SessionId} closing statements prepared with database override {PreparedDatabaseOverride} (now {DatabaseOverride}) for: {CommandText}")]
+	public static partial void ClosingPreparedStatementsFromOtherDatabase(ILogger logger, string sessionId, string? preparedDatabaseOverride, string? databaseOverride, string commandText);
+
 	[LoggerMessage(EventIds.StartingBulkCopy, LogLevel.Debug, "Starting bulk copy to {TableName}")]
 	public static partial void StartingBulkCopy(ILogger logger, string tableName);
 

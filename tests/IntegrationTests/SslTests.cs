@@ -270,6 +270,11 @@ public class SslTests : IClassFixture<DatabaseFixture>
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
 		await connection.OpenAsync();
+		using var cmd = new MySqlCommand("show status like 'Ssl_version';", connection);
+		using var reader = await cmd.ExecuteReaderAsync();
+		Assert.True(reader.Read());
+		var actualProtocolString = reader.GetString(1);
+
 #pragma warning disable SYSLIB0039 // SslProtocols.Tls11 is obsolete
 		var expectedProtocol = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls12) ? SslProtocols.Tls12 :
 			AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls11) ? SslProtocols.Tls11 :
@@ -278,22 +283,25 @@ public class SslTests : IClassFixture<DatabaseFixture>
 			expectedProtocol == SslProtocols.Tls11 ? "TLSv1.1" : "TLSv1";
 #pragma warning restore SYSLIB0039 // SslProtocols.Tls11 is obsolete
 
-#if !NET462 && !NET472
-		// https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0#tls-13--openssl-111-on-linux
-		if (expectedProtocol == SslProtocols.Tls12 && AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls13) && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+		// TLS 1.3 is always negotiated on Linux with OpenSSL 1.1.1 (https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0#tls-13--openssl-111-on-linux);
+		// on Windows, it depends on the OS version (Windows 11 / Windows Server 2022 and later) and the .NET Framework configuration
+#if NET462
+		var isLinux = false;
+#else
+		var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+#endif
+		var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
+		if (expectedProtocol == SslProtocols.Tls12 && AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls13) &&
+			(isLinux || (isWindows && actualProtocolString == "TLSv1.3")))
 		{
-			expectedProtocol = SslProtocols.Tls13;
+			expectedProtocol = (SslProtocols) 12288; // SslProtocols.Tls13, which isn't defined in .NET Framework 4.6.2
 			expectedProtocolString = "TLSv1.3";
 		}
-#endif
 
 #if !MYSQL_DATA
 		Assert.Equal(expectedProtocol, connection.SslProtocol);
 #endif
-		using var cmd = new MySqlCommand("show status like 'Ssl_version';", connection);
-		using var reader = await cmd.ExecuteReaderAsync();
-		Assert.True(reader.Read());
-		Assert.Equal(expectedProtocolString, reader.GetString(1));
+		Assert.Equal(expectedProtocolString, actualProtocolString);
 	}
 
 #if !NET5_0_OR_GREATER

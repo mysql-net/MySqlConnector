@@ -41,7 +41,7 @@ In a .NET Framework application, make the following `app.config` change to regis
     <!-- add name="MySQL Data Provider"
       invariant="MySql.Data.MySqlClient"
       description=".Net Framework Data Provider for MySQL"
-      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=26.7.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
+      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=26.10.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
 
     <!-- ADD THIS -->
     <add name="MySqlConnector"
@@ -257,6 +257,9 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 * [#116257](https://bugs.mysql.com/bug.php?id=116257): `NullReferenceException` thrown when using prepared statement under OpenTelemetry
 * [#116382](https://bugs.mysql.com/bug.php?id=116382): `ExecuteNonQueryAsync` hangs with DDL if `UseCompression=True`
 * [#119211](https://bugs.mysql.com/bug.php?id=119211): `SSL Mode = None` no longer works in connection string.
+* [#120347](https://bugs.mysql.com/bug.php?id=120347): `IsAutoIncrement` in `GetSchemaTable` is False
+* [#121503](https://bugs.mysql.com/bug.php?id=121503): Concurrent TransactionScopes share one physical connection
+* [#121599](https://bugs.mysql.com/bug.php?id=121599): Prepared command with `MySqlDbType.Date` parameter fails with "Malformed communication packet" on MySQL 8.4.13 and later
 
 ### Fixed First by MySqlConnector
 

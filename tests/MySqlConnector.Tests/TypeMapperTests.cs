@@ -23,6 +23,7 @@ public class TypeMapperTests
 	[InlineData(typeof(DateTimeOffset), DbType.DateTimeOffset)]
 	[InlineData(typeof(TimeSpan), DbType.Time)]
 	[InlineData(typeof(Guid), DbType.Guid)]
+	[InlineData(typeof(object), DbType.Object)]
 	public void DbTypeMappingTest(Type clrType, DbType dbType)
 	{
 		Assert.Equal(clrType, TypeMapper.Instance.GetDbTypeMapping(dbType).ClrType);

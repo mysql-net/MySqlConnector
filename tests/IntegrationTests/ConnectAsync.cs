@@ -131,10 +131,6 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 	[SkippableFact(ServerFeatures.Timeout, MySqlData = "https://bugs.mysql.com/bug.php?id=94760")]
 	public async Task ConnectTimeoutAsyncCancellationToken()
 	{
-		// skip on Azure Pipelines, as this one seems to consistently time out
-		if (Environment.GetEnvironmentVariable("TF_BUILD") == "True")
-			return;
-
 		var csb = new MySqlConnectionStringBuilder
 		{
 			Server = "www.mysql.com",
