@@ -76,9 +76,9 @@ TiDB | |
 
 MySqlConnector outperforms Connector/NET (MySql.Data) on benchmarks:
 
-<p><img src="https://files.logoscdn.com/v1/assets/15435916/optimized" alt="Benchmark results for MySql.Data vs MySqlConnector" width="736" height="454"></p>
+<p><img src="https://files.logoscdn.com/v1/assets/18420946/optimized?share=vnRIEg1fh7n3QTr1&f=png" alt="Benchmark results for MySql.Data vs MySqlConnector" width="736" height="492"></p>
 
-(Client: MySqlConnector 2.3.1, MySql.Data 8.2.0, Ubuntu 23.04, .NET 8.0; Server: Azure Database for MySQL 8.0.34, TLS 1.2)
+(Client: MySqlConnector 3.0.0, MySql.Data 26.10.0, Ubuntu 24.04, .NET 11.0; Server: Azure Database for MySQL 8.4.11, TLS 1.3)
 
 ## Why use MySqlConnector over Oracle’s MySQL Connector/NET?
 

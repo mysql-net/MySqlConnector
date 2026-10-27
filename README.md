@@ -16,9 +16,9 @@ Complete documentation is available at the [MySqlConnector Documentation Website
 
 This library outperforms MySQL Connector/NET (`MySql.Data`) on benchmarks:
 
-![Benchmark](https://files.logoscdn.com/v1/assets/15435916/optimized)
+![Benchmark](https://files.logoscdn.com/v1/assets/18420946/optimized?share=vnRIEg1fh7n3QTr1&f=png)
 
-(Client: MySqlConnector 2.3.1, MySql.Data 8.2.0, Ubuntu 23.04, .NET 8.0; Server: Azure Database for MySQL 8.0.34, TLS 1.2)
+(Client: MySqlConnector 3.0.0, MySql.Data 26.10.0, Ubuntu 24.04, .NET 11.0; Server: Azure Database for MySQL 8.4.11, TLS 1.3)
 
 ### Server Compatibility
 
