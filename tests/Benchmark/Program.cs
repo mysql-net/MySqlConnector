@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
@@ -40,7 +39,8 @@ public class MySqlClient
 	[GlobalSetup]
 	public void GlobalSetup()
 	{
-		using (var connection = new MySqlConnector.MySqlConnection(s_connectionString))
+		var connectionString = Environment.GetEnvironmentVariable("MYSQL_CONNECTION_STRING") ?? throw new InvalidOperationException("Set MYSQL_CONNECTION_STRING to the MySQL connection string.");
+		using (var connection = new MySqlConnector.MySqlConnection(connectionString))
 		{
 			connection.Open();
 			using (var cmd = connection.CreateCommand())
@@ -67,25 +67,23 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 			}
 		}
 
-		s_connectionString += ";database=benchmark";
+		connectionString += ";database=benchmark";
 
-		var mySqlData = new MySql.Data.MySqlClient.MySqlConnection(s_connectionString);
-		mySqlData.Open();
-		m_connections.Add("MySql.Data", mySqlData);
-
-		var mySqlConnector = new MySqlConnector.MySqlConnection(s_connectionString);
-		mySqlConnector.Open();
-		m_connections.Add("MySqlConnector", mySqlConnector);
-
-		Connection = m_connections[Library];
+		// network latency to a cloud server can differ by hundreds of microseconds between TCP connections (and stays stable for the
+		// lifetime of each connection), so rotate through several connections to measure the library instead of one network path
+		m_connections = new DbConnection[c_connectionCount];
+		for (var i = 0; i < m_connections.Length; i++)
+		{
+			m_connections[i] = Library == "MySqlConnector" ? new MySqlConnector.MySqlConnection(connectionString) : new MySql.Data.MySqlClient.MySqlConnection(connectionString);
+			m_connections[i].Open();
+		}
 	}
 
 	[GlobalCleanup]
 	public void GlobalCleanup()
 	{
-		foreach (var connection in m_connections.Values)
+		foreach (var connection in m_connections)
 			connection.Dispose();
-		m_connections.Clear();
 		MySqlConnector.MySqlConnection.ClearAllPools();
 		MySql.Data.MySqlClient.MySqlConnection.ClearAllPools();
 	}
@@ -106,21 +104,23 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 	[Benchmark]
 	public async Task OpenFromPoolAsync()
 	{
-		Connection.Close();
-		await Connection.OpenAsync();
+		var connection = GetNextConnection();
+		connection.Close();
+		await connection.OpenAsync();
 	}
 
 	[Benchmark]
 	public void OpenFromPoolSync()
 	{
-		Connection.Close();
-		Connection.Open();
+		var connection = GetNextConnection();
+		connection.Close();
+		connection.Open();
 	}
 
 	[Benchmark]
 	public async Task ExecuteScalarAsync()
 	{
-		using var cmd = Connection.CreateCommand();
+		using var cmd = GetNextConnection().CreateCommand();
 		cmd.CommandText = c_executeScalarSql;
 		await cmd.ExecuteScalarAsync();
 	}
@@ -128,7 +128,7 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 	[Benchmark]
 	public void ExecuteScalarSync()
 	{
-		using var cmd = Connection.CreateCommand();
+		using var cmd = GetNextConnection().CreateCommand();
 		cmd.CommandText = c_executeScalarSql;
 		cmd.ExecuteScalar();
 	}
@@ -148,7 +148,7 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 	private async Task<int> ReadAllRowsAsync(string sql)
 	{
 		int total = 0;
-		using (var cmd = Connection.CreateCommand())
+		using (var cmd = GetNextConnection().CreateCommand())
 		{
 			cmd.CommandText = sql;
 			using var reader = await cmd.ExecuteReaderAsync();
@@ -167,7 +167,7 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 	private int ReadAllRowsSync(string sql)
 	{
 		int total = 0;
-		using (var cmd = Connection.CreateCommand())
+		using (var cmd = GetNextConnection().CreateCommand())
 		{
 			cmd.CommandText = sql;
 			using var reader = cmd.ExecuteReader();
@@ -183,10 +183,15 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 		return total;
 	}
 
-	private DbConnection Connection { get; set; }
+	private DbConnection GetNextConnection()
+	{
+		var connection = m_connections[m_nextConnection];
+		m_nextConnection = (m_nextConnection + 1) % m_connections.Length;
+		return connection;
+	}
 
-	// TODO: move to config file
-	static string s_connectionString = "server=127.0.0.1;user id=root;password=pass;port=3306;ssl mode=disabled;Use Affected Rows=true;Connection Reset=false;Default Command Timeout=0;AutoEnlist=false;";
+	private const int c_connectionCount = 8;
 
-	Dictionary<string, DbConnection> m_connections = new Dictionary<string, DbConnection>();
+	private DbConnection[] m_connections;
+	private int m_nextConnection;
 }
