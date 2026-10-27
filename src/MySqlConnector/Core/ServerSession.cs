@@ -798,10 +798,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			if (!cs.ConnectionReset && cs.Database.Length != 0)
 			{
 				Log.SendingInitDatabaseRequestDueToChangedDatabase(m_logger, Id, DatabaseOverride!, cs.Database);
-				using (var initDatabasePayload = InitDatabasePayload.Create(cs.Database))
-					await SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
-				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				OkPayload.Verify(payload.Span, this);
+				await InitDatabaseAsync(cs.Database, ioBehavior, cancellationToken).ConfigureAwait(false);
 				DatabaseOverride = null;
 				return true;
 			}
@@ -890,10 +887,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			// sets back to the server default (https://bugs.mysql.com/bug.php?id=97633); clear DatabaseOverride only once the database is selected
 			if (restoreDatabase)
 			{
-				using (var initDatabasePayload = InitDatabasePayload.Create(cs.Database))
-					await SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
-				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				OkPayload.Verify(payload.Span, this);
+				await InitDatabaseAsync(cs.Database, ioBehavior, cancellationToken).ConfigureAwait(false);
 				DatabaseOverride = null;
 			}
 
@@ -918,6 +912,14 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 		Conditions &= ~MySqlConnectionOpenedConditions.Reset;
 		return false;
+	}
+
+	public async ValueTask InitDatabaseAsync(string database, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	{
+		using (var initDatabasePayload = InitDatabasePayload.Create(database))
+			await SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
+		var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+		OkPayload.Verify(payload.Span, this);
 	}
 
 	// Appends a COM_INIT_DB packet to the pipelined COM_RESET_CONNECTION and SET NAMES packets. COM_INIT_DB goes last because the

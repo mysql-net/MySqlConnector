@@ -481,12 +481,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		if (State != ConnectionState.Open)
 			throw new InvalidOperationException("Connection is not open.");
 
-		using (var initDatabasePayload = InitDatabasePayload.Create(databaseName))
-			await m_session!.SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
-		var payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-		OkPayload.Verify(payload.Span, m_session);
-
-		// for non session tracking servers
+		await m_session!.InitDatabaseAsync(databaseName, ioBehavior, cancellationToken).ConfigureAwait(false);
 		m_session.DatabaseOverride = databaseName;
 	}
 
