@@ -1752,6 +1752,49 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 		Assert.Equal(floatArray, result);
 	}
 
+	[Fact]
+	public async Task ReadLargeRowsOfVaryingSizes()
+	{
+		// rows larger than the 16KiB read buffer are read into a reused buffer; vary the sizes so that it has to grow and so that buffered data is moved between buffers
+		int[] sizes = [20_000, 100_000, 1_000, 50_000, 300_000, 17_000, 0, 150_000];
+		var values = sizes.Select(static size =>
+		{
+			var value = new byte[size];
+			new Random(size).NextBytes(value);
+			return value;
+		}).ToArray();
+
+		using (var cmd = m_database.Connection.CreateCommand())
+		{
+			cmd.CommandText = $"""
+				drop table if exists query_large_rows;
+				create table query_large_rows(id integer not null primary key, value longblob not null);
+				insert into query_large_rows(id, value) values {string.Join(", ", sizes.Select((_, i) => $"({i}, @value{i})"))};
+				""";
+			for (var i = 0; i < values.Length; i++)
+				cmd.Parameters.AddWithValue($"@value{i}", values[i]);
+			await cmd.ExecuteNonQueryAsync();
+		}
+
+		for (var pass = 0; pass < 2; pass++)
+		{
+			using (var cmd = new MySqlCommand("select id, value from query_large_rows order by id;", m_database.Connection))
+			using (var reader = await cmd.ExecuteReaderAsync())
+			{
+				foreach (var value in values)
+				{
+					Assert.True(await reader.ReadAsync());
+					TestUtilities.AssertEqual(value, (byte[]) reader.GetValue(1));
+				}
+				Assert.False(await reader.ReadAsync());
+			}
+
+			// returning the session to the pool releases the large read buffer
+			m_database.Connection.Close();
+			m_database.Connection.Open();
+		}
+	}
+
 	private class BoolTest
 	{
 		public int Id { get; set; }

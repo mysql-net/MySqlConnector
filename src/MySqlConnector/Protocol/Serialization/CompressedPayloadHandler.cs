@@ -13,6 +13,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		m_byteHandler = byteHandler;
 		m_bufferedByteReader = new();
 		m_compressedBufferedByteReader = new();
+		m_payloadCache = new();
 	}
 
 #if NET11_0_OR_GREATER
@@ -40,10 +41,10 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		set => throw new NotSupportedException();
 	}
 
-	public ValueTask<ArraySegment<byte>> ReadPayloadAsync(ArraySegmentHolder<byte> cache, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+	public ValueTask<ArraySegment<byte>> ReadPayloadAsync(ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 	{
 		using var compressedByteHandler = new CompressedByteHandler(this, protocolErrorBehavior);
-		return ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader, compressedByteHandler, static () => -1, cache, protocolErrorBehavior, ioBehavior);
+		return ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader, compressedByteHandler, static () => -1, m_payloadCache, protocolErrorBehavior, ioBehavior);
 	}
 
 	public async ValueTask WritePayloadAsync(ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
@@ -61,6 +62,13 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 
 		// reset the uncompressed stream to accept more data
 		m_uncompressedStream.SetLength(0);
+	}
+
+	public void PrepareForIdle()
+	{
+		m_bufferedByteReader.ReleaseLargeBuffer();
+		m_compressedBufferedByteReader.ReleaseLargeBuffer();
+		m_payloadCache.ArraySegment = default;
 	}
 
 	private async ValueTask<int> ReadBytesAsync(Memory<byte> buffer, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
@@ -348,6 +356,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 
 	private readonly BufferedByteReader m_bufferedByteReader;
 	private readonly BufferedByteReader m_compressedBufferedByteReader;
+	private readonly ArraySegmentHolder<byte> m_payloadCache;
 #if NET11_0_OR_GREATER
 	private readonly bool m_isZstandard;
 #endif
