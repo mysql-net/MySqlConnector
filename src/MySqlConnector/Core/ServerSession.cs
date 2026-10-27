@@ -31,7 +31,6 @@ internal sealed partial class ServerSession : IServerCapabilities
 	{
 		m_logger = logger;
 		m_lock = new();
-		m_payloadCache = new();
 		Id = pool.Id + "." + pool.GetNewSessionId();
 		ServerVersion = ServerVersion.Empty;
 		CreatedTimestamp = Stopwatch.GetTimestamp();
@@ -77,9 +76,8 @@ internal sealed partial class ServerSession : IServerCapabilities
 		if (Pool is null)
 			return default;
 
-		// if the payload cache is too large, discard it rather than keeping it alive in the pool; see https://github.com/mysql-net/MySqlConnector/issues/1587
-		if (m_payloadCache.Array?.Length > ProtocolUtility.MaxPacketSize + 1)
-			m_payloadCache.ArraySegment = default;
+		// release buffers used to read large payloads rather than keeping them alive in the pool; see https://github.com/mysql-net/MySqlConnector/issues/1587
+		m_payloadHandler!.PrepareForIdle();
 
 		MetricsReporter.RecordUseTime(Pool, Utility.GetElapsedSeconds(LastLeasedTimestamp, LastReturnedTimestamp));
 		LastLeasedTimestamp = 0;
@@ -1191,7 +1189,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 		ArraySegment<byte> bytes;
 		try
 		{
-			bytes = await m_payloadHandler!.ReadPayloadAsync(m_payloadCache, ProtocolErrorBehavior.Throw, ioBehavior).ConfigureAwait(false);
+			bytes = await m_payloadHandler!.ReadPayloadAsync(ProtocolErrorBehavior.Throw, ioBehavior).ConfigureAwait(false);
 		}
 		catch (Exception ex)
 		{
@@ -2300,7 +2298,6 @@ internal sealed partial class ServerSession : IServerCapabilities
 #else
 	private readonly object m_lock;
 #endif
-	private readonly ArraySegmentHolder<byte> m_payloadCache;
 	private readonly ActivityTagsCollection m_activityTags;
 	private State m_state;
 	private TcpClient? m_tcpClient;

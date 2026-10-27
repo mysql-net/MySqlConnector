@@ -17,7 +17,14 @@ internal sealed class BufferedByteReader
 		}
 
 		// get a buffer big enough to hold all the data, and move any buffered data to the beginning
-		var buffer = count > m_buffer.Length ? new byte[count] : m_buffer;
+		var buffer = m_buffer;
+		if (count > buffer.Length)
+		{
+			// reuse the buffer from a previous large read (if it's big enough) instead of allocating a new (possibly LOH) array for every large packet
+			if (m_largeBuffer is null || m_largeBuffer.Length < count)
+				m_largeBuffer = new byte[count];
+			buffer = m_largeBuffer;
+		}
 		if (m_remainingData.Count > 0)
 		{
 			Buffer.BlockCopy(m_remainingData.Array!, m_remainingData.Offset, buffer, 0, m_remainingData.Count);
@@ -26,6 +33,9 @@ internal sealed class BufferedByteReader
 
 		return ReadBytesAsync(byteHandler, new(buffer, m_remainingData.Count, buffer.Length - m_remainingData.Count), count, ioBehavior);
 	}
+
+	// Stops reusing the buffer allocated for large reads, so that it isn't kept alive while the session is idle in the pool.
+	public void ReleaseLargeBuffer() => m_largeBuffer = null;
 
 	private async ValueTask<ArraySegment<byte>> ReadBytesAsync(IByteHandler byteHandler, ArraySegment<byte> buffer, int totalBytesToRead, IOBehavior ioBehavior)
 	{
@@ -53,5 +63,6 @@ internal sealed class BufferedByteReader
 	}
 
 	private readonly byte[] m_buffer;
+	private byte[]? m_largeBuffer;
 	private ArraySegment<byte> m_remainingData;
 }

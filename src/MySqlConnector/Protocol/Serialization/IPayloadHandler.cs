@@ -23,15 +23,12 @@ internal interface IPayloadHandler : IDisposable
 	/// <summary>
 	/// Reads the next payload.
 	/// </summary>
-	/// <param name="cache">An <see cref="ArraySegmentHolder{Byte}"/> that will cache any buffers allocated during this
-	/// read. (To disable caching, pass <code>new ArraySegmentHolder&lt;byte&gt;</code> so the cache will be garbage-collected
-	/// when this method returns.)</param>
 	/// <param name="protocolErrorBehavior">The <see cref="ProtocolErrorBehavior"/> to use if there is a protocol error.</param>
 	/// <param name="ioBehavior">The <see cref="IOBehavior"/> to use when reading data.</param>
 	/// <returns>An <see cref="ArraySegment{Byte}"/> containing the data that was read. This
 	/// <see cref="ArraySegment{Byte}"/> will be valid to read from until the next time <see cref="ReadPayloadAsync"/> or
 	/// <see cref="WritePayloadAsync"/> is called.</returns>
-	ValueTask<ArraySegment<byte>> ReadPayloadAsync(ArraySegmentHolder<byte> cache, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior);
+	ValueTask<ArraySegment<byte>> ReadPayloadAsync(ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior);
 
 	/// <summary>
 	/// Writes a payload.
@@ -39,4 +36,9 @@ internal interface IPayloadHandler : IDisposable
 	/// <param name="payload">The data to write.</param>
 	/// <param name="ioBehavior">The <see cref="IOBehavior"/> to use when writing.</param>
 	ValueTask WritePayloadAsync(ReadOnlyMemory<byte> payload, IOBehavior ioBehavior);
+
+	/// <summary>
+	/// Prepares for the session to become idle, e.g., by releasing any cached buffers.
+	/// </summary>
+	void PrepareForIdle();
 }

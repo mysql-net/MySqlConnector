@@ -8,6 +8,7 @@ internal sealed class StandardPayloadHandler : IPayloadHandler
 	{
 		ByteHandler = byteHandler;
 		m_getNextSequenceNumber = () => m_sequenceNumber++;
+		m_payloadCache = new();
 	}
 
 	public void Dispose()
@@ -44,13 +45,20 @@ internal sealed class StandardPayloadHandler : IPayloadHandler
 		}
 	}
 
-	public ValueTask<ArraySegment<byte>> ReadPayloadAsync(ArraySegmentHolder<byte> cache, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) =>
-		ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader!, m_byteHandler!, m_getNextSequenceNumber, cache, protocolErrorBehavior, ioBehavior);
+	public ValueTask<ArraySegment<byte>> ReadPayloadAsync(ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) =>
+		ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader!, m_byteHandler!, m_getNextSequenceNumber, m_payloadCache, protocolErrorBehavior, ioBehavior);
 
 	public ValueTask WritePayloadAsync(ReadOnlyMemory<byte> payload, IOBehavior ioBehavior) =>
 		ProtocolUtility.WritePayloadAsync(m_byteHandler!, m_getNextSequenceNumber, payload, ioBehavior);
 
+	public void PrepareForIdle()
+	{
+		m_bufferedByteReader!.ReleaseLargeBuffer();
+		m_payloadCache.ArraySegment = default;
+	}
+
 	private readonly Func<int> m_getNextSequenceNumber;
+	private readonly ArraySegmentHolder<byte> m_payloadCache;
 	private IByteHandler? m_byteHandler;
 	private BufferedByteReader? m_bufferedByteReader;
 	private byte m_sequenceNumber;
