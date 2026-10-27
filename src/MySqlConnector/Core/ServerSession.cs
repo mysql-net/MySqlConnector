@@ -511,17 +511,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 				// for pipelining, concatenate reset connection and SET NAMES query into one buffer
 				if (m_supportsPipelining)
-				{
-					m_pipelinedResetConnectionBytes = new byte[m_setNamesPayload.Span.Length + 9];
-
-					// first packet: reset connection
-					m_pipelinedResetConnectionBytes[0] = 1;
-					m_pipelinedResetConnectionBytes[4] = (byte) CommandKind.ResetConnection;
-
-					// second packet: SET NAMES query
-					m_pipelinedResetConnectionBytes[5] = (byte) m_setNamesPayload.Span.Length;
-					m_setNamesPayload.Span.CopyTo(m_pipelinedResetConnectionBytes.AsSpan()[9..]);
-				}
+					m_pipelinedResetConnectionBytes = CreatePipelinedPackets(ResetConnectionPayload.Instance.Memory, m_setNamesPayload.Memory);
 			}
 
 			Log.SessionMadeConnection(m_logger, Id, ServerVersion.OriginalString, ConnectionId, m_compressionMethod != CompressionMethod.None, m_supportsConnectionAttributes, SupportsDeprecateEof, SupportsCachedPreparedMetadata, serverSupportsSsl, SupportsSessionTrack, m_supportsPipelining, SupportsQueryAttributes);
@@ -922,21 +912,13 @@ internal sealed partial class ServerSession : IServerCapabilities
 		OkPayload.Verify(payload.Span, this);
 	}
 
-	// Appends a COM_INIT_DB packet to the pipelined COM_RESET_CONNECTION and SET NAMES packets. COM_INIT_DB goes last because the
+	// Pipelines COM_INIT_DB after the COM_RESET_CONNECTION and SET NAMES packets. COM_INIT_DB goes last because the
 	// server decodes the database name with 'character_set_client', which COM_RESET_CONNECTION resets and SET NAMES restores.
 	// The result is cached per session: a pooled session is always reset with its pool's ConnectionSettings, so 'database' doesn't change.
 	private byte[] CreatePipelinedResetConnectionAndInitDatabaseBytes(string database)
 	{
 		using var initDatabasePayload = InitDatabasePayload.Create(database);
-		var initDatabase = initDatabasePayload.Span;
-		var resetConnection = m_pipelinedResetConnectionBytes!;
-		var bytes = new byte[resetConnection.Length + 4 + initDatabase.Length];
-		resetConnection.CopyTo(bytes, 0);
-
-		// third packet: COM_INIT_DB, with a three-byte payload length and sequence number 0
-		SerializationUtility.WriteUInt32((uint) initDatabase.Length, bytes, resetConnection.Length, 3);
-		initDatabase.CopyTo(bytes.AsSpan(resetConnection.Length + 4));
-		return bytes;
+		return CreatePipelinedPackets(ResetConnectionPayload.Instance.Memory, m_setNamesPayload.Memory, initDatabasePayload.Memory);
 	}
 
 	// Whether the server's identity has been established well enough to send it the account password.
@@ -2225,6 +2207,26 @@ internal sealed partial class ServerSession : IServerCapabilities
 		m_activityTags[name] = value;
 		if (activity is { IsAllDataRequested: true })
 			activity.SetTag(name, value);
+	}
+
+	// Concatenates the payloads into one buffer of packets that can be sent with a single write. Each packet has sequence number 0
+	// because each payload is a separate command.
+	private static byte[] CreatePipelinedPackets(params ReadOnlyMemory<byte>[] payloads)
+	{
+		var length = 0;
+		foreach (var payload in payloads)
+			length += payload.Length + 4;
+
+		var bytes = new byte[length];
+		var offset = 0;
+		foreach (var payload in payloads)
+		{
+			// three-byte payload length, then the sequence number (already 0), then the payload
+			SerializationUtility.WriteUInt32((uint) payload.Length, bytes, offset, 3);
+			payload.Span.CopyTo(bytes.AsSpan(offset + 4));
+			offset += payload.Length + 4;
+		}
+		return bytes;
 	}
 
 	private enum State
