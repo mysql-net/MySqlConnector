@@ -72,7 +72,7 @@ internal sealed class SocketByteHandler : IByteHandler
 		var startTime = RemainingTimeout == Constants.InfiniteTimeout ? 0 : Environment.TickCount;
 		var timerId = RemainingTimeout switch
 		{
-			Constants.InfiniteTimeout => 0u,
+			Constants.InfiniteTimeout => 0,
 			<= 0 => throw MySqlException.CreateForTimeout(),
 			_ => TimerQueue.Instance.Add(RemainingTimeout, m_closeSocket),
 		};

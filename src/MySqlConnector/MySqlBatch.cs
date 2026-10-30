@@ -277,22 +277,26 @@ public sealed class MySqlBatch :
 	{
 		Volatile.Write(ref m_commandTimedOut, false);
 
-		if (m_cancelTimerId != 0)
-			TimerQueue.Instance.Remove(m_cancelTimerId);
-
-		if (milliseconds != Constants.InfiniteTimeout)
+		if (milliseconds == Constants.InfiniteTimeout)
+		{
+			m_cancelTimer.Stop();
+		}
+		else
 		{
 			m_cancelForCommandTimeoutAction ??= CancelCommandForTimeout;
-			m_cancelTimerId = TimerQueue.Instance.Add(milliseconds, m_cancelForCommandTimeoutAction);
+			m_cancelTimer.Start(milliseconds, m_cancelForCommandTimeoutAction);
 		}
 	}
 
 	bool ICancellableCommand.IsTimedOut => Volatile.Read(ref m_commandTimedOut);
 
-	private void CancelCommandForTimeout()
+	private void CancelCommandForTimeout(int timerId)
 	{
-		Volatile.Write(ref m_commandTimedOut, true);
-		Cancel();
+		if (m_cancelTimer.OnTimerFired(timerId, m_cancelForCommandTimeoutAction!))
+		{
+			Volatile.Write(ref m_commandTimedOut, true);
+			Cancel();
+		}
 	}
 
 	private async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -417,7 +421,7 @@ public sealed class MySqlBatch :
 	private readonly int m_commandId;
 	private bool m_isDisposed;
 	private Action? m_cancelAction;
-	private Action? m_cancelForCommandTimeoutAction;
-	private uint m_cancelTimerId;
+	private Action<int>? m_cancelForCommandTimeoutAction;
+	private ResettableTimer m_cancelTimer;
 	private bool m_commandTimedOut;
 }

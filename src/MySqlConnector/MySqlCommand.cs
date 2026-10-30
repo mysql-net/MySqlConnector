@@ -412,13 +412,14 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 
 	void ICancellableCommand.SetTimeout(int milliseconds)
 	{
-		if (m_cancelTimerId != 0)
-			TimerQueue.Instance.Remove(m_cancelTimerId);
-
-		if (milliseconds != Constants.InfiniteTimeout)
+		if (milliseconds == Constants.InfiniteTimeout)
+		{
+			m_cancelTimer.Stop();
+		}
+		else
 		{
 			m_cancelForCommandTimeoutAction ??= CancelCommandForTimeout;
-			m_cancelTimerId = TimerQueue.Instance.Add(milliseconds, m_cancelForCommandTimeoutAction);
+			m_cancelTimer.Start(milliseconds, m_cancelForCommandTimeoutAction);
 		}
 	}
 
@@ -434,10 +435,13 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 
 	private IOBehavior AsyncIOBehavior => Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous;
 
-	private void CancelCommandForTimeout()
+	private void CancelCommandForTimeout(int timerId)
 	{
-		Volatile.Write(ref m_commandTimedOut, true);
-		Connection?.Cancel(this, m_commandId, false);
+		if (m_cancelTimer.OnTimerFired(timerId, m_cancelForCommandTimeoutAction!))
+		{
+			Volatile.Write(ref m_commandTimedOut, true);
+			Connection?.Cancel(this, m_commandId, false);
+		}
 	}
 
 	private bool IsValid([NotNullWhen(false)] out Exception? exception)
@@ -471,7 +475,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	private int? m_commandTimeout;
 	private CommandBehavior m_commandBehavior;
 	private Action? m_cancelAction;
-	private Action? m_cancelForCommandTimeoutAction;
-	private uint m_cancelTimerId;
+	private Action<int>? m_cancelForCommandTimeoutAction;
+	private ResettableTimer m_cancelTimer;
 	private bool m_commandTimedOut;
 }

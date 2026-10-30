@@ -12,7 +12,17 @@ internal sealed class TimerQueue
 	/// <param name="delay">The time (in milliseconds) to wait before invoking <paramref name="action"/>.</param>
 	/// <param name="action">The callback to invoke.</param>
 	/// <returns>A timer ID that can be passed to <see cref="Remove"/> to cancel the timer.</returns>
-	public uint Add(int delay, Action action)
+	public int Add(int delay, Action action) => Add(delay, (Delegate) action);
+
+	/// <summary>
+	/// Adds a timer that will invoke <paramref name="action"/> in approximately <paramref name="delay"/> milliseconds.
+	/// </summary>
+	/// <param name="delay">The time (in milliseconds) to wait before invoking <paramref name="action"/>.</param>
+	/// <param name="action">The callback to invoke; it is passed the ID of the timer that fired.</param>
+	/// <returns>A timer ID that can be passed to <see cref="Remove"/> to cancel the timer.</returns>
+	public int Add(int delay, Action<int> action) => Add(delay, (Delegate) action);
+
+	private int Add(int delay, Delegate action)
 	{
 		ArgumentOutOfRangeException.ThrowIfNegative(delay);
 
@@ -40,9 +50,9 @@ internal sealed class TimerQueue
 	/// <summary>
 	/// Cancels the timer with the specified ID.
 	/// </summary>
-	/// <param name="id">The timer ID (returned from <see cref="Add"/>).</param>
+	/// <param name="id">The timer ID (returned from <see cref="Add(int, Action)"/>).</param>
 	/// <returns><c>true</c> if the timer was removed; otherwise, <c>false</c>. This method will return <c>false</c> if the specified timer has already fired.</returns>
-	public bool Remove(uint id)
+	public bool Remove(int id)
 	{
 		lock (m_lock)
 		{
@@ -68,14 +78,14 @@ internal sealed class TimerQueue
 
 	private void Callback(object? obj)
 	{
-		var actionsToBeCalled = new List<Action>();
+		var actionsToBeCalled = new List<Data>();
 
 		lock (m_lock)
 		{
 			// process all timers that have expired or will expire in the granularity of a clock tick
 			while (m_timeoutActions.Count > 0 && unchecked(m_timeoutActions[0].Time - Environment.TickCount) < 15)
 			{
-				actionsToBeCalled.Add(m_timeoutActions[0].Action);
+				actionsToBeCalled.Add(m_timeoutActions[0]);
 				m_timeoutActions.RemoveAt(0);
 			}
 
@@ -90,9 +100,12 @@ internal sealed class TimerQueue
 			}
 		}
 
-		foreach (var action in actionsToBeCalled)
+		foreach (var data in actionsToBeCalled)
 		{
-			action();
+			if (data.Action is Action action)
+				action();
+			else
+				((Action<int>) data.Action)(data.Id);
 		}
 	}
 
@@ -114,16 +127,16 @@ internal sealed class TimerQueue
 
 	private readonly struct Data
 	{
-		public Data(uint id, int time, Action action)
+		public Data(int id, int time, Delegate action)
 		{
 			Id = id;
 			Time = time;
 			Action = action;
 		}
 
-		public uint Id { get; }
+		public int Id { get; }
 		public int Time { get; }
-		public Action Action { get; }
+		public Delegate Action { get; }
 	}
 
 #if NET9_0_OR_GREATER
@@ -133,7 +146,7 @@ internal sealed class TimerQueue
 #endif
 	private readonly Timer m_timer;
 	private readonly List<Data> m_timeoutActions;
-	private uint m_counter;
+	private int m_counter;
 	private bool m_isTimerEnabled;
 	private int m_nextTimerTick;
 }
