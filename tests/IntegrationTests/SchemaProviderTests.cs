@@ -195,6 +195,23 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 
 		await queryTask;
 	}
+
+	[Fact]
+	public async Task GetProcessListSchemaWithSupplementaryCharacterQuery()
+	{
+		// a query containing a supplementary character makes INFORMATION_SCHEMA.PROCESSLIST fail on MySQL 9.1 and later: https://bugs.mysql.com/bug.php?id=121434
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		await connection.OpenAsync();
+		using var command = new MySqlCommand("SELECT SLEEP(3), '\U0001F600';", connection);
+		var queryTask = command.ExecuteScalarAsync();
+		await Task.Delay(TimeSpan.FromSeconds(1));
+
+		var table = await m_database.Connection.GetSchemaAsync("ProcessList");
+		var row = Assert.Single(table.Rows.Cast<DataRow>(), x => (long) x["ID"] == connection.ServerThread);
+		Assert.Equal("Query", row["COMMAND"]);
+
+		await queryTask;
+	}
 #endif
 
 	[Fact]

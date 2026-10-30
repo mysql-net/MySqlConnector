@@ -537,8 +537,23 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 			}
 		}, cancellationToken);
 
-	// INFORMATION_SCHEMA.PROCESSLIST fails on MySQL 9.1 and later if any statement's text isn't valid UTF-8: https://bugs.mysql.com/bug.php?id=121434
-	// SHOW FULL PROCESSLIST returns the same columns (and MariaDB adds a Progress column, which is ignored).
-	private Task DoFillProcessListAsync(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken) =>
-		FillDataTableAsync(ioBehavior, dataTable, command => command.CommandText = "SHOW FULL PROCESSLIST;", cancellationToken);
+	private async Task DoFillProcessListAsync(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	{
+		var usePerformanceSchema = false;
+		await FillDataTableAsync(ioBehavior, dataTable, command =>
+		{
+			// MariaDB doesn't have performance_schema.processlist, and INFORMATION_SCHEMA.PROCESSLIST isn't deprecated there.
+			var serverVersion = connection.Session.ServerVersion;
+			usePerformanceSchema = !serverVersion.IsMariaDb && serverVersion.Version >= ServerVersions.SupportsPerformanceSchemaProcessList;
+			command.CommandText = usePerformanceSchema ?
+				"SELECT ID, USER, HOST, DB, COMMAND, TIME, STATE, INFO FROM performance_schema.processlist;" :
+				"SELECT ID, USER, HOST, DB, COMMAND, TIME, STATE, INFO FROM INFORMATION_SCHEMA.PROCESSLIST;";
+		}, cancellationToken).ConfigureAwait(false);
+
+		// If the server was started with performance_schema=OFF, that table is empty (instead of containing at least this connection), so fall back to
+		// SHOW FULL PROCESSLIST (which returns the same columns).
+		// Don't use INFORMATION_SCHEMA.PROCESSLIST because of https://bugs.mysql.com/bug.php?id=121434.
+		if (usePerformanceSchema && dataTable.Rows.Count == 0)
+			await FillDataTableAsync(ioBehavior, dataTable, command => command.CommandText = "SHOW FULL PROCESSLIST;", cancellationToken).ConfigureAwait(false);
+	}
 }

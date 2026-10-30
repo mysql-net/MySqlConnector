@@ -199,6 +199,151 @@ SELECT @'var' as R")]
 		var options = noBackslashEscapes ? StatementPreparerOptions.NoBackslashEscapes : StatementPreparerOptions.None;
 		var parsedSql = GetParsedSql(sql, parameters, options);
 		Assert.Equal("ALTER USER 'root'@'localhost' IDENTIFIED BY 'P@ssw0rd';", parsedSql);
+
+		// test most common form: just using a parameter for the password
+		parsedSql = GetParsedSql("ALTER USER 'test'@'%' IDENTIFIED BY @password;", parameters, options);
+		Assert.Equal("ALTER USER 'test'@'%' IDENTIFIED BY 'P@ssw0rd';", parsedSql);
+	}
+
+	// MySQL lexes '@' as its own token, so whitespace between a keyword and a parameter is optional
+	[Theory]
+	[InlineData("SELECT@param;")]
+	[InlineData("SELECT * FROM t WHERE@param IS NULL;")]
+	[InlineData("SELECT * FROM t WHERE a = 1 AND@param;")]
+	[InlineData("SELECT * FROM t WHERE a = 1 OR@param;")]
+	[InlineData("SELECT * FROM t WHERE NOT@param;")]
+	[InlineData("SELECT * FROM t WHERE name LIKE@param;")]
+	[InlineData("SELECT * FROM t LIMIT@param;")]
+	[InlineData("SELECT * FROM t LIMIT 10 OFFSET@param;")]
+	[InlineData("SELECT CASE WHEN a = 1 THEN@param ELSE@param END FROM t;")]
+	[InlineData("SELECT * FROM t WHERE@param IS NULL OR name = @param;")]
+	[InlineData("SELECT * FROM t WHERE name = BINARY@param;")]
+	[InlineData("SELECT * FROM t WHERE name = _utf8mb4@param COLLATE utf8mb4_bin;")]
+	[InlineData("SELECT N@param;")]
+	[InlineData("SELECT * FROM t WHERE a IN(@param,@param);")]
+	public void ParametersAdjacentToKeywords(string sql) => AssertParametersBound(sql);
+
+	[Theory]
+	[InlineData("SELECT @@version;")]
+	[InlineData("SELECT@@version;")]
+	[InlineData("SELECT@@IDENTITY;")]
+	[InlineData("SELECT @@global.max_connections, @@session.sql_mode;")]
+	[InlineData("SELECT 1 UNION SELECT@@version;")]
+	[InlineData("SET @@session.sql_mode = 'ANSI';")]
+	[InlineData("SET@@session.sql_mode='ANSI';")]
+	[InlineData("SELECT * FROM t WHERE a = 1 AND@@autocommit = 1;")]
+	[InlineData("SELECT 'a', @@version;")]
+	[InlineData("SELECT `a`, @@version FROM t;")]
+	[InlineData("SELECT @@version, @param;")]
+	[InlineData("SELECT@@version,@param;")]
+	[InlineData("SET@@session.time_zone=@param;")]
+	public void SystemVariablesAreNotParameters(string sql) => AssertParametersBound(sql);
+
+	[Theory]
+	[InlineData("SELECT 'a' @param;")]
+	[InlineData("SELECT 'a'\n@param;")]
+	[InlineData("SELECT 'a'\t@param;")]
+	[InlineData("SELECT \"a\" @param;")]
+	[InlineData("SELECT * FROM t WHERE name LIKE '%' @param '%';")]
+	[InlineData("SELECT `amount` @param FROM t;")]
+	[InlineData("SELECT 'a',@param;")]
+	[InlineData("SELECT 'a' , @param;")]
+	[InlineData("SELECT * FROM t WHERE `a` = @param;")]
+	[InlineData("SELECT * FROM t WHERE a = 'x' AND b = @param;")]
+	[InlineData("SELECT * FROM t WHERE a IN ('x', @param);")]
+	[InlineData("SELECT CONCAT('a', @param, 'b');")]
+	public void ParametersAfterQuotedValues(string sql) => AssertParametersBound(sql);
+
+	[Theory]
+	[InlineData("SELECT @'param' @param;", "SELECT 'abc' 'abc';")]
+	[InlineData("SELECT @\"param\" @param;", "SELECT 'abc' 'abc';")]
+	[InlineData("SELECT @`param` @param;", "SELECT 'abc' 'abc';")]
+	[InlineData("SELECT @'param'\n@param;", "SELECT 'abc'\n'abc';")]
+	[InlineData("SELECT ?param, 'a' ?param, @param;", "SELECT 'abc', 'a' 'abc', 'abc';")]
+	public void QuotedAndQuestionMarkParametersFollowedByParameter(string sql, string expectedSql)
+	{
+		var parameters = new MySqlParameterCollection { new("@param", "abc") };
+		Assert.Equal(expectedSql, GetParsedSql(sql, parameters));
+	}
+
+	[Theory]
+	[InlineData("SELECT @undefined;")]
+	[InlineData("SELECT@undefined;")]
+	[InlineData("SELECT * FROM t WHERE a = @undefined;")]
+	[InlineData("SELECT * FROM t WHERE a = 1 AND@undefined;")]
+	[InlineData("SELECT 'a' @undefined;")]
+	[InlineData("SELECT 'a'\n@undefined;")]
+	[InlineData("SELECT `a` @undefined;")]
+	[InlineData("SELECT @'undefined';")]
+	[InlineData("SELECT @`undefined`;")]
+	[InlineData("SELECT @\"undefined\";")]
+	[InlineData("SELECT ?undefined;")]
+	public void UndefinedParameter(string sql)
+	{
+		Assert.Throws<MySqlException>(() => GetParsedSql(sql));
+		Assert.Equal(sql, GetParsedSql(sql, options: StatementPreparerOptions.AllowUserVariables));
+	}
+
+	[Theory]
+	[InlineData("CREATE USER 'test'@'localhost' IDENTIFIED BY 'password';")]
+	[InlineData("CREATE USER 'test'@localhost;")]
+	[InlineData("CREATE USER 'test'@'%', 'test2'@'%';")]
+	[InlineData("CREATE USER 'test'@'192.168.0.%';")]
+	[InlineData("CREATE USER `test`@`localhost`;")]
+	[InlineData("CREATE USER \"test\"@\"localhost\";")]
+	[InlineData("DROP USER 'test'@'%';")]
+	[InlineData("RENAME USER 'old'@'%' TO 'new'@'%';")]
+	[InlineData("GRANT SELECT ON db.* TO 'test'@'localhost';")]
+	[InlineData("REVOKE SELECT ON db.* FROM 'test'@'localhost';")]
+	[InlineData("SHOW GRANTS FOR 'test'@'localhost';")]
+	[InlineData("SET PASSWORD FOR 'test'@'localhost' = 'password';")]
+	[InlineData("CREATE DEFINER='root'@'localhost' PROCEDURE p() SELECT 1;")]
+	[InlineData("CREATE DEFINER=`root`@`localhost` VIEW v AS SELECT 1;")]
+	[InlineData("ALTER USER test@'%' IDENTIFIED BY 'password';", Skip = "https://github.com/mysql-net/MySqlConnector/issues/1480")]
+	[InlineData("ALTER USER test @'%' IDENTIFIED BY 'password';", Skip = "https://github.com/mysql-net/MySqlConnector/issues/1480")]
+	[InlineData("ALTER USER 'test' @'%' IDENTIFIED BY 'password';", Skip = "https://github.com/mysql-net/MySqlConnector/issues/1480")]
+	[InlineData("ALTER USER test\r\n@'%' IDENTIFIED BY 'password';", Skip = "https://github.com/mysql-net/MySqlConnector/issues/1480")]
+	[InlineData("ALTER USER test@localhost IDENTIFIED BY 'password';", Skip = "https://github.com/mysql-net/MySqlConnector/issues/1480")]
+	[InlineData("ALTER USER test @localhost IDENTIFIED BY 'password';", Skip = "https://github.com/mysql-net/MySqlConnector/issues/1480")]
+	[InlineData("ALTER USER test @'localhost' IDENTIFIED BY 'password';", Skip = "https://github.com/mysql-net/MySqlConnector/issues/1480")]
+	[InlineData("ALTER USER 'test' @'localhost' IDENTIFIED BY 'password';", Skip = "https://github.com/mysql-net/MySqlConnector/issues/1480")]
+	[InlineData("ALTER USER test\r\n@localhost IDENTIFIED BY 'password';", Skip = "https://github.com/mysql-net/MySqlConnector/issues/1480")]
+	[InlineData("ALTER USER 'test' /* comment */ @'%' IDENTIFIED BY 'password';", Skip = "https://github.com/mysql-net/MySqlConnector/issues/1480")]
+	public void AccountNames(string sql)
+	{
+		AssertParametersBound(sql);
+		AssertParametersBound(sql, StatementPreparerOptions.NoBackslashEscapes);
+	}
+
+	[Theory]
+	[InlineData("SELECT 1--@param;", "SELECT 1--123;")]
+	[InlineData("SELECT 1 -- @param\n+ @param;", "SELECT 1 -- @param\n+ 123;")]
+	[InlineData("SELECT 1 # @param\n+ @param;", "SELECT 1 # @param\n+ 123;")]
+	[InlineData("SELECT /* @param */@param;", "SELECT /* @param */123;")]
+	[InlineData("SELECT 'a' -- @param\n, @param;", "SELECT 'a' -- @param\n, 123;")]
+	[InlineData("SELECT 'a' # @param\n, @param;", "SELECT 'a' # @param\n, 123;")]
+	public void ParametersNearComments(string sql, string expectedSql)
+	{
+		var parameters = new MySqlParameterCollection { new("@param", 123) };
+		Assert.Equal(expectedSql, GetParsedSql(sql, parameters));
+	}
+
+	[Theory]
+	[InlineData("SELECT 'a\\', @param;", false, "SELECT 'a\\', @param;", false)]
+	[InlineData("SELECT 'a\\', @param;", true, "SELECT 'a\\', 'abc';", true)]
+	[InlineData("SELECT \"a\\\", @param;", false, "SELECT \"a\\\", @param;", false)]
+	[InlineData("SELECT \"a\\\", @param;", true, "SELECT \"a\\\", 'abc';", true)]
+	[InlineData("SELECT `a\\`, @param;", false, "SELECT `a\\`, 'abc';", true)]
+	[InlineData("SELECT `a\\`, @param;", true, "SELECT `a\\`, 'abc';", true)]
+	public void BackslashesInQuotedValues(string sql, bool noBackslashEscapes, string expectedSql, bool expectedComplete)
+	{
+		var parameters = new MySqlParameterCollection { new("@param", "abc") };
+		var preparer = new StatementPreparer(sql, parameters, noBackslashEscapes ? StatementPreparerOptions.NoBackslashEscapes : StatementPreparerOptions.None);
+		var writer = new ByteBufferWriter();
+		var isComplete = preparer.ParseAndBindParameters(writer);
+		Assert.Equal(expectedComplete, isComplete);
+		using var payload = writer.ToPayloadData();
+		Assert.Equal(expectedSql, Encoding.UTF8.GetString(payload.Span));
 	}
 
 	// https://github.com/mysql-net/MySqlConnector/issues/1480
@@ -357,6 +502,14 @@ SELECT @'var' as R")]
 	[InlineData("SELECT * FROM `SELECT`", "SELECT * FROM `SELECT`", false, true)]
 	[InlineData("SELECT * FROM test WHERE id = ?;", "SELECT * FROM test WHERE id = 0;", false, true)]
 	[InlineData("SELECT * FROM test WHERE id = ?", "SELECT * FROM test WHERE id = 0", false, true)]
+	[InlineData("SELECT 'a' ?", "SELECT 'a' 0;", true, true)]
+	[InlineData("SELECT * FROM test LIMIT?", "SELECT * FROM test LIMIT0;", true, true)]
+	[InlineData("SELECT 'a' ", "SELECT 'a' ;", true, true)]
+	[InlineData("SELECT 'a' -- comment", "SELECT 'a' -- comment\n;", true, true)]
+	[InlineData("SELECT @@version # comment", "SELECT @@version # comment\n;", true, true)]
+	[InlineData("SELECT@@version#comment", "SELECT@@version#comment\n;", true, true)]
+	[InlineData("CREATE USER 'test'@'%'", "CREATE USER 'test'@'%';", true, true)]
+	[InlineData("CREATE USER 'test'@localhost", "CREATE USER 'test'@localhost;", true, true)]
 	public void CompleteStatements(string sql, string expectedSql, bool appendSemicolon, bool expectedComplete)
 	{
 		var parameters = new MySqlParameterCollection { new() { Value = 0 } };
@@ -385,6 +538,13 @@ SELECT @'var' as R")]
 	[InlineData("SELECT @\"one\", 'two';", new[] { "SELECT ?, 'two'" }, "@\"one\"")]
 	[InlineData("SELECT ?, ?; SELECT ?, ?", new[] { "SELECT ?, ?", "SELECT ?, ?" }, "0,1;2,3")]
 	[InlineData("SELECT '@one' FROM `@three` WHERE `@zero` = @two;", new[] { "SELECT '@one' FROM `@three` WHERE `@zero` = ?" }, "@two")]
+	[InlineData("SELECT ?, @one;", new[] { "SELECT ?, ?" }, "0,@one")]
+	[InlineData("SELECT@one;", new[] { "SELECT?" }, "@one")]
+	[InlineData("SELECT@@version, @one;", new[] { "SELECT@@version, ?" }, "@one")]
+	[InlineData("SELECT@@version; SELECT@two", new[] { "SELECT@@version", "SELECT?" }, ";@two")]
+	[InlineData("SELECT * FROM t WHERE name LIKE '%' @one '%';", new[] { "SELECT * FROM t WHERE name LIKE '%' ? '%'" }, "@one")]
+	[InlineData("SELECT 1 -- @one\n; SELECT @two", new[] { "SELECT 1 -- @one\n", "SELECT ?" }, ";@two")]
+	[InlineData("CREATE USER 'test'@'%'; SELECT @two;", new[] { "CREATE USER 'test'@'%'", "SELECT ?" }, ";@two")]
 	public void SplitStatement(string sql, string[] expectedStatements, string expectedStatementParametersString)
 	{
 		// verify InlineData is in the expected format
@@ -428,6 +588,21 @@ SELECT @'var' as R")]
 			Assert.Equal(expectedParameterIndexes, splitStatements[i].ParameterIndexes);
 			Assert.Equal(expectedParameterNames, splitStatements[i].ParameterNames);
 		}
+	}
+
+	// asserts that every '@param' in 'sql' (and nothing else) is treated as a parameter, both when binding parameters
+	// client-side and when splitting the SQL into statements for server-side preparation
+	private static void AssertParametersBound(string sql, StatementPreparerOptions options = StatementPreparerOptions.None)
+	{
+		var parameters = new MySqlParameterCollection { new("@param", "abc") };
+		Assert.Equal(sql.Replace("@param", "'abc'"), GetParsedSql(sql, parameters, options));
+
+		var preparer = new StatementPreparer(sql, parameters, options);
+		using var parsedStatements = preparer.SplitStatements();
+		var statement = Assert.Single(parsedStatements.Statements);
+		Assert.Equal(sql.Replace("@param", "?").TrimEnd(';'), Encoding.UTF8.GetString(statement.StatementBytes.Slice(1)));
+		var parameterCount = sql.Split(new[] { "@param" }, StringSplitOptions.None).Length - 1;
+		Assert.Equal(Enumerable.Repeat("@param", parameterCount), statement.ParameterNames);
 	}
 
 	private static string GetParsedSql(string input, MySqlParameterCollection parameters = null, StatementPreparerOptions options = StatementPreparerOptions.None)
