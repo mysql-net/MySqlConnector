@@ -4,6 +4,7 @@ on:
   push:
     branches: [ master, test ]
     tags: [ '*' ]
+    paths-ignore: [ 'docs/content/**' ]
   pull_request:
   workflow_dispatch:
 
