@@ -287,7 +287,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	public TimeOnly GetTimeOnly(string name) => GetTimeOnly(GetOrdinal(name));
 #endif
 
-	public TimeSpan GetTimeSpan(int ordinal) => (TimeSpan) GetValue(ordinal);
+	public TimeSpan GetTimeSpan(int ordinal) => GetResultSet().GetCurrentRow().GetTimeSpan(ordinal);
 	public TimeSpan GetTimeSpan(string name) => GetTimeSpan(GetOrdinal(name));
 
 	public override Stream GetStream(int ordinal) => GetResultSet().GetCurrentRow().GetStream(ordinal);

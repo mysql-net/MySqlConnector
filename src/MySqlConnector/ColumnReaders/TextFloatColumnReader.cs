@@ -5,11 +5,14 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class TextFloatColumnReader : ColumnReader
+internal sealed class TextFloatColumnReader() : ColumnReader(ColumnReaderKind.Single)
 {
 	public static TextFloatColumnReader Instance { get; } = new();
 
-	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		ReadSingle(data, columnDefinition);
+
+	public override float ReadSingle(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{
 		if (Utf8Parser.TryParse(data, out float floatValue, out var floatBytesConsumed) && floatBytesConsumed == data.Length)
 			return floatValue;

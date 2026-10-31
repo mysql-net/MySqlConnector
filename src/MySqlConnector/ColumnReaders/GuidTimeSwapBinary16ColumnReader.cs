@@ -3,11 +3,14 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class GuidTimeSwapBinary16ColumnReader : ColumnReader
+internal sealed class GuidTimeSwapBinary16ColumnReader() : ColumnReader(ColumnReaderKind.Guid)
 {
 	public static GuidTimeSwapBinary16ColumnReader Instance { get; } = new();
 
 	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		ReadGuid(data);
+
+	public override Guid ReadGuid(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
 		ReadGuid(data);
 
 #if NET5_0_OR_GREATER

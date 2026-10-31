@@ -2,7 +2,7 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class BytesColumnReader : ColumnReader
+internal sealed class BytesColumnReader() : ColumnReader(ColumnReaderKind.Bytes)
 {
 	public static BytesColumnReader Instance { get; } = new();
 

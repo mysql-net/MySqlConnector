@@ -1779,8 +1779,14 @@ end;";
 		assertEqual = assertEqual ?? Assert.Equal;
 		using var cmd = connection.CreateCommand();
 		cmd.CommandText = $"select {column} from datatypes_{table} order by rowid";
-		using (var reader = cmd.ExecuteReader())
+
+		// read the values with the text protocol, then (after preparing the command) with the binary protocol
+		foreach (var prepare in new[] { false, true })
 		{
+			if (prepare)
+				cmd.Prepare();
+
+			using var reader = cmd.ExecuteReader();
 			Assert.Equal(dataTypeName, reader.GetDataTypeName(0));
 			foreach (var value in expected)
 			{

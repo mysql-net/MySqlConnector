@@ -3,11 +3,14 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class BinaryTimeColumnReader : ColumnReader
+internal sealed class BinaryTimeColumnReader() : ColumnReader(ColumnReaderKind.TimeSpan)
 {
 	public static BinaryTimeColumnReader Instance { get; } = new();
 
-	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		ReadTimeSpan(data, columnDefinition);
+
+	public override TimeSpan ReadTimeSpan(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{
 		if (data.Length == 0)
 			return TimeSpan.Zero;

@@ -26,8 +26,8 @@ class Program
 			.AddExporter(DefaultExporters.Csv);
 
 		// pass through command-line arguments so the run can be narrowed with --filter, --job, --runtimes, etc.
-		var summary = BenchmarkRunner.Run<MySqlClient>(customConfig, args);
-		Console.WriteLine(summary);
+		foreach (var summary in BenchmarkRunner.Run(typeof(Program).Assembly, customConfig, args))
+			Console.WriteLine(summary);
 	}
 }
 
