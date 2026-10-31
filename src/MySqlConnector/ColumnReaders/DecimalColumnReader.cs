@@ -4,14 +4,14 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class DecimalColumnReader() : ColumnReader(ColumnReaderKind.Decimal)
+internal sealed class DecimalColumnReader : ColumnReader
 {
 	public static DecimalColumnReader Instance { get; } = new();
 
 	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
 		DoReadValue(data);
 
-	public override decimal ReadDecimal(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+	public decimal ReadDecimal(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
 		DoReadValue(data);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -5,7 +5,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class TextFloatColumnReader() : ColumnReader(ColumnReaderKind.Single)
+internal sealed class TextFloatColumnReader : FloatColumnReader
 {
 	public static TextFloatColumnReader Instance { get; } = new();
 

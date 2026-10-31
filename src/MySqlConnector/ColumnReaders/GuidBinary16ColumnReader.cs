@@ -3,7 +3,7 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class GuidBinary16ColumnReader() : ColumnReader(ColumnReaderKind.Guid)
+internal sealed class GuidBinary16ColumnReader : GuidColumnReader
 {
 	public static GuidBinary16ColumnReader Instance { get; } = new();
 

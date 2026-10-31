@@ -3,7 +3,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class TextTimeColumnReader() : ColumnReader(ColumnReaderKind.TimeSpan)
+internal sealed class TextTimeColumnReader : TimeColumnReader
 {
 	public static TextTimeColumnReader Instance { get; } = new();
 

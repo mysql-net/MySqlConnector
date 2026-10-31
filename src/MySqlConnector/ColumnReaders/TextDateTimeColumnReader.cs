@@ -5,10 +5,9 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class TextDateTimeColumnReader : ColumnReader
+internal sealed class TextDateTimeColumnReader : DateTimeColumnReader
 {
 	public TextDateTimeColumnReader(MySqlConnection connection)
-		: base(ColumnReaderKind.DateTime)
 	{
 		m_allowZeroDateTime = connection.AllowZeroDateTime;
 		m_convertZeroDateTime = connection.ConvertZeroDateTime;

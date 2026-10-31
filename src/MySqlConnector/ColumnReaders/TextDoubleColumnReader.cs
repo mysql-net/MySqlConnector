@@ -5,7 +5,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class TextDoubleColumnReader() : ColumnReader(ColumnReaderKind.Double)
+internal sealed class TextDoubleColumnReader : DoubleColumnReader
 {
 	public static TextDoubleColumnReader Instance { get; } = new();
 

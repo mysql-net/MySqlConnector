@@ -3,7 +3,7 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class TextUnsignedInt32ColumnReader() : ColumnReader(ColumnReaderKind.UnsignedInteger)
+internal sealed class TextUnsignedInt32ColumnReader : UnsignedIntegerColumnReader
 {
 	public static TextUnsignedInt32ColumnReader Instance { get; } = new();
 

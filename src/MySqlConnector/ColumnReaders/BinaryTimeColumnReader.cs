@@ -3,7 +3,7 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class BinaryTimeColumnReader() : ColumnReader(ColumnReaderKind.TimeSpan)
+internal sealed class BinaryTimeColumnReader : TimeColumnReader
 {
 	public static BinaryTimeColumnReader Instance { get; } = new();
 

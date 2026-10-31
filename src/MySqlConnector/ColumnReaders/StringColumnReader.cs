@@ -4,7 +4,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class StringColumnReader() : ColumnReader(ColumnReaderKind.String)
+internal sealed class StringColumnReader : ColumnReader
 {
 	public static StringColumnReader Instance { get; } = new();
 

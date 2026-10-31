@@ -5,7 +5,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class GuidChar32ColumnReader() : ColumnReader(ColumnReaderKind.Guid)
+internal sealed class GuidChar32ColumnReader : GuidColumnReader
 {
 	public static GuidChar32ColumnReader Instance { get; } = new();
 

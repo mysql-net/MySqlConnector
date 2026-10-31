@@ -4,7 +4,7 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class BinarySignedInt32ColumnReader() : ColumnReader(ColumnReaderKind.SignedInteger)
+internal sealed class BinarySignedInt32ColumnReader : SignedIntegerColumnReader
 {
 	public static BinarySignedInt32ColumnReader Instance { get; } = new();
 

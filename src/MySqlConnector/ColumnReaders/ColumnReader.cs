@@ -4,7 +4,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal abstract class ColumnReader(ColumnReaderKind kind)
+internal abstract class ColumnReader
 {
 	public static ColumnReader Create(bool isBinary, ColumnDefinitionPayload columnDefinition, MySqlConnection connection)
 	{
@@ -122,37 +122,5 @@ internal abstract class ColumnReader(ColumnReaderKind kind)
 		}
 	}
 
-	public ColumnReaderKind Kind { get; } = kind;
-
 	public abstract object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
-
-	public virtual bool ReadBoolean(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		throw new NotSupportedException();
-
-	public virtual long ReadInt64(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		throw new NotSupportedException();
-
-	public virtual ulong ReadUInt64(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		throw new NotSupportedException();
-
-	public virtual decimal ReadDecimal(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		throw new NotSupportedException();
-
-	public virtual double ReadDouble(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		throw new NotSupportedException();
-
-	public virtual float ReadSingle(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		throw new NotSupportedException();
-
-	public virtual DateTime ReadDateTime(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		throw new NotSupportedException();
-
-	public virtual MySqlDateTime ReadMySqlDateTime(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		throw new NotSupportedException();
-
-	public virtual TimeSpan ReadTimeSpan(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		throw new NotSupportedException();
-
-	public virtual Guid ReadGuid(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		throw new NotSupportedException();
 }

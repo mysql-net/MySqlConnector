@@ -3,7 +3,7 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class BinaryFloatColumnReader() : ColumnReader(ColumnReaderKind.Single)
+internal sealed class BinaryFloatColumnReader : FloatColumnReader
 {
 	public static BinaryFloatColumnReader Instance { get; } = new();
 

@@ -94,12 +94,12 @@ internal sealed class Row
 	public bool GetBoolean(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "Boolean", out var data, out var columnDefinition);
-		return columnReader.Kind switch
+		return columnReader switch
 		{
-			ColumnReaderKind.Boolean => columnReader.ReadBoolean(data, columnDefinition),
-			ColumnReaderKind.SignedInteger => columnReader.ReadInt64(data, columnDefinition) != 0,
-			ColumnReaderKind.UnsignedInteger => columnReader.ReadUInt64(data, columnDefinition) != 0,
-			ColumnReaderKind.Decimal => columnReader.ReadDecimal(data, columnDefinition) != 0,
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition),
+			SignedIntegerColumnReader signedReader => signedReader.ReadInt64(data, columnDefinition) != 0,
+			UnsignedIntegerColumnReader unsignedReader => unsignedReader.ReadUInt64(data, columnDefinition) != 0,
+			DecimalColumnReader decimalReader => decimalReader.ReadDecimal(data, columnDefinition) != 0,
 			_ => throw CreateInvalidCastException(ordinal, "Boolean"),
 		};
 	}
@@ -107,12 +107,12 @@ internal sealed class Row
 	public sbyte GetSByte(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "SByte", out var data, out var columnDefinition);
-		return columnReader.Kind switch
+		return columnReader switch
 		{
-			ColumnReaderKind.SignedInteger => checked((sbyte) columnReader.ReadInt64(data, columnDefinition)),
-			ColumnReaderKind.UnsignedInteger => checked((sbyte) columnReader.ReadUInt64(data, columnDefinition)),
-			ColumnReaderKind.Decimal => (sbyte) columnReader.ReadDecimal(data, columnDefinition),
-			ColumnReaderKind.Boolean => columnReader.ReadBoolean(data, columnDefinition) ? (sbyte) 1 : (sbyte) 0,
+			SignedIntegerColumnReader signedReader => checked((sbyte) signedReader.ReadInt64(data, columnDefinition)),
+			UnsignedIntegerColumnReader unsignedReader => checked((sbyte) unsignedReader.ReadUInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (sbyte) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? (sbyte) 1 : (sbyte) 0,
 			_ => throw CreateInvalidCastException(ordinal, "SByte"),
 		};
 	}
@@ -120,12 +120,12 @@ internal sealed class Row
 	public byte GetByte(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "Byte", out var data, out var columnDefinition);
-		return columnReader.Kind switch
+		return columnReader switch
 		{
-			ColumnReaderKind.SignedInteger => checked((byte) columnReader.ReadInt64(data, columnDefinition)),
-			ColumnReaderKind.UnsignedInteger => checked((byte) columnReader.ReadUInt64(data, columnDefinition)),
-			ColumnReaderKind.Decimal => (byte) columnReader.ReadDecimal(data, columnDefinition),
-			ColumnReaderKind.Boolean => columnReader.ReadBoolean(data, columnDefinition) ? (byte) 1 : (byte) 0,
+			UnsignedIntegerColumnReader unsignedReader => checked((byte) unsignedReader.ReadUInt64(data, columnDefinition)),
+			SignedIntegerColumnReader signedReader => checked((byte) signedReader.ReadInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (byte) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? (byte) 1 : (byte) 0,
 			_ => throw CreateInvalidCastException(ordinal, "Byte"),
 		};
 	}
@@ -174,18 +174,18 @@ internal sealed class Row
 	public Guid GetGuid(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "Guid", out var data, out var columnDefinition);
-		switch (columnReader.Kind)
+		switch (columnReader)
 		{
-		case ColumnReaderKind.Guid:
-			return columnReader.ReadGuid(data, columnDefinition);
+		case GuidColumnReader guidReader:
+			return guidReader.ReadGuid(data, columnDefinition);
 
-		case ColumnReaderKind.String:
+		case StringColumnReader:
 			// try the common 'D' format first, then fall back to all the formats that Guid.TryParse accepts
 			if ((Utf8Parser.TryParse(data, out Guid guid, out var bytesConsumed, 'D') && bytesConsumed == data.Length) || Guid.TryParse(Encoding.UTF8.GetString(data), out guid))
 				return guid;
 			break;
 
-		case ColumnReaderKind.Bytes when data.Length == 16:
+		case BytesColumnReader when data.Length == 16:
 			return Connection.GuidFormat switch
 			{
 				MySqlGuidFormat.Binary16 => GuidBinary16ColumnReader.ReadGuid(data),
@@ -200,12 +200,12 @@ internal sealed class Row
 	public short GetInt16(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "Int16", out var data, out var columnDefinition);
-		return columnReader.Kind switch
+		return columnReader switch
 		{
-			ColumnReaderKind.SignedInteger => checked((short) columnReader.ReadInt64(data, columnDefinition)),
-			ColumnReaderKind.UnsignedInteger => checked((short) columnReader.ReadUInt64(data, columnDefinition)),
-			ColumnReaderKind.Decimal => (short) columnReader.ReadDecimal(data, columnDefinition),
-			ColumnReaderKind.Boolean => columnReader.ReadBoolean(data, columnDefinition) ? (short) 1 : (short) 0,
+			SignedIntegerColumnReader signedReader => checked((short) signedReader.ReadInt64(data, columnDefinition)),
+			UnsignedIntegerColumnReader unsignedReader => checked((short) unsignedReader.ReadUInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (short) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? (short) 1 : (short) 0,
 			_ => throw CreateInvalidCastException(ordinal, "Int16"),
 		};
 	}
@@ -213,12 +213,12 @@ internal sealed class Row
 	public int GetInt32(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "Int32", out var data, out var columnDefinition);
-		return columnReader.Kind switch
+		return columnReader switch
 		{
-			ColumnReaderKind.SignedInteger => checked((int) columnReader.ReadInt64(data, columnDefinition)),
-			ColumnReaderKind.UnsignedInteger => checked((int) columnReader.ReadUInt64(data, columnDefinition)),
-			ColumnReaderKind.Decimal => (int) columnReader.ReadDecimal(data, columnDefinition),
-			ColumnReaderKind.Boolean => columnReader.ReadBoolean(data, columnDefinition) ? 1 : 0,
+			SignedIntegerColumnReader signedReader => checked((int) signedReader.ReadInt64(data, columnDefinition)),
+			UnsignedIntegerColumnReader unsignedReader => checked((int) unsignedReader.ReadUInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (int) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? 1 : 0,
 			_ => throw CreateInvalidCastException(ordinal, "Int32"),
 		};
 	}
@@ -226,12 +226,12 @@ internal sealed class Row
 	public long GetInt64(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "Int64", out var data, out var columnDefinition);
-		return columnReader.Kind switch
+		return columnReader switch
 		{
-			ColumnReaderKind.SignedInteger => columnReader.ReadInt64(data, columnDefinition),
-			ColumnReaderKind.UnsignedInteger => checked((long) columnReader.ReadUInt64(data, columnDefinition)),
-			ColumnReaderKind.Decimal => (long) columnReader.ReadDecimal(data, columnDefinition),
-			ColumnReaderKind.Boolean => columnReader.ReadBoolean(data, columnDefinition) ? 1 : 0,
+			SignedIntegerColumnReader signedReader => signedReader.ReadInt64(data, columnDefinition),
+			UnsignedIntegerColumnReader unsignedReader => checked((long) unsignedReader.ReadUInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (long) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? 1 : 0,
 			_ => throw CreateInvalidCastException(ordinal, "Int64"),
 		};
 	}
@@ -239,12 +239,12 @@ internal sealed class Row
 	public ushort GetUInt16(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "UInt16", out var data, out var columnDefinition);
-		return columnReader.Kind switch
+		return columnReader switch
 		{
-			ColumnReaderKind.SignedInteger => checked((ushort) columnReader.ReadInt64(data, columnDefinition)),
-			ColumnReaderKind.UnsignedInteger => checked((ushort) columnReader.ReadUInt64(data, columnDefinition)),
-			ColumnReaderKind.Decimal => (ushort) columnReader.ReadDecimal(data, columnDefinition),
-			ColumnReaderKind.Boolean => columnReader.ReadBoolean(data, columnDefinition) ? (ushort) 1 : (ushort) 0,
+			UnsignedIntegerColumnReader unsignedReader => checked((ushort) unsignedReader.ReadUInt64(data, columnDefinition)),
+			SignedIntegerColumnReader signedReader => checked((ushort) signedReader.ReadInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (ushort) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? (ushort) 1 : (ushort) 0,
 			_ => throw CreateInvalidCastException(ordinal, "UInt16"),
 		};
 	}
@@ -252,12 +252,12 @@ internal sealed class Row
 	public uint GetUInt32(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "UInt32", out var data, out var columnDefinition);
-		return columnReader.Kind switch
+		return columnReader switch
 		{
-			ColumnReaderKind.SignedInteger => checked((uint) columnReader.ReadInt64(data, columnDefinition)),
-			ColumnReaderKind.UnsignedInteger => checked((uint) columnReader.ReadUInt64(data, columnDefinition)),
-			ColumnReaderKind.Decimal => (uint) columnReader.ReadDecimal(data, columnDefinition),
-			ColumnReaderKind.Boolean => columnReader.ReadBoolean(data, columnDefinition) ? 1u : 0,
+			UnsignedIntegerColumnReader unsignedReader => checked((uint) unsignedReader.ReadUInt64(data, columnDefinition)),
+			SignedIntegerColumnReader signedReader => checked((uint) signedReader.ReadInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (uint) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? 1u : 0,
 			_ => throw CreateInvalidCastException(ordinal, "UInt32"),
 		};
 	}
@@ -265,12 +265,12 @@ internal sealed class Row
 	public ulong GetUInt64(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "UInt64", out var data, out var columnDefinition);
-		return columnReader.Kind switch
+		return columnReader switch
 		{
-			ColumnReaderKind.SignedInteger => checked((ulong) columnReader.ReadInt64(data, columnDefinition)),
-			ColumnReaderKind.UnsignedInteger => columnReader.ReadUInt64(data, columnDefinition),
-			ColumnReaderKind.Decimal => (ulong) columnReader.ReadDecimal(data, columnDefinition),
-			ColumnReaderKind.Boolean => columnReader.ReadBoolean(data, columnDefinition) ? 1ul : 0,
+			UnsignedIntegerColumnReader unsignedReader => unsignedReader.ReadUInt64(data, columnDefinition),
+			SignedIntegerColumnReader signedReader => checked((ulong) signedReader.ReadInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (ulong) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? 1ul : 0,
 			_ => throw CreateInvalidCastException(ordinal, "UInt64"),
 		};
 	}
@@ -278,10 +278,10 @@ internal sealed class Row
 	public DateTime GetDateTime(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "DateTime", out var data, out var columnDefinition);
-		return columnReader.Kind switch
+		return columnReader switch
 		{
-			ColumnReaderKind.DateTime => columnReader.ReadDateTime(data, columnDefinition),
-			ColumnReaderKind.String => ParseDateTime(data),
+			DateTimeColumnReader dateTimeReader => dateTimeReader.ReadDateTime(data, columnDefinition),
+			StringColumnReader => ParseDateTime(data),
 			_ => throw CreateInvalidCastException(ordinal, "DateTime"),
 		};
 	}
@@ -311,11 +311,11 @@ internal sealed class Row
 	public decimal GetDecimal(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "Decimal", out var data, out var columnDefinition);
-		return columnReader.Kind switch
+		return columnReader switch
 		{
-			ColumnReaderKind.Decimal => columnReader.ReadDecimal(data, columnDefinition),
-			ColumnReaderKind.Double => (decimal) columnReader.ReadDouble(data, columnDefinition),
-			ColumnReaderKind.Single => (decimal) columnReader.ReadSingle(data, columnDefinition),
+			DecimalColumnReader decimalReader => decimalReader.ReadDecimal(data, columnDefinition),
+			DoubleColumnReader doubleReader => (decimal) doubleReader.ReadDouble(data, columnDefinition),
+			FloatColumnReader floatReader => (decimal) floatReader.ReadSingle(data, columnDefinition),
 			_ => throw CreateInvalidCastException(ordinal, "Decimal"),
 		};
 	}
@@ -323,11 +323,11 @@ internal sealed class Row
 	public double GetDouble(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "Double", out var data, out var columnDefinition);
-		return columnReader.Kind switch
+		return columnReader switch
 		{
-			ColumnReaderKind.Double => columnReader.ReadDouble(data, columnDefinition),
-			ColumnReaderKind.Single => columnReader.ReadSingle(data, columnDefinition),
-			ColumnReaderKind.Decimal => (double) columnReader.ReadDecimal(data, columnDefinition),
+			DoubleColumnReader doubleReader => doubleReader.ReadDouble(data, columnDefinition),
+			FloatColumnReader floatReader => floatReader.ReadSingle(data, columnDefinition),
+			DecimalColumnReader decimalReader => (double) decimalReader.ReadDecimal(data, columnDefinition),
 			_ => throw CreateInvalidCastException(ordinal, "Double"),
 		};
 	}
@@ -335,11 +335,11 @@ internal sealed class Row
 	public float GetFloat(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "Single", out var data, out var columnDefinition);
-		return columnReader.Kind switch
+		return columnReader switch
 		{
-			ColumnReaderKind.Single => columnReader.ReadSingle(data, columnDefinition),
-			ColumnReaderKind.Double => ToSingle(columnReader.ReadDouble(data, columnDefinition)),
-			ColumnReaderKind.Decimal => (float) columnReader.ReadDecimal(data, columnDefinition),
+			FloatColumnReader floatReader => floatReader.ReadSingle(data, columnDefinition),
+			DoubleColumnReader doubleReader => ToSingle(doubleReader.ReadDouble(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (float) decimalReader.ReadDecimal(data, columnDefinition),
 			_ => throw CreateInvalidCastException(ordinal, "Single"),
 		};
 
@@ -352,14 +352,14 @@ internal sealed class Row
 	public MySqlDateTime GetMySqlDateTime(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "MySqlDateTime", out var data, out var columnDefinition);
-		return columnReader.Kind == ColumnReaderKind.DateTime ? columnReader.ReadMySqlDateTime(data, columnDefinition) :
+		return columnReader is DateTimeColumnReader dateTimeReader ? dateTimeReader.ReadMySqlDateTime(data, columnDefinition) :
 			throw CreateInvalidCastException(ordinal, "MySqlDateTime");
 	}
 
 	public TimeSpan GetTimeSpan(int ordinal)
 	{
 		var columnReader = GetColumnReader(ordinal, "TimeSpan", out var data, out var columnDefinition);
-		return columnReader.Kind == ColumnReaderKind.TimeSpan ? columnReader.ReadTimeSpan(data, columnDefinition) :
+		return columnReader is TimeColumnReader timeReader ? timeReader.ReadTimeSpan(data, columnDefinition) :
 			throw CreateInvalidCastException(ordinal, "TimeSpan");
 	}
 

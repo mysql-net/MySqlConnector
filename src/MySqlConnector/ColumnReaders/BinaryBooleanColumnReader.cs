@@ -3,7 +3,7 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class BinaryBooleanColumnReader() : ColumnReader(ColumnReaderKind.Boolean)
+internal sealed class BinaryBooleanColumnReader : BooleanColumnReader
 {
 	public static BinaryBooleanColumnReader Instance { get; } = new();
 

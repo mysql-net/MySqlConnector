@@ -4,7 +4,7 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class VectorColumnReader() : ColumnReader(ColumnReaderKind.Other)
+internal sealed class VectorColumnReader : ColumnReader
 {
 	public static VectorColumnReader Instance { get; } = new();
 

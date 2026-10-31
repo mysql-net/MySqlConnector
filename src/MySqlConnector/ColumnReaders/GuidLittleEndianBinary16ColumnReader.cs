@@ -3,7 +3,7 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class GuidLittleEndianBinary16ColumnReader() : ColumnReader(ColumnReaderKind.Guid)
+internal sealed class GuidLittleEndianBinary16ColumnReader : GuidColumnReader
 {
 	public static GuidLittleEndianBinary16ColumnReader Instance { get; } = new();
 
