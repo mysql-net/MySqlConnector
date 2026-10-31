@@ -5,7 +5,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class BinaryDateTimeColumnReader : ColumnReader
+internal sealed class BinaryDateTimeColumnReader : DateTimeColumnReader
 {
 	public BinaryDateTimeColumnReader(MySqlConnection connection)
 	{
@@ -14,14 +14,25 @@ internal sealed class BinaryDateTimeColumnReader : ColumnReader
 		m_dateTimeKind = connection.DateTimeKind;
 	}
 
-	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		ParseDateTime(data, out var mySqlDateTime) is { } dateTime ? dateTime : mySqlDateTime;
+
+	public override DateTime ReadDateTime(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		ParseDateTime(data, out var mySqlDateTime) ?? mySqlDateTime.GetDateTime();
+
+	public override MySqlDateTime ReadMySqlDateTime(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		ParseDateTime(data, out var mySqlDateTime) is { } dateTime ? new(dateTime) : mySqlDateTime;
+
+	// Returns the value as a DateTime, or returns null and sets 'mySqlDateTime' if it should be returned as a MySqlDateTime.
+	private DateTime? ParseDateTime(ReadOnlySpan<byte> data, out MySqlDateTime mySqlDateTime)
 	{
+		mySqlDateTime = default;
 		if (data.Length == 0)
 		{
 			if (m_convertZeroDateTime)
 				return DateTime.MinValue;
 			if (m_allowZeroDateTime)
-				return default(MySqlDateTime);
+				return null;
 			throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime.");
 		}
 
@@ -47,11 +58,15 @@ internal sealed class BinaryDateTimeColumnReader : ColumnReader
 
 		try
 		{
-			return m_allowZeroDateTime ? new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
+			if (m_allowZeroDateTime)
+			{
+				mySqlDateTime = new MySqlDateTime(year, month, day, hour, minute, second, microseconds);
+				return null;
+			}
 #if NET7_0_OR_GREATER
-				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, m_dateTimeKind);
+			return new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, m_dateTimeKind);
 #else
-				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, m_dateTimeKind).AddTicks(microseconds % 1000 * 10);
+			return new DateTime(year, month, day, hour, minute, second, microseconds / 1000, m_dateTimeKind).AddTicks(microseconds % 1000 * 10);
 #endif
 		}
 		catch (Exception ex)

@@ -11,8 +11,8 @@ internal sealed class DecimalColumnReader : ColumnReader
 	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
 		DoReadValue(data);
 
-	public override int? TryReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		(int) DoReadValue(data);
+	public decimal ReadDecimal(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		DoReadValue(data);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static decimal DoReadValue(ReadOnlySpan<byte> data) =>

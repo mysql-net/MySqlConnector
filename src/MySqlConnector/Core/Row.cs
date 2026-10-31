@@ -1,7 +1,9 @@
+using System.Buffers.Text;
 using System.Runtime.InteropServices;
 using System.Text;
 using MySqlConnector.ColumnReaders;
 using MySqlConnector.Protocol;
+using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 using MySqlConnector.Utilities;
@@ -89,62 +91,35 @@ internal sealed class Row
 		return m_columnReaders[ordinal].ReadValue(data, columnDefinition);
 	}
 
-	public bool GetBoolean(int ordinal)
-	{
-		var value = GetValue(ordinal);
-		return value switch
+	public bool GetBoolean(int ordinal) =>
+		GetColumnReader(ordinal, "Boolean", out var data, out var columnDefinition) switch
 		{
-			bool boolValue => boolValue,
-			sbyte sbyteValue => sbyteValue != 0,
-			byte byteValue => byteValue != 0,
-			short shortValue => shortValue != 0,
-			ushort ushortValue => ushortValue != 0,
-			int intValue => intValue != 0,
-			uint uintValue => uintValue != 0,
-			long longValue => longValue != 0,
-			ulong ulongValue => ulongValue != 0,
-			decimal decimalValue => decimalValue != 0,
-			_ => (bool) value,
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition),
+			SignedIntegerColumnReader signedReader => signedReader.ReadInt64(data, columnDefinition) != 0,
+			UnsignedIntegerColumnReader unsignedReader => unsignedReader.ReadUInt64(data, columnDefinition) != 0,
+			DecimalColumnReader decimalReader => decimalReader.ReadDecimal(data, columnDefinition) != 0,
+			_ => throw CreateInvalidCastException(ordinal, "Boolean"),
 		};
-	}
 
-	public sbyte GetSByte(int ordinal)
-	{
-		var value = GetValue(ordinal);
-		return value switch
+	public sbyte GetSByte(int ordinal) =>
+		GetColumnReader(ordinal, "SByte", out var data, out var columnDefinition) switch
 		{
-			sbyte sbyteValue => sbyteValue,
-			byte byteValue => checked((sbyte) byteValue),
-			short shortValue => checked((sbyte) shortValue),
-			ushort ushortValue => checked((sbyte) ushortValue),
-			int intValue => checked((sbyte) intValue),
-			uint uintValue => checked((sbyte) uintValue),
-			long longValue => checked((sbyte) longValue),
-			ulong ulongValue => checked((sbyte) ulongValue),
-			decimal decimalValue => (sbyte) decimalValue,
-			bool boolValue => boolValue ? (sbyte) 1 : (sbyte) 0,
-			_ => (sbyte) value,
+			SignedIntegerColumnReader signedReader => checked((sbyte) signedReader.ReadInt64(data, columnDefinition)),
+			UnsignedIntegerColumnReader unsignedReader => checked((sbyte) unsignedReader.ReadUInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (sbyte) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? (sbyte) 1 : (sbyte) 0,
+			_ => throw CreateInvalidCastException(ordinal, "SByte"),
 		};
-	}
 
-	public byte GetByte(int ordinal)
-	{
-		var value = GetValue(ordinal);
-		return value switch
+	public byte GetByte(int ordinal) =>
+		GetColumnReader(ordinal, "Byte", out var data, out var columnDefinition) switch
 		{
-			byte byteValue => byteValue,
-			sbyte sbyteValue => checked((byte) sbyteValue),
-			short shortValue => checked((byte) shortValue),
-			ushort ushortValue => checked((byte) ushortValue),
-			int intValue => checked((byte) intValue),
-			uint uintValue => checked((byte) uintValue),
-			long longValue => checked((byte) longValue),
-			ulong ulongValue => checked((byte) ulongValue),
-			decimal decimalValue => (byte) decimalValue,
-			bool boolValue => boolValue ? (byte) 1 : (byte) 0,
-			_ => (byte) value,
+			UnsignedIntegerColumnReader unsignedReader => checked((byte) unsignedReader.ReadUInt64(data, columnDefinition)),
+			SignedIntegerColumnReader signedReader => checked((byte) signedReader.ReadInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (byte) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? (byte) 1 : (byte) 0,
+			_ => throw CreateInvalidCastException(ordinal, "Byte"),
 		};
-	}
 
 	public long GetBytes(int ordinal, long dataOffset, byte[]? buffer, int bufferOffset, int length)
 	{
@@ -189,153 +164,102 @@ internal sealed class Row
 
 	public Guid GetGuid(int ordinal)
 	{
-		var value = GetValue(ordinal);
-		if (value is Guid guid)
-			return guid;
-
-		if (value is string stringValue && Guid.TryParse(stringValue, out guid))
-			return guid;
-
-		if (value is byte[] { Length: 16 } bytes)
+		var columnReader = GetColumnReader(ordinal, "Guid", out var data, out var columnDefinition);
+		switch (columnReader)
 		{
+		case GuidColumnReader guidReader:
+			return guidReader.ReadGuid(data, columnDefinition);
+
+		case StringColumnReader:
+			// try the common 'D' format first, then fall back to all the formats that Guid.TryParse accepts
+			if ((Utf8Parser.TryParse(data, out Guid guid, out var bytesConsumed, 'D') && bytesConsumed == data.Length) || Guid.TryParse(Encoding.UTF8.GetString(data), out guid))
+				return guid;
+			break;
+
+		case BytesColumnReader when data.Length == 16:
 			return Connection.GuidFormat switch
 			{
-				MySqlGuidFormat.Binary16 => GuidBinary16ColumnReader.ReadGuid(bytes),
-				MySqlGuidFormat.TimeSwapBinary16 => GuidTimeSwapBinary16ColumnReader.ReadGuid(bytes),
-				_ => GuidLittleEndianBinary16ColumnReader.ReadGuid(bytes),
+				MySqlGuidFormat.Binary16 => GuidBinary16ColumnReader.ReadGuid(data),
+				MySqlGuidFormat.TimeSwapBinary16 => GuidTimeSwapBinary16ColumnReader.ReadGuid(data),
+				_ => GuidLittleEndianBinary16ColumnReader.ReadGuid(data),
 			};
 		}
 
-		return (Guid) value;
+		throw CreateInvalidCastException(ordinal, "Guid");
 	}
 
-	public short GetInt16(int ordinal)
-	{
-		var value = GetValue(ordinal);
-		return value switch
+	public short GetInt16(int ordinal) =>
+		GetColumnReader(ordinal, "Int16", out var data, out var columnDefinition) switch
 		{
-			short shortValue => shortValue,
-			sbyte sbyteValue => sbyteValue,
-			byte byteValue => byteValue,
-			ushort ushortValue => checked((short) ushortValue),
-			int intValue => checked((short) intValue),
-			uint uintValue => checked((short) uintValue),
-			long longValue => checked((short) longValue),
-			ulong ulongValue => checked((short) ulongValue),
-			decimal decimalValue => (short) decimalValue,
-			bool boolValue => boolValue ? (short) 1 : (short) 0,
-			_ => (short) value,
+			SignedIntegerColumnReader signedReader => checked((short) signedReader.ReadInt64(data, columnDefinition)),
+			UnsignedIntegerColumnReader unsignedReader => checked((short) unsignedReader.ReadUInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (short) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? (short) 1 : (short) 0,
+			_ => throw CreateInvalidCastException(ordinal, "Int16"),
 		};
-	}
 
-	public int GetInt32(int ordinal)
-	{
-		ArgumentOutOfRangeException.ThrowIfNegative(ordinal);
-		ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(ordinal, ResultSet.ColumnDefinitions!.Length);
-		if (m_dataOffsetLengths[ordinal].Offset == -1)
-			throw new InvalidCastException("Can't convert NULL to Int32");
-
-		var (offset, length) = m_dataOffsetLengths[ordinal];
-		var data = m_data.Slice(offset, length).Span;
-		var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
-		if (m_columnReaders[ordinal].TryReadInt32(data, columnDefinition) is { } value)
-			return value;
-		throw new InvalidCastException($"Can't convert {ResultSet.GetColumnType(ordinal)} to Int32");
-	}
-
-	public long GetInt64(int ordinal)
-	{
-		var value = GetValue(ordinal);
-		return value switch
+	public int GetInt32(int ordinal) =>
+		GetColumnReader(ordinal, "Int32", out var data, out var columnDefinition) switch
 		{
-			long longValue => longValue,
-			sbyte sbyteValue => sbyteValue,
-			byte byteValue => byteValue,
-			short shortValue => shortValue,
-			ushort ushortValue => ushortValue,
-			int intValue => intValue,
-			uint uintValue => uintValue,
-			ulong ulongValue => checked((long) ulongValue),
-			decimal decimalValue => (long) decimalValue,
-			bool boolValue => boolValue ? 1 : 0,
-			_ => (long) value,
+			SignedIntegerColumnReader signedReader => checked((int) signedReader.ReadInt64(data, columnDefinition)),
+			UnsignedIntegerColumnReader unsignedReader => checked((int) unsignedReader.ReadUInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (int) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? 1 : 0,
+			_ => throw CreateInvalidCastException(ordinal, "Int32"),
 		};
-	}
 
-	public ushort GetUInt16(int ordinal)
-	{
-		var value = GetValue(ordinal);
-		return value switch
+	public long GetInt64(int ordinal) =>
+		GetColumnReader(ordinal, "Int64", out var data, out var columnDefinition) switch
 		{
-			ushort ushortValue => ushortValue,
-			sbyte sbyteValue => checked((ushort) sbyteValue),
-			byte byteValue => byteValue,
-			short shortValue => checked((ushort) shortValue),
-			int intValue => checked((ushort) intValue),
-			uint uintValue => checked((ushort) uintValue),
-			long longValue => checked((ushort) longValue),
-			ulong ulongValue => checked((ushort) ulongValue),
-			decimal decimalValue => (ushort) decimalValue,
-			bool boolValue => boolValue ? (ushort) 1 : (ushort) 0,
-			_ => (ushort) value,
+			SignedIntegerColumnReader signedReader => signedReader.ReadInt64(data, columnDefinition),
+			UnsignedIntegerColumnReader unsignedReader => checked((long) unsignedReader.ReadUInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (long) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? 1 : 0,
+			_ => throw CreateInvalidCastException(ordinal, "Int64"),
 		};
-	}
 
-	public uint GetUInt32(int ordinal)
-	{
-		var value = GetValue(ordinal);
-		return value switch
+	public ushort GetUInt16(int ordinal) =>
+		GetColumnReader(ordinal, "UInt16", out var data, out var columnDefinition) switch
 		{
-			uint uintValue => uintValue,
-			sbyte sbyteValue => checked((uint) sbyteValue),
-			byte byteValue => byteValue,
-			short shortValue => checked((uint) shortValue),
-			ushort ushortValue => ushortValue,
-			int intValue => checked((uint) intValue),
-			long longValue => checked((uint) longValue),
-			ulong ulongValue => checked((uint) ulongValue),
-			decimal decimalValue => (uint) decimalValue,
-			bool boolValue => boolValue ? 1u : 0,
-			_ => (uint) value,
+			UnsignedIntegerColumnReader unsignedReader => checked((ushort) unsignedReader.ReadUInt64(data, columnDefinition)),
+			SignedIntegerColumnReader signedReader => checked((ushort) signedReader.ReadInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (ushort) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? (ushort) 1 : (ushort) 0,
+			_ => throw CreateInvalidCastException(ordinal, "UInt16"),
 		};
-	}
 
-	public ulong GetUInt64(int ordinal)
-	{
-		var value = GetValue(ordinal);
-		return value switch
+	public uint GetUInt32(int ordinal) =>
+		GetColumnReader(ordinal, "UInt32", out var data, out var columnDefinition) switch
 		{
-			ulong ulongValue => ulongValue,
-			sbyte sbyteValue => checked((ulong) sbyteValue),
-			byte byteValue => byteValue,
-			short shortValue => checked((ulong) shortValue),
-			ushort ushortValue => ushortValue,
-			int intValue => checked((ulong) intValue),
-			uint uintValue => uintValue,
-			long longValue => checked((ulong) longValue),
-			decimal decimalValue => (ulong) decimalValue,
-			bool boolValue => boolValue ? 1ul : 0,
-			_ => (ulong) value,
+			UnsignedIntegerColumnReader unsignedReader => checked((uint) unsignedReader.ReadUInt64(data, columnDefinition)),
+			SignedIntegerColumnReader signedReader => checked((uint) signedReader.ReadInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (uint) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? 1u : 0,
+			_ => throw CreateInvalidCastException(ordinal, "UInt32"),
 		};
-	}
 
-	public DateTime GetDateTime(int ordinal)
-	{
-		var value = GetValue(ordinal);
-
-		if (value is string dateString)
+	public ulong GetUInt64(int ordinal) =>
+		GetColumnReader(ordinal, "UInt64", out var data, out var columnDefinition) switch
 		{
-			// slightly inefficient to roundtrip the bytes through a string, but this is assumed to be an infrequent code path; this could be optimised to reprocess the original bytes
-			if (dateString.Length is >= 10 and <= 26)
-				value = TextDateTimeColumnReader.ParseDateTime(Encoding.UTF8.GetBytes(dateString), Connection.ConvertZeroDateTime, Connection.AllowZeroDateTime, Connection.DateTimeKind);
-			else
-				throw new FormatException($"Couldn't interpret value as a valid DateTime: {value}");
-		}
+			UnsignedIntegerColumnReader unsignedReader => unsignedReader.ReadUInt64(data, columnDefinition),
+			SignedIntegerColumnReader signedReader => checked((ulong) signedReader.ReadInt64(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (ulong) decimalReader.ReadDecimal(data, columnDefinition),
+			BooleanColumnReader booleanReader => booleanReader.ReadBoolean(data, columnDefinition) ? 1ul : 0,
+			_ => throw CreateInvalidCastException(ordinal, "UInt64"),
+		};
 
-		if (value is MySqlDateTime mySqlDateTime)
-			return mySqlDateTime.GetDateTime();
-		return (DateTime) value;
-	}
+	public DateTime GetDateTime(int ordinal) =>
+		GetColumnReader(ordinal, "DateTime", out var data, out var columnDefinition) switch
+		{
+			DateTimeColumnReader dateTimeReader => dateTimeReader.ReadDateTime(data, columnDefinition),
+			StringColumnReader => ParseDateTime(data),
+			_ => throw CreateInvalidCastException(ordinal, "DateTime"),
+		};
+
+	private DateTime ParseDateTime(ReadOnlySpan<byte> data) =>
+		data.Length is >= 10 and <= 26 ?
+			TextDateTimeColumnReader.ParseDateTime(data, Connection.ConvertZeroDateTime, Connection.AllowZeroDateTime, Connection.DateTimeKind, out var mySqlDateTime) ?? mySqlDateTime.GetDateTime() :
+			throw new FormatException($"Couldn't interpret value as a valid DateTime: {Encoding.UTF8.GetString(data)}");
 
 	public DateTimeOffset GetDateTimeOffset(int ordinal) => new(DateTime.SpecifyKind(GetDateTime(ordinal), DateTimeKind.Utc));
 
@@ -354,52 +278,48 @@ internal sealed class Row
 
 	public string GetString(int ordinal) => (string) GetValue(ordinal);
 
-	public decimal GetDecimal(int ordinal)
-	{
-		var value = GetValue(ordinal);
-		return value switch
+	public decimal GetDecimal(int ordinal) =>
+		GetColumnReader(ordinal, "Decimal", out var data, out var columnDefinition) switch
 		{
-			decimal decimalValue => decimalValue,
-			double doubleValue => (decimal) doubleValue,
-			float floatValue => (decimal) floatValue,
-			_ => (decimal) value,
+			DecimalColumnReader decimalReader => decimalReader.ReadDecimal(data, columnDefinition),
+			DoubleColumnReader doubleReader => (decimal) doubleReader.ReadDouble(data, columnDefinition),
+			FloatColumnReader floatReader => (decimal) floatReader.ReadSingle(data, columnDefinition),
+			_ => throw CreateInvalidCastException(ordinal, "Decimal"),
 		};
-	}
 
-	public double GetDouble(int ordinal)
-	{
-		var value = GetValue(ordinal);
-		return value switch
+	public double GetDouble(int ordinal) =>
+		GetColumnReader(ordinal, "Double", out var data, out var columnDefinition) switch
 		{
-			double doubleValue => doubleValue,
-			float floatValue => floatValue,
-			decimal decimalValue => (double) decimalValue,
-			_ => (double) value,
+			DoubleColumnReader doubleReader => doubleReader.ReadDouble(data, columnDefinition),
+			FloatColumnReader floatReader => floatReader.ReadSingle(data, columnDefinition),
+			DecimalColumnReader decimalReader => (double) decimalReader.ReadDecimal(data, columnDefinition),
+			_ => throw CreateInvalidCastException(ordinal, "Double"),
 		};
-	}
 
 	public float GetFloat(int ordinal)
 	{
+		var columnReader = GetColumnReader(ordinal, "Single", out var data, out var columnDefinition);
+		return columnReader switch
+		{
+			FloatColumnReader floatReader => floatReader.ReadSingle(data, columnDefinition),
+			DoubleColumnReader doubleReader => ToSingle(doubleReader.ReadDouble(data, columnDefinition)),
+			DecimalColumnReader decimalReader => (float) decimalReader.ReadDecimal(data, columnDefinition),
+			_ => throw CreateInvalidCastException(ordinal, "Single"),
+		};
+
 		// Loss of precision is expected, significant loss of information is not.
 		// Use explicit range checks to guard against that.
-		var value = GetValue(ordinal);
-		return value switch
-		{
-			float floatValue => floatValue,
-			double doubleValue when doubleValue is >= float.MinValue and <= float.MaxValue => (float) doubleValue,
-			double => throw new InvalidCastException("The value cannot be safely cast to Single."),
-			decimal decimalValue => (float) decimalValue,
-			_ => (float) value,
-		};
+		static float ToSingle(double value) =>
+			value is >= float.MinValue and <= float.MaxValue ? (float) value : throw new InvalidCastException("The value cannot be safely cast to Single.");
 	}
 
-	public MySqlDateTime GetMySqlDateTime(int ordinal)
-	{
-		var value = GetValue(ordinal);
-		if (value is DateTime dateTime)
-			return new MySqlDateTime(dateTime);
-		return (MySqlDateTime) value;
-	}
+	public MySqlDateTime GetMySqlDateTime(int ordinal) =>
+		GetColumnReader(ordinal, "MySqlDateTime", out var data, out var columnDefinition) is DateTimeColumnReader dateTimeReader ? dateTimeReader.ReadMySqlDateTime(data, columnDefinition) :
+			throw CreateInvalidCastException(ordinal, "MySqlDateTime");
+
+	public TimeSpan GetTimeSpan(int ordinal) =>
+		GetColumnReader(ordinal, "TimeSpan", out var data, out var columnDefinition) is TimeColumnReader timeReader ? timeReader.ReadTimeSpan(data, columnDefinition) :
+			throw CreateInvalidCastException(ordinal, "TimeSpan");
 
 	public MySqlGeometry GetMySqlGeometry(int ordinal)
 	{
@@ -438,6 +358,24 @@ internal sealed class Row
 
 	private ResultSet ResultSet { get; }
 	private MySqlConnection Connection => ResultSet.Connection;
+
+	// Returns the ColumnReader for the specified column, and the column's data; throws if the column is NULL.
+	private ColumnReader GetColumnReader(int ordinal, string typeName, out ReadOnlySpan<byte> data, out ColumnDefinitionPayload columnDefinition)
+	{
+		ArgumentOutOfRangeException.ThrowIfNegative(ordinal);
+		ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(ordinal, ResultSet.ColumnDefinitions!.Length);
+
+		var (offset, length) = m_dataOffsetLengths[ordinal];
+		if (offset == -1)
+			throw new InvalidCastException($"Can't convert NULL to {typeName}");
+
+		data = m_data.Span.Slice(offset, length);
+		columnDefinition = ResultSet.ColumnDefinitions[ordinal];
+		return m_columnReaders[ordinal];
+	}
+
+	private InvalidCastException CreateInvalidCastException(int ordinal, string typeName) =>
+		new($"Can't convert {ResultSet.GetColumnType(ordinal)} to {typeName}");
 
 	private void CheckBinaryColumn(int ordinal)
 	{

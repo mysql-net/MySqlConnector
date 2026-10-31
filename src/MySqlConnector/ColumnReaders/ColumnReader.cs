@@ -4,7 +4,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal abstract class ColumnReader
+internal closed class ColumnReader
 {
 	public static ColumnReader Create(bool isBinary, ColumnDefinitionPayload columnDefinition, MySqlConnection connection)
 	{
@@ -123,7 +123,4 @@ internal abstract class ColumnReader
 	}
 
 	public abstract object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
-
-	public virtual int? TryReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		default;
 }

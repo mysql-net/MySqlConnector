@@ -3,14 +3,14 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class BinaryUnsignedInt8ColumnReader : ColumnReader
+internal sealed class BinaryUnsignedInt8ColumnReader : UnsignedIntegerColumnReader
 {
 	public static BinaryUnsignedInt8ColumnReader Instance { get; } = new();
 
 	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
 		DoReadValue(data);
 
-	public override int? TryReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+	public override ulong ReadUInt64(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
 		DoReadValue(data);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

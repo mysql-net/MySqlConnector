@@ -5,11 +5,14 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class TextDoubleColumnReader : ColumnReader
+internal sealed class TextDoubleColumnReader : DoubleColumnReader
 {
 	public static TextDoubleColumnReader Instance { get; } = new();
 
-	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		ReadDouble(data, columnDefinition);
+
+	public override double ReadDouble(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{
 		if (Utf8Parser.TryParse(data, out double doubleValue, out var doubleBytesConsumed) && doubleBytesConsumed == data.Length)
 			return doubleValue;

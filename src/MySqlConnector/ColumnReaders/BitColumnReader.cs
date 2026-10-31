@@ -4,15 +4,15 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class BitColumnReader : ColumnReader
+internal sealed class BitColumnReader : UnsignedIntegerColumnReader
 {
 	public static BitColumnReader Instance { get; } = new();
 
 	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
 		DoReadValue(data, columnDefinition);
 
-	public override int? TryReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		checked((int) DoReadValue(data, columnDefinition));
+	public override ulong ReadUInt64(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		DoReadValue(data, columnDefinition);
 
 	private static ulong DoReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{
