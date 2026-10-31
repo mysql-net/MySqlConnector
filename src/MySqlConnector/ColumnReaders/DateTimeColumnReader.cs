@@ -2,7 +2,7 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal abstract class DateTimeColumnReader : ColumnReader
+internal closed class DateTimeColumnReader : ColumnReader
 {
 	public abstract DateTime ReadDateTime(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
 
