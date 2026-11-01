@@ -275,7 +275,7 @@ public class ConnectionTests : IClassFixture<DatabaseFixture>
 	public async Task ResetConnectionThrowsIfNotOpen()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
-		await Assert.ThrowsAsync<InvalidOperationException>(async () => await connection.ResetConnectionAsync());
+		await Assert.ThrowsAsync<InvalidOperationException>(async () => await connection.ResetConnectionAsync(TestContext.Current.CancellationToken));
 	}
 
 	[SkippableFact(ServerFeatures.ResetConnection)]

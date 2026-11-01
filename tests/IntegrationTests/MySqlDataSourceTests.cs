@@ -40,7 +40,7 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 	public async Task OpenConnectionAsync()
 	{
 		using var dbSource = new MySqlDataSource(AppConfig.ConnectionString);
-		using var connection = await dbSource.OpenConnectionAsync();
+		using var connection = await dbSource.OpenConnectionAsync(TestContext.Current.CancellationToken);
 		Assert.Equal(ConnectionState.Open, connection.State);
 	}
 
@@ -86,13 +86,13 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 		using var dbSource = new MySqlDataSource(AppConfig.ConnectionString);
 
 		int serverThread;
-		using (var connection = await dbSource.OpenConnectionAsync())
+		using (var connection = await dbSource.OpenConnectionAsync(TestContext.Current.CancellationToken))
 		{
 			serverThread = connection.ServerThread;
-			await dbSource.ClearAsync();
+			await dbSource.ClearAsync(TestContext.Current.CancellationToken);
 		}
 
-		using (var connection = await dbSource.OpenConnectionAsync())
+		using (var connection = await dbSource.OpenConnectionAsync(TestContext.Current.CancellationToken))
 		{
 			Assert.NotEqual(serverThread, connection.ServerThread);
 		}
@@ -281,7 +281,7 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 		Assert.IsType<ApplicationException>(exception.InnerException.InnerException); // First-time failure
 
 		// succeeds after failure retry; the new password is stored after the provider returns, so retry until it's available
-		barrier.SignalAndWait();
+		barrier.SignalAndWait(TestContext.Current.CancellationToken);
 		var stopwatch = Stopwatch.StartNew();
 		MySqlConnection connection;
 		while (true)

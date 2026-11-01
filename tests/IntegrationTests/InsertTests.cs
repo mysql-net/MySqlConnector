@@ -20,10 +20,10 @@ public class InsertTests : IClassFixture<DatabaseFixture>
 create table insert_ai(rowid integer not null primary key auto_increment, text varchar(100) not null);");
 		try
 		{
-			await m_database.Connection.OpenAsync();
+			await m_database.Connection.OpenAsync(TestContext.Current.CancellationToken);
 			using var command = new MySqlCommand("INSERT INTO insert_ai (text) VALUES (@text);", m_database.Connection);
 			command.Parameters.Add(new() { ParameterName = "@text", Value = "test" });
-			Assert.Equal(1, await command.ExecuteNonQueryAsync());
+			Assert.Equal(1, await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(1L, command.LastInsertedId);
 		}
 		finally
@@ -39,10 +39,10 @@ create table insert_ai(rowid integer not null primary key auto_increment, text v
 create table insert_ai(rowid integer not null primary key auto_increment);");
 		try
 		{
-			await m_database.Connection.OpenAsync();
+			await m_database.Connection.OpenAsync(TestContext.Current.CancellationToken);
 			using var command = new MySqlCommand("INSERT INTO insert_ai(rowid) VALUES (@rowid);", m_database.Connection);
 			command.Parameters.AddWithValue("@rowid", -1);
-			Assert.Equal(1, await command.ExecuteNonQueryAsync());
+			Assert.Equal(1, await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(-1L, command.LastInsertedId);
 		}
 		finally
@@ -58,10 +58,10 @@ create table insert_ai(rowid integer not null primary key auto_increment);");
 create table insert_ai(rowid bigint unsigned not null primary key auto_increment);");
 		try
 		{
-			await m_database.Connection.OpenAsync();
+			await m_database.Connection.OpenAsync(TestContext.Current.CancellationToken);
 			using var command = new MySqlCommand("INSERT INTO insert_ai(rowid) VALUES (@rowid);", m_database.Connection);
 			command.Parameters.AddWithValue("@rowid", ((ulong) long.MaxValue) + 1);
-			Assert.Equal(1, await command.ExecuteNonQueryAsync());
+			Assert.Equal(1, await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(long.MinValue, command.LastInsertedId);
 		}
 		finally
@@ -79,11 +79,11 @@ insert into insert_ai(text) values('test');
 ");
 		try
 		{
-			await m_database.Connection.OpenAsync();
+			await m_database.Connection.OpenAsync(TestContext.Current.CancellationToken);
 			using var command = new MySqlCommand(@"SELECT * FROM insert_ai;
 INSERT INTO insert_ai (text) VALUES (@text);", m_database.Connection);
 			command.Parameters.Add(new() { ParameterName = "@text", Value = "test" });
-			Assert.Equal(1, await command.ExecuteNonQueryAsync());
+			Assert.Equal(1, await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(2L, command.LastInsertedId);
 		}
 		finally
@@ -101,11 +101,11 @@ insert into insert_ai(text) values('test');
 ");
 		try
 		{
-			await m_database.Connection.OpenAsync();
+			await m_database.Connection.OpenAsync(TestContext.Current.CancellationToken);
 			using var command = new MySqlCommand(@"INSERT INTO insert_ai (text) VALUES (@text);
 SELECT * FROM insert_ai;", m_database.Connection);
 			command.Parameters.Add(new() { ParameterName = "@text", Value = "test" });
-			Assert.Equal(1, await command.ExecuteNonQueryAsync());
+			Assert.Equal(1, await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(2L, command.LastInsertedId);
 		}
 		finally
@@ -122,10 +122,10 @@ create table insert_ai(rowid integer not null primary key auto_increment, text v
 ");
 		try
 		{
-			await m_database.Connection.OpenAsync();
+			await m_database.Connection.OpenAsync(TestContext.Current.CancellationToken);
 			using var command = new MySqlCommand(@"INSERT INTO insert_ai (text) VALUES ('test1');
 INSERT INTO insert_ai (text) VALUES ('test2');", m_database.Connection);
-			Assert.Equal(2, await command.ExecuteNonQueryAsync());
+			Assert.Equal(2, await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(2L, command.LastInsertedId);
 		}
 		finally
@@ -142,11 +142,11 @@ create table insert_ai(rowid integer not null primary key auto_increment, text v
 ");
 		try
 		{
-			await m_database.Connection.OpenAsync();
+			await m_database.Connection.OpenAsync(TestContext.Current.CancellationToken);
 			using var command = new MySqlCommand(@"LOCK TABLES insert_ai WRITE;
 INSERT INTO insert_ai (text) VALUES ('test');
 UNLOCK TABLES;", m_database.Connection);
-			Assert.Equal(1, await command.ExecuteNonQueryAsync());
+			Assert.Equal(1, await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(1L, command.LastInsertedId);
 		}
 		finally
@@ -174,10 +174,10 @@ Create Table TestTableWithForeignKey(
 );");
 		try
 		{
-			await m_database.Connection.OpenAsync();
+			await m_database.Connection.OpenAsync(TestContext.Current.CancellationToken);
 			using var command = new MySqlCommand(@"INSERT INTO TestTable(column1) VALUES('hello');
 INSERT INTO TestTableWithForeignKey(foreign_id, column2) VALUES(LAST_INSERT_ID(), 'test');", m_database.Connection);
-			Assert.Equal(2, await command.ExecuteNonQueryAsync());
+			Assert.Equal(2, await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(1L, command.LastInsertedId);
 		}
 		finally
@@ -194,11 +194,11 @@ create table insert_ai(rowid integer not null primary key auto_increment, text v
 ");
 		try
 		{
-			await m_database.Connection.OpenAsync();
+			await m_database.Connection.OpenAsync(TestContext.Current.CancellationToken);
 			using var command = new MySqlCommand(@"INSERT IGNORE INTO insert_ai (rowid, text) VALUES (2, 'test');", m_database.Connection);
-			Assert.Equal(1, await command.ExecuteNonQueryAsync());
+			Assert.Equal(1, await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(2L, command.LastInsertedId);
-			Assert.Equal(0, await command.ExecuteNonQueryAsync());
+			Assert.Equal(0, await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(0L, command.LastInsertedId);
 		}
 		finally
@@ -215,11 +215,11 @@ create table insert_rows_affected(id integer not null primary key auto_increment
 
 		try
 		{
-			await m_database.Connection.OpenAsync();
+			await m_database.Connection.OpenAsync(TestContext.Current.CancellationToken);
 			using var command = new MySqlCommand(@"
 INSERT INTO insert_rows_affected (value) VALUES (null);
 INSERT INTO insert_rows_affected (value) VALUES (null);", m_database.Connection);
-			var rowsAffected = await command.ExecuteNonQueryAsync();
+			var rowsAffected = await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 			Assert.Equal(2, rowsAffected);
 		}
 		finally
@@ -526,7 +526,7 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 			""", connection);
 		writeCommand.Parameters.AddWithValue("@value", chunkStream);
 		writeCommand.Prepare();
-		using (var reader = isAsync ? await writeCommand.ExecuteReaderAsync().ConfigureAwait(true) : writeCommand.ExecuteReader())
+		using (var reader = isAsync ? await writeCommand.ExecuteReaderAsync(TestContext.Current.CancellationToken).ConfigureAwait(true) : writeCommand.ExecuteReader())
 		{
 			Assert.True(reader.Read());
 			Assert.Equal(1, reader.FieldCount);
@@ -577,7 +577,7 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 		writeCommand.Parameters.AddWithValue("@value3", chunkStream3);
 		writeCommand.Prepare();
 		if (isAsync)
-			await writeCommand.ExecuteNonQueryAsync();
+			await writeCommand.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 		else
 			writeCommand.ExecuteNonQuery();
 
@@ -750,13 +750,13 @@ create table insert_enum_value2(rowid integer not null primary key auto_incremen
 
 		try
 		{
-			await m_database.Connection.OpenAsync();
+			await m_database.Connection.OpenAsync(TestContext.Current.CancellationToken);
 			using var command = new MySqlCommand("INSERT INTO insert_enum_value2 (`Varchar`, `String`, `Int`) VALUES (@Varchar, @String, @Int);", m_database.Connection);
 			command.Parameters.Add(new("@String", MySqlColor.Orange)).MySqlDbType = MySqlDbType.String;
 			command.Parameters.Add(new("@Varchar", MySqlColor.Green)).MySqlDbType = MySqlDbType.VarChar;
 			command.Parameters.Add(new("@Int", MySqlColor.None));
 
-			await command.ExecuteNonQueryAsync();
+			await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 			var result = (await m_database.Connection.QueryAsync<ColorEnumValues>(@"select `Varchar`, `String`, `Int` from insert_enum_value2;")).ToArray();
 			Assert.Single(result);
 			Assert.Equal(MySqlColor.Orange.ToString("G"), result[0].String);

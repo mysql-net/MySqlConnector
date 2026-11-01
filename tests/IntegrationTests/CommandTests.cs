@@ -230,7 +230,7 @@ public class CommandTests : IClassFixture<DatabaseFixture>
 	public async Task ExecuteNonQueryReturnValue()
 	{
 		using var connection = new MySqlConnection(m_database.Connection.ConnectionString);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		const string setUp = @"drop table if exists execute_non_query;
 create table execute_non_query(id integer not null primary key auto_increment, value text null);";
 		await connection.ExecuteAsync(setUp);

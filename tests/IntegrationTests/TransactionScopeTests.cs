@@ -622,22 +622,22 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 				command1.Connection = connection;
 				command2.Connection = connection;
 
-				await connection.OpenAsync();
+				await connection.OpenAsync(TestContext.Current.CancellationToken);
 				using (var reader = await command1.ExecuteReaderAsync(CommandBehavior.CloseConnection, CancellationToken.None))
 				{
-					Assert.True(await reader.ReadAsync());
+					Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 					Assert.Equal(1, reader.GetInt32(0));
-					Assert.False(await reader.ReadAsync());
+					Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
 				}
 
 				Assert.Equal(ConnectionState.Closed, connection.State);
 
-				await connection.OpenAsync();
+				await connection.OpenAsync(TestContext.Current.CancellationToken);
 				using (var reader = await command2.ExecuteReaderAsync(CommandBehavior.CloseConnection, CancellationToken.None))
 				{
-					Assert.True(await reader.ReadAsync());
+					Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 					Assert.Equal(2, reader.GetInt32(0));
-					Assert.False(await reader.ReadAsync());
+					Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
 				}
 			}
 		}
@@ -649,7 +649,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString + ";" + connectionString);
 		using var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 
 		using var command = new MySqlCommand("DO SLEEP(3);", connection);
 		using var tokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
@@ -779,10 +779,10 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 				);");
 		}
 
-		var task = Task.Run(() => UseTransaction());
+		var task = Task.Run(() => UseTransaction(), TestContext.Current.CancellationToken);
 		UseTransaction();
 #pragma warning disable xUnit1031 // Do not use blocking task operations in test method
-		task.Wait();
+		task.Wait(TestContext.Current.CancellationToken);
 #pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
 		void UseTransaction()

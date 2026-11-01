@@ -2,18 +2,20 @@
 
   <PropertyGroup Condition=" '$(Configuration)' != 'MySqlData' ">
     <TargetFrameworks>net8.0;net10.0;net11.0</TargetFrameworks>
-    <TargetFrameworks Condition=" $([MSBuild]::IsOSPlatform('Windows')) ">net462;net481;$(TargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks Condition=" $([MSBuild]::IsOSPlatform('Windows')) ">net472;net481;$(TargetFrameworks)</TargetFrameworks>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'MySqlData' ">
     <TargetFrameworks>net11.0</TargetFrameworks>
     <DefineConstants>MYSQL_DATA</DefineConstants>
-    <NoWarn>$(NoWarn);MSB3246</NoWarn>
+    <!-- MySql.Data has CancellationToken overloads (e.g., MySqlDataAdapter.Fill) that MySqlConnector doesn't, so xUnit1051 would require conditional code -->
+    <NoWarn>$(NoWarn);MSB3246;xUnit1051</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
     <VersionPrefix>0.1.0</VersionPrefix>
+    <OutputType>Exe</OutputType>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <AssemblyOriginatorKeyFile>..\..\MySqlConnector.snk</AssemblyOriginatorKeyFile>
@@ -30,12 +32,7 @@
 
   <ItemGroup>
     <!--testing packages-->
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="xunit.v3" />
     <!--app packages-->
     <PackageReference Include="Dapper.StrongName" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
@@ -61,11 +58,16 @@
     <Using Include="MySql.Data.MySqlClient" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' OR '$(TargetFramework)' == 'net481' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' OR '$(TargetFramework)' == 'net481' ">
     <Reference Include="System" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Transactions" />
     <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <!-- app.config registers DbProviderFactories for .NET Framework; since the test project is the entry assembly, .NET would fail to read its system.data section -->
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
+    <None Remove="app.config" />
   </ItemGroup>
 
   <ItemGroup>

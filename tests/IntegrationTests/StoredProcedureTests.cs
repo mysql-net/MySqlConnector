@@ -46,7 +46,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		}
 
 		if (prepare)
-			await cmd.PrepareAsync();
+			await cmd.PrepareAsync(TestContext.Current.CancellationToken);
 		var result = await ExecuteCommandAsync(cmd, executorType);
 		if (procedureType == "PROCEDURE" && executorType != "NonQuery")
 			Assert.Equal(cmd.Parameters["@name"].Value, result);
@@ -131,11 +131,11 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		});
 
 		if (prepare)
-			await cmd.PrepareAsync();
-		using (var reader = await cmd.ExecuteReaderAsync())
+			await cmd.PrepareAsync(TestContext.Current.CancellationToken);
+		using (var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken))
 		{
-			Assert.False(await reader.ReadAsync());
-			Assert.False(await reader.NextResultAsync());
+			Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
+			Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken));
 		}
 
 		Assert.Equal("test value", cmd.Parameters[0].Value);
@@ -158,12 +158,12 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		});
 
 		if (prepare)
-			await cmd.PrepareAsync();
-		using (var reader = await cmd.ExecuteReaderAsync())
+			await cmd.PrepareAsync(TestContext.Current.CancellationToken);
+		using (var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken))
 		{
 			Assert.Equal(0, reader.FieldCount);
 			Assert.False(reader.HasRows);
-			Assert.False(await reader.ReadAsync());
+			Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(0, reader.FieldCount);
 			Assert.False(reader.HasRows);
 		}
@@ -188,12 +188,12 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		});
 
 		if (prepare)
-			await cmd.PrepareAsync();
-		using var reader = await cmd.ExecuteReaderAsync();
-		Assert.False(await reader.ReadAsync());
+			await cmd.PrepareAsync(TestContext.Current.CancellationToken);
+		using var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken);
+		Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
 		var table = reader.GetSchemaTable();
 		Assert.Null(table);
-		Assert.False(await reader.NextResultAsync());
+		Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken));
 	}
 
 #if !MYSQL_DATA
@@ -214,11 +214,11 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		});
 
 		if (prepare)
-			await cmd.PrepareAsync();
-		using var reader = await cmd.ExecuteReaderAsync();
-		Assert.False(await reader.ReadAsync());
+			await cmd.PrepareAsync(TestContext.Current.CancellationToken);
+		using var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken);
+		Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
 		Assert.Empty(reader.GetColumnSchema());
-		Assert.False(await reader.NextResultAsync());
+		Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken));
 	}
 #endif
 
@@ -239,8 +239,8 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		});
 
 		if (prepare)
-			await cmd.PrepareAsync();
-		await Assert.ThrowsAsync<FormatException>(async () => await cmd.ExecuteNonQueryAsync());
+			await cmd.PrepareAsync(TestContext.Current.CancellationToken);
+		await Assert.ThrowsAsync<FormatException>(async () => await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
 	}
 
 	[Theory]
@@ -270,8 +270,8 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		});
 
 		if (prepare)
-			await cmd.PrepareAsync();
-		await cmd.ExecuteNonQueryAsync();
+			await cmd.PrepareAsync(TestContext.Current.CancellationToken);
+		await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(DBNull.Value, cmd.Parameters["@string_value"].Value);
 		Assert.Equal(DBNull.Value, cmd.Parameters["@int_value"].Value);
@@ -343,7 +343,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		});
 
 		if (prepare)
-			await cmd.PrepareAsync();
+			await cmd.PrepareAsync(TestContext.Current.CancellationToken);
 		await CircleAssertions(cmd, executorType);
 	}
 
@@ -476,14 +476,14 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		cmd.Parameters.Add(new() { ParameterName = paramaterName, Value = 3 });
 
 		if (prepare)
-			await cmd.PrepareAsync();
-		using var reader = await cmd.ExecuteReaderAsync();
-		Assert.True(await reader.ReadAsync());
+			await cmd.PrepareAsync(TestContext.Current.CancellationToken);
+		using var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken);
+		Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 		Assert.Equal("six", reader.GetString(0));
-		Assert.True(await reader.ReadAsync());
+		Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 		Assert.Equal("three", reader.GetString(0));
-		Assert.False(await reader.ReadAsync());
-		Assert.False(await reader.NextResultAsync());
+		Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
+		Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken));
 	}
 
 	[Theory]
@@ -502,25 +502,25 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		cmd.Parameters.Add(new() { ParameterName = "@pivot", Value = pivot });
 
 		if (prepare)
-			await cmd.PrepareAsync();
-		using var reader = await cmd.ExecuteReaderAsync();
+			await cmd.PrepareAsync(TestContext.Current.CancellationToken);
+		using var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken);
 		foreach (var result in firstResultSet)
 		{
-			Assert.True(await reader.ReadAsync());
+			Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(result, reader.GetString(0));
 		}
-		Assert.False(await reader.ReadAsync());
+		Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
 
-		Assert.True(await reader.NextResultAsync());
+		Assert.True(await reader.NextResultAsync(TestContext.Current.CancellationToken));
 
 		foreach (var result in secondResultSet)
 		{
-			Assert.True(await reader.ReadAsync());
+			Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(result, reader.GetString(0));
 		}
-		Assert.False(await reader.ReadAsync());
+		Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
 
-		Assert.False(await reader.NextResultAsync());
+		Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken));
 	}
 
 	[Theory]
@@ -544,16 +544,16 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 			cmd.CommandType = CommandType.StoredProcedure;
 			cmd.Parameters.Add(parameter);
 			if (prepare)
-				await cmd.PrepareAsync();
-			using (var reader = await cmd.ExecuteReaderAsync())
+				await cmd.PrepareAsync(TestContext.Current.CancellationToken);
+			using (var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken))
 			{
 				for (var i = 0; i < (int) parameter.Value; i++)
 				{
-					Assert.True(await reader.ReadAsync());
+					Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 					Assert.Equal(i + 1, reader.GetInt32(0));
 					Assert.True(reader.GetString(1).Length > 0);
 				}
-				await reader.NextResultAsync();
+				await reader.NextResultAsync(TestContext.Current.CancellationToken);
 			}
 			Assert.Equal(nextValue, parameter.Value);
 		}
@@ -572,14 +572,14 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		cmd.CommandType = CommandType.StoredProcedure;
 
 		if (prepare)
-			await cmd.PrepareAsync();
-		using var reader = await cmd.ExecuteReaderAsync();
-		Assert.True(await reader.ReadAsync());
+			await cmd.PrepareAsync(TestContext.Current.CancellationToken);
+		using var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken);
+		Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 		Assert.Equal(1, reader.GetInt32(0));
 		Assert.Equal(2, reader.GetInt32(1));
 		Assert.Equal(3, reader.GetInt32(2));
-		Assert.False(await reader.ReadAsync());
-		Assert.False(await reader.NextResultAsync());
+		Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
+		Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken));
 	}
 
 	[Fact]

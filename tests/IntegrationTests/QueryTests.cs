@@ -213,7 +213,7 @@ insert into query_test (value) VALUES (1);
 #if MYSQL_DATA
 		await Assert.ThrowsAsync<MySqlException>(() => reader.ReadAsync());
 #else
-		await Assert.ThrowsAsync<InvalidOperationException>(() => reader.ReadAsync());
+		await Assert.ThrowsAsync<InvalidOperationException>(() => reader.ReadAsync(TestContext.Current.CancellationToken));
 #endif
 	}
 
@@ -241,7 +241,7 @@ insert into query_test (value) VALUES (1);
 #if MYSQL_DATA
 		await Assert.ThrowsAsync<MySqlException>(() => reader.NextResultAsync());
 #else
-		await Assert.ThrowsAsync<InvalidOperationException>(() => reader.NextResultAsync());
+		await Assert.ThrowsAsync<InvalidOperationException>(() => reader.NextResultAsync(TestContext.Current.CancellationToken));
 #endif
 	}
 
@@ -252,7 +252,7 @@ insert into query_test (value) VALUES (1);
 		{
 			cmd.CommandText = @"drop table if exists query_invalid_sql;
 create table query_invalid_sql(id integer not null primary key auto_increment);";
-			await cmd.ExecuteNonQueryAsync();
+			await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 		}
 
 		using (var cmd = m_database.Connection.CreateCommand())
@@ -271,7 +271,7 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 		using (var cmd = m_database.Connection.CreateCommand())
 		{
 			cmd.CommandText = @"select count(id) from query_invalid_sql";
-			Assert.Equal(0L, await cmd.ExecuteScalarAsync());
+			Assert.Equal(0L, await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken));
 		}
 	}
 
@@ -288,7 +288,7 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 			cmd.CommandText = @"drop table if exists query_multiple_readers;
 				create table query_multiple_readers(id integer not null primary key auto_increment);
 				insert into query_multiple_readers(id) values(1), (2), (3);";
-			await cmd.ExecuteNonQueryAsync();
+			await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 		}
 
 		using var cmd1 = m_database.Connection.CreateCommand();
@@ -296,19 +296,19 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 		using var cmd2 = m_database.Connection.CreateCommand();
 		cmd2.CommandText = @"select id from query_multiple_readers order by id;";
 
-		using var reader1 = await cmd1.ExecuteReaderAsync();
+		using var reader1 = await cmd1.ExecuteReaderAsync(TestContext.Current.CancellationToken);
 		Assert.Throws(exceptionType, () => cmd2.ExecuteReader());
 		Assert.Throws(exceptionType, () => cmd2.ExecuteScalar());
 		do
 		{
-			while (await reader1.ReadAsync())
+			while (await reader1.ReadAsync(TestContext.Current.CancellationToken))
 			{
 				Assert.Throws(exceptionType, () => cmd2.ExecuteReader());
 				Assert.Throws(exceptionType, () => cmd2.ExecuteScalar());
 			}
 			Assert.Throws(exceptionType, () => cmd2.ExecuteReader());
 			Assert.Throws(exceptionType, () => cmd2.ExecuteScalar());
-		} while (await reader1.NextResultAsync());
+		} while (await reader1.NextResultAsync(TestContext.Current.CancellationToken));
 
 		Assert.Throws(exceptionType, () => cmd2.ExecuteReader());
 		Assert.Throws(exceptionType, () => cmd2.ExecuteScalar());
@@ -328,7 +328,7 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 			cmd.CommandText = @"drop table if exists query_undisposed_reader;
 				create table query_undisposed_reader(id integer not null primary key auto_increment);
 				insert into query_undisposed_reader(id) values(1), (2), (3);";
-			await cmd.ExecuteNonQueryAsync();
+			await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 		}
 
 		using var cmd1 = m_database.Connection.CreateCommand();
@@ -337,14 +337,14 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 		cmd1.CommandText = commandText;
 		cmd2.CommandText = commandText;
 
-		var reader1 = await cmd1.ExecuteReaderAsync();
+		var reader1 = await cmd1.ExecuteReaderAsync(TestContext.Current.CancellationToken);
 		Assert.True(reader1.Read());
 		Assert.Equal(1, reader1.GetInt32(0));
 
 		m_database.Connection.Close();
 		m_database.Connection.Open();
 
-		var reader2 = await cmd1.ExecuteReaderAsync();
+		var reader2 = await cmd1.ExecuteReaderAsync(TestContext.Current.CancellationToken);
 		Assert.True(reader2.Read());
 		Assert.Equal(1, reader2.GetInt32(0));
 	}
@@ -357,7 +357,7 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 			cmd.CommandText = @"drop table if exists query_multiple_statements;
 				create table query_multiple_statements(value1 int not null, value2 int not null, value3 int not null);
 				insert into query_multiple_statements(value1, value2, value3) values(1, 2, 3), (4, 5, 6), (7, 8, 9);";
-			await cmd.ExecuteNonQueryAsync();
+			await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 		}
 
 		using (var cmd = m_database.Connection.CreateCommand())
@@ -366,12 +366,12 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 				select value2 from query_multiple_statements order by value2;
 				select value3 from query_multiple_statements order by value3;";
 
-			using var reader = await cmd.ExecuteReaderAsync();
-			Assert.True(await reader.NextResultAsync());
-			Assert.True(await reader.NextResultAsync());
-			Assert.True(await reader.ReadAsync());
+			using var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken);
+			Assert.True(await reader.NextResultAsync(TestContext.Current.CancellationToken));
+			Assert.True(await reader.NextResultAsync(TestContext.Current.CancellationToken));
+			Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(3, reader.GetInt32(0));
-			Assert.False(await reader.NextResultAsync());
+			Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken));
 		}
 	}
 
@@ -395,14 +395,14 @@ insert into query_get_name (id, value) VALUES (1, 'one'), (2, 'two');
 				Assert.Equal("id", reader.GetName(0));
 				Assert.Equal("value", reader.GetName(1));
 				Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(2));
-				Assert.True(await reader.ReadAsync());
+				Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 				Assert.Equal("id", reader.GetName(0));
-				Assert.True(await reader.ReadAsync());
+				Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 				Assert.Equal("id", reader.GetName(0));
-				Assert.False(await reader.ReadAsync());
+				Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
 				Assert.Equal("id", reader.GetName(0));
 
-				Assert.False(await reader.NextResultAsync());
+				Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken));
 #if MYSQL_DATA
 				Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(0));
 #else
@@ -416,10 +416,10 @@ insert into query_get_name (id, value) VALUES (1, 'one'), (2, 'two');
 				Assert.Equal("id", reader.GetName(0));
 				Assert.Equal("value", reader.GetName(1));
 				Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(2));
-				Assert.False(await reader.ReadAsync());
+				Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
 				Assert.Equal("id", reader.GetName(0));
 
-				Assert.False(await reader.NextResultAsync());
+				Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken));
 #if MYSQL_DATA
 				Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(0));
 #else
@@ -446,10 +446,10 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			cmd.CommandText = "select id, value FROM query_null_parameter where @parameter is null or value = @parameter order by id;";
 			cmd.Parameters.Add(new() { ParameterName = "@parameter", Value = "one" });
 			using var reader = cmd.ExecuteReader();
-			Assert.True(await reader.ReadAsync());
+			Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(1L, reader.GetInt64(0));
-			Assert.False(await reader.ReadAsync());
-			Assert.False(await reader.NextResultAsync());
+			Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
+			Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken));
 		}
 
 		using (var cmd = m_database.Connection.CreateCommand())
@@ -457,14 +457,14 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			cmd.CommandText = "select id, value FROM query_null_parameter where @parameter is null or value = @parameter order by id;";
 			cmd.Parameters.Add(new() { ParameterName = "@parameter", Value = null });
 			using var reader = cmd.ExecuteReader();
-			Assert.True(await reader.ReadAsync());
+			Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(1L, reader.GetInt64(0));
-			Assert.True(await reader.ReadAsync());
+			Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(2L, reader.GetInt64(0));
-			Assert.True(await reader.ReadAsync());
+			Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(3L, reader.GetInt64(0));
-			Assert.False(await reader.ReadAsync());
-			Assert.False(await reader.NextResultAsync());
+			Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
+			Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken));
 		}
 	}
 
@@ -473,8 +473,8 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 	{
 		using var cmd = m_database.Connection.CreateCommand();
 		cmd.CommandText = @"select 1;";
-		using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
-		Assert.True(await reader.ReadAsync().ConfigureAwait(false));
+		using var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
+		Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken).ConfigureAwait(false));
 		reader.Dispose();
 		reader.Dispose();
 	}
@@ -485,15 +485,15 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		using var cmd = m_database.Connection.CreateCommand();
 		cmd.CommandText = @"select 1; select 1 from mysql.abc; select 2;";
 
-		using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
-		Assert.True(await reader.ReadAsync().ConfigureAwait(false));
+		using var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
+		Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken).ConfigureAwait(false));
 		Assert.Equal(1, reader.GetInt32(0));
-		Assert.False(await reader.ReadAsync().ConfigureAwait(false));
+		Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken).ConfigureAwait(false));
 
-		await Assert.ThrowsAsync<MySqlException>(() => reader.NextResultAsync());
-		Assert.False(await reader.ReadAsync().ConfigureAwait(false));
+		await Assert.ThrowsAsync<MySqlException>(() => reader.NextResultAsync(TestContext.Current.CancellationToken));
+		Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken).ConfigureAwait(false));
 
-		Assert.False(await reader.NextResultAsync().ConfigureAwait(false));
+		Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken).ConfigureAwait(false));
 	}
 
 	[Fact]
@@ -519,13 +519,13 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			cmd.CommandText = @"drop table if exists query_enumerator;
 				create table query_enumerator(value text);
 				insert into query_enumerator(value) values('one'), ('two'), ('three'), ('four');";
-			await cmd.ExecuteNonQueryAsync();
+			await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 		}
 
 		using (var cmd = m_database.Connection.CreateCommand())
 		{
 			cmd.CommandText = @"select value from query_enumerator order by value asc;";
-			using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
+			using var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 			Assert.Equal(new[] { "four", "one", "three", "two" }, reader.Cast<IDataRecord>().Select(x => x.GetString(0)));
 		}
 	}
@@ -1299,19 +1299,19 @@ create table command_behavior_single_row(id integer not null primary key);");
 
 		using (var cmd = new MySqlCommand("SELECT 1; insert into command_behavior_single_row(id) values(1); SELECT 2;", connection))
 		{
-			using var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow);
-			Assert.True(await reader.ReadAsync());
+			using var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow, TestContext.Current.CancellationToken);
+			Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(1, reader.GetInt32(0));
-			Assert.False(await reader.ReadAsync());
+			Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
 #if !MYSQL_DATA
-			Assert.False(await reader.NextResultAsync());
+			Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken));
 #endif
 		}
 
 		// subsequent commands were still executed (and had effects) even though they didn't return results
 		using (var cmd = new MySqlCommand("select count(*) from command_behavior_single_row;", connection))
 		{
-			Assert.Equal(1L, await cmd.ExecuteScalarAsync());
+			Assert.Equal(1L, await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken));
 		}
 	}
 
@@ -1325,17 +1325,17 @@ create table command_behavior_single_result(id integer not null primary key);");
 
 		using (var cmd = new MySqlCommand("SELECT 1; insert into command_behavior_single_result(id) values(1); SELECT 2;", connection))
 		{
-			using var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult);
-			Assert.True(await reader.ReadAsync());
+			using var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, TestContext.Current.CancellationToken);
+			Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(1, reader.GetInt32(0));
-			Assert.False(await reader.ReadAsync());
-			Assert.False(await reader.NextResultAsync());
+			Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
+			Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken));
 		}
 
 		// subsequent commands were still executed (and had effects) even though they didn't return results
 		using (var cmd = new MySqlCommand("select count(*) from command_behavior_single_result;", connection))
 		{
-			Assert.Equal(1L, await cmd.ExecuteScalarAsync());
+			Assert.Equal(1L, await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken));
 		}
 	}
 
@@ -1478,13 +1478,13 @@ $$";
 		if (prepareCommand)
 		{
 			exception = isAsync
-				? (await Assert.ThrowsAsync<MySqlException>(async () => await command.PrepareAsync()))
+				? (await Assert.ThrowsAsync<MySqlException>(async () => await command.PrepareAsync(TestContext.Current.CancellationToken)))
 				: Assert.Throws<MySqlException>(() => command.Prepare());
 		}
 		else
 		{
 			exception = isAsync
-				? (await Assert.ThrowsAsync<MySqlException>(async () => await command.ExecuteNonQueryAsync()))
+				? (await Assert.ThrowsAsync<MySqlException>(async () => await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken)))
 				: Assert.Throws<MySqlException>(() => command.ExecuteNonQuery());
 		}
 
@@ -1776,20 +1776,20 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 				""";
 			for (var i = 0; i < values.Length; i++)
 				cmd.Parameters.AddWithValue($"@value{i}", values[i]);
-			await cmd.ExecuteNonQueryAsync();
+			await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 		}
 
 		for (var pass = 0; pass < 2; pass++)
 		{
 			using (var cmd = new MySqlCommand("select id, value from query_large_rows order by id;", m_database.Connection))
-			using (var reader = await cmd.ExecuteReaderAsync())
+			using (var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken))
 			{
 				foreach (var value in values)
 				{
-					Assert.True(await reader.ReadAsync());
+					Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
 					TestUtilities.AssertEqual(value, (byte[]) reader.GetValue(1));
 				}
-				Assert.False(await reader.ReadAsync());
+				Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
 			}
 
 			// returning the session to the pool releases the large read buffer

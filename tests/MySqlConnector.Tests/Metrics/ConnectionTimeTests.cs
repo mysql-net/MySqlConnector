@@ -8,7 +8,7 @@ public class ConnectionTimeTests : MetricsTestsBase
 		var csb = CreateConnectionStringBuilder();
 		PoolName = csb.GetConnectionString(includePassword: false);
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		var measurements = GetAndClearMeasurements("db.client.connections.create_time");
 		var time = Assert.Single(measurements);
 		Assert.InRange(time, 0, 0.3);
@@ -22,7 +22,7 @@ public class ConnectionTimeTests : MetricsTestsBase
 		Server.ConnectDelay = TimeSpan.FromSeconds(1);
 
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		var measurements = GetAndClearMeasurements("db.client.connections.create_time");
 		var time = Assert.Single(measurements);
 		Assert.InRange(time, 1.0, 1.3);
@@ -35,10 +35,10 @@ public class ConnectionTimeTests : MetricsTestsBase
 		PoolName = csb.GetConnectionString(includePassword: false);
 
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		connection.Close();
 
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		var measurements = GetAndClearMeasurements("db.client.connections.wait_time");
 		var time = Assert.Single(measurements);
 		Assert.InRange(time, 0, 0.2);
@@ -52,10 +52,10 @@ public class ConnectionTimeTests : MetricsTestsBase
 		Server.ResetDelay = TimeSpan.FromSeconds(1);
 
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		connection.Close();
 
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		var measurements = GetAndClearMeasurements("db.client.connections.wait_time");
 		var time = Assert.Single(measurements);
 		Assert.InRange(time, 1.0, 1.2);
@@ -68,7 +68,7 @@ public class ConnectionTimeTests : MetricsTestsBase
 		PoolName = csb.GetConnectionString(includePassword: false);
 
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		connection.Close();
 
 		var time = Assert.Single(GetAndClearMeasurements("db.client.connections.use_time"));
@@ -82,8 +82,8 @@ public class ConnectionTimeTests : MetricsTestsBase
 		PoolName = csb.GetConnectionString(includePassword: false);
 
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await connection.OpenAsync();
-		await Task.Delay(500);
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
+		await Task.Delay(500, TestContext.Current.CancellationToken);
 		connection.Close();
 
 		var time = Assert.Single(GetAndClearMeasurements("db.client.connections.use_time"));

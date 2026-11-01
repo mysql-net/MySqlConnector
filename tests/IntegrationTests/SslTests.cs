@@ -290,11 +290,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 
 		// TLS 1.3 is always negotiated on Linux with OpenSSL 1.1.1 (https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0#tls-13--openssl-111-on-linux);
 		// on Windows, it depends on the OS version (Windows 11 / Windows Server 2022 and later) and the .NET Framework configuration
-#if NET462
-		var isLinux = false;
-#else
 		var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-#endif
 		var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
 		if (expectedProtocol == SslProtocols.Tls12 && AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls13) &&
 			(isLinux || (isWindows && actualProtocolString == "TLSv1.3")))

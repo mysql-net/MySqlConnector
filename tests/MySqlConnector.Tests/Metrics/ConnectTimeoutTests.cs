@@ -28,7 +28,7 @@ public class ConnectTimeoutTests : MetricsTestsBase
 			.UseName(PoolName)
 			.Build();
 
-		await Assert.ThrowsAsync<MySqlException>(async () => await dataSource.OpenConnectionAsync());
+		await Assert.ThrowsAsync<MySqlException>(async () => await dataSource.OpenConnectionAsync(TestContext.Current.CancellationToken));
 
 		AssertMeasurement("db.client.connections.timeouts", 1);
 	}

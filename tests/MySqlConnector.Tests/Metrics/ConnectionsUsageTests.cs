@@ -146,7 +146,7 @@ public class ConnectionsUsageTests : MetricsTestsBase
 		AssertMeasurement("db.client.connections.pending_requests", 0);
 
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		var openTask = connection.OpenAsync();
+		var openTask = connection.OpenAsync(TestContext.Current.CancellationToken);
 		AssertMeasurement("db.client.connections.pending_requests", 1);
 		await openTask;
 
@@ -161,12 +161,12 @@ public class ConnectionsUsageTests : MetricsTestsBase
 		Server.ResetDelay = TimeSpan.FromSeconds(0.5);
 
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		connection.Close();
 
 		AssertMeasurement("db.client.connections.pending_requests", 0);
 
-		var openTask = connection.OpenAsync();
+		var openTask = connection.OpenAsync(TestContext.Current.CancellationToken);
 		AssertMeasurement("db.client.connections.pending_requests", 1);
 		await openTask;
 

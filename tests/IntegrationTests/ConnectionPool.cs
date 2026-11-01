@@ -57,7 +57,7 @@ public class ConnectionPool : IClassFixture<DatabaseFixture>
 		for (int i = 0; i < csb.MaximumPoolSize; i++)
 		{
 			var connection = new MySqlConnection(csb.ConnectionString);
-			await connection.OpenAsync().ConfigureAwait(false);
+			await connection.OpenAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 			connections.Add(connection);
 		}
 
@@ -66,12 +66,12 @@ public class ConnectionPool : IClassFixture<DatabaseFixture>
 			Thread.Sleep(5000);
 			connections[0].Dispose();
 			connections.RemoveAt(0);
-		});
+		}, TestContext.Current.CancellationToken);
 
 		using (var extraConnection = new MySqlConnection(csb.ConnectionString))
 		{
 			var stopwatch = Stopwatch.StartNew();
-			await extraConnection.OpenAsync().ConfigureAwait(false);
+			await extraConnection.OpenAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 			stopwatch.Stop();
 			Assert.InRange(stopwatch.ElapsedMilliseconds, 4500, 7500);
 		}
@@ -96,7 +96,7 @@ public class ConnectionPool : IClassFixture<DatabaseFixture>
 		for (int i = 0; i < csb.MaximumPoolSize; i++)
 		{
 			var connection = new MySqlConnection(csb.ConnectionString);
-			await connection.OpenAsync().ConfigureAwait(false);
+			await connection.OpenAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 			connections.Add(connection);
 		}
 
@@ -143,16 +143,16 @@ public class ConnectionPool : IClassFixture<DatabaseFixture>
 
 		using (var connection = new MySqlConnection(csb.ConnectionString))
 		{
-			await connection.OpenAsync();
+			await connection.OpenAsync(TestContext.Current.CancellationToken);
 			using (var cmd = connection.CreateCommand())
 			{
 				cmd.CommandText = "SET @@session.wait_timeout=3";
-				await cmd.ExecuteNonQueryAsync();
+				await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 			}
 			serverThread = connection.ServerThread;
 		}
 
-		await Task.Delay(TimeSpan.FromSeconds(5));
+		await Task.Delay(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
 		using (var connection = new MySqlConnection(csb.ConnectionString))
 		{
@@ -160,7 +160,7 @@ public class ConnectionPool : IClassFixture<DatabaseFixture>
 			try
 #endif
 			{
-				await connection.OpenAsync();
+				await connection.OpenAsync(TestContext.Current.CancellationToken);
 				Assert.NotEqual(serverThread, connection.ServerThread);
 			}
 #if !MYSQL_DATA
@@ -295,7 +295,7 @@ public class ConnectionPool : IClassFixture<DatabaseFixture>
 		}
 
 		await OpenConnections(maxPoolSize, serverThreadIdsBegin);
-		await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+		await Task.Delay(TimeSpan.FromSeconds(delaySeconds), TestContext.Current.CancellationToken);
 		await OpenConnections(maxPoolSize, serverThreadIdsEnd);
 
 		serverThreadIdsEnd.IntersectWith(serverThreadIdsBegin);

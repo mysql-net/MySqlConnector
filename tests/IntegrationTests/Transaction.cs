@@ -94,10 +94,10 @@ public class Transaction : IClassFixture<TransactionFixture>
 	[Fact]
 	public async Task CommitAsync()
 	{
-		using (var trans = await m_connection.BeginTransactionAsync().ConfigureAwait(false))
+		using (var trans = await m_connection.BeginTransactionAsync(TestContext.Current.CancellationToken).ConfigureAwait(false))
 		{
 			await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
-			await trans.CommitAsync().ConfigureAwait(false);
+			await trans.CommitAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 		}
 		var results = await m_connection.QueryAsync<int>(@"select value from transactions_test order by value;").ConfigureAwait(false);
 		Assert.Equal(new[] { 1, 2 }, results);
@@ -109,9 +109,9 @@ public class Transaction : IClassFixture<TransactionFixture>
 		MySqlTransaction trans = null;
 		try
 		{
-			trans = await m_connection.BeginTransactionAsync().ConfigureAwait(false);
+			trans = await m_connection.BeginTransactionAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 			await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
-			await trans.CommitAsync().ConfigureAwait(false);
+			await trans.CommitAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 		}
 		finally
 		{
@@ -152,7 +152,7 @@ public class Transaction : IClassFixture<TransactionFixture>
 	[Fact]
 	public async Task ReadOnlyTransactionAsync()
 	{
-		using var trans = await m_connection.BeginTransactionAsync(IsolationLevel.Serializable, isReadOnly: true);
+		using var trans = await m_connection.BeginTransactionAsync(IsolationLevel.Serializable, isReadOnly: true, cancellationToken: TestContext.Current.CancellationToken);
 		var exception = await Assert.ThrowsAsync<MySqlException>(async () => await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans));
 		Assert.Equal(MySqlErrorCode.CannotExecuteInReadOnlyTransaction, exception.ErrorCode);
 	}
@@ -160,7 +160,7 @@ public class Transaction : IClassFixture<TransactionFixture>
 	[Fact]
 	public async Task ReadWriteTransactionAsync()
 	{
-		using (var trans = await m_connection.BeginTransactionAsync(IsolationLevel.Serializable, isReadOnly: false))
+		using (var trans = await m_connection.BeginTransactionAsync(IsolationLevel.Serializable, isReadOnly: false, cancellationToken: TestContext.Current.CancellationToken))
 		{
 			await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans);
 			trans.Commit();
@@ -174,10 +174,10 @@ public class Transaction : IClassFixture<TransactionFixture>
 	public async Task DbConnectionCommitAsync()
 	{
 		DbConnection connection = m_connection;
-		using (var trans = await connection.BeginTransactionAsync().ConfigureAwait(false))
+		using (var trans = await connection.BeginTransactionAsync(TestContext.Current.CancellationToken).ConfigureAwait(false))
 		{
 			await connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
-			await trans.CommitAsync().ConfigureAwait(false);
+			await trans.CommitAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 		}
 		var results = await connection.QueryAsync<int>(@"select value from transactions_test order by value;").ConfigureAwait(false);
 		Assert.Equal(new[] { 1, 2 }, results);
@@ -214,10 +214,10 @@ public class Transaction : IClassFixture<TransactionFixture>
 	[Fact]
 	public async Task RollbackAsync()
 	{
-		using (var trans = await m_connection.BeginTransactionAsync().ConfigureAwait(false))
+		using (var trans = await m_connection.BeginTransactionAsync(TestContext.Current.CancellationToken).ConfigureAwait(false))
 		{
 			await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
-			await trans.RollbackAsync().ConfigureAwait(false);
+			await trans.RollbackAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 		}
 		var results = await m_connection.QueryAsync<int>(@"select value from transactions_test order by value;").ConfigureAwait(false);
 		Assert.Equal(new int[0], results);
@@ -229,9 +229,9 @@ public class Transaction : IClassFixture<TransactionFixture>
 		MySqlTransaction trans = null;
 		try
 		{
-			trans = await m_connection.BeginTransactionAsync().ConfigureAwait(false);
+			trans = await m_connection.BeginTransactionAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 			await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
-			await trans.RollbackAsync().ConfigureAwait(false);
+			await trans.RollbackAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 		}
 		finally
 		{
@@ -246,10 +246,10 @@ public class Transaction : IClassFixture<TransactionFixture>
 	public async Task DbConnectionRollbackAsync()
 	{
 		DbConnection connection = m_connection;
-		using (var trans = await connection.BeginTransactionAsync().ConfigureAwait(false))
+		using (var trans = await connection.BeginTransactionAsync(TestContext.Current.CancellationToken).ConfigureAwait(false))
 		{
 			await connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
-			await trans.RollbackAsync().ConfigureAwait(false);
+			await trans.RollbackAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 		}
 		var results = await connection.QueryAsync<int>(@"select value from transactions_test order by value;").ConfigureAwait(false);
 		Assert.Equal(new int[0], results);
@@ -333,15 +333,15 @@ public class Transaction : IClassFixture<TransactionFixture>
 	[Fact]
 	public async Task RollbackSavepointAsync()
 	{
-		using (var trans = await m_connection.BeginTransactionAsync())
+		using (var trans = await m_connection.BeginTransactionAsync(TestContext.Current.CancellationToken))
 		{
 			await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans);
-			await trans.SaveAsync("a");
+			await trans.SaveAsync("a", TestContext.Current.CancellationToken);
 			await m_connection.ExecuteAsync("insert into transactions_test values(3), (4)", transaction: trans);
-			await trans.SaveAsync("b");
+			await trans.SaveAsync("b", TestContext.Current.CancellationToken);
 			await m_connection.ExecuteAsync("insert into transactions_test values(5), (6)", transaction: trans);
-			await trans.RollbackAsync("a");
-			await trans.CommitAsync();
+			await trans.RollbackAsync("a", TestContext.Current.CancellationToken);
+			await trans.CommitAsync(TestContext.Current.CancellationToken);
 		}
 		var results = await m_connection.QueryAsync<int>(@"select value from transactions_test order by value;");
 		Assert.Equal(new int[] { 1, 2 }, results);
@@ -373,7 +373,7 @@ public class Transaction : IClassFixture<TransactionFixture>
 		MySqlTransaction trans = null;
 		try
 		{
-			trans = await m_connection.BeginTransactionAsync().ConfigureAwait(false);
+			trans = await m_connection.BeginTransactionAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 			await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
 		}
 		finally
