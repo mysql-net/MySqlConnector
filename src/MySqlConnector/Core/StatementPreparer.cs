@@ -35,12 +35,42 @@ internal sealed class StatementPreparer(string commandText, MySqlParameterCollec
 		return true;
 	}
 
-	private int GetParameterIndex(string name)
+	private int GetParameterIndex(string name, int statementStartIndex)
 	{
 		var index = parameters?.NormalizedIndexOf(name) ?? -1;
-		if (index == -1 && (Options & StatementPreparerOptions.AllowUserVariables) == 0)
+		if (index == -1 && (Options & StatementPreparerOptions.AllowUserVariables) == 0 && !IsAccountManagementStatement(statementStartIndex))
 			throw new MySqlException($"Parameter '{name}' must be defined. To use this as a variable, set 'Allow User Variables=true' in the connection string.");
 		return index;
+	}
+
+	// MySQL doesn't allow user variables in account-management statements, so in those statements, an '@' that isn't followed by the name
+	// of a parameter must be part of an account name (e.g., user@localhost or 'user' @'%') and is left as-is.
+	private bool IsAccountName(string name, int statementStartIndex) =>
+		IsAccountManagementStatement(statementStartIndex) && (parameters?.NormalizedIndexOf(name) ?? -1) == -1;
+
+	private bool IsAccountManagementStatement(int statementStartIndex)
+	{
+		var sql = CommandText.AsSpan(statementStartIndex);
+		var first = ReadKeyword(ref sql);
+		var second = ReadKeyword(ref sql);
+		return IsKeyword(first, "GRANT") || IsKeyword(first, "REVOKE") ||
+			((IsKeyword(first, "CREATE") || IsKeyword(first, "DROP")) && (IsKeyword(second, "USER") || IsKeyword(second, "ROLE"))) ||
+			((IsKeyword(first, "ALTER") || IsKeyword(first, "RENAME")) && IsKeyword(second, "USER")) ||
+			(IsKeyword(first, "SET") && (IsKeyword(second, "PASSWORD") || IsKeyword(second, "ROLE") || IsKeyword(second, "DEFAULT"))) ||
+			(IsKeyword(first, "SHOW") && (IsKeyword(second, "GRANTS") || IsKeyword(second, "CREATE")));
+
+		static ReadOnlySpan<char> ReadKeyword(ref ReadOnlySpan<char> sql)
+		{
+			sql = sql.TrimStart();
+			var length = 0;
+			while (length < sql.Length && sql[length] is (>= 'A' and <= 'Z') or (>= 'a' and <= 'z') or '_')
+				length++;
+			var keyword = sql[..length];
+			sql = sql[length..];
+			return keyword;
+		}
+
+		static bool IsKeyword(ReadOnlySpan<char> word, string keyword) => word.Equals(keyword.AsSpan(), StringComparison.OrdinalIgnoreCase);
 	}
 
 	private MySqlParameter GetInputParameter(int index)
@@ -58,9 +88,11 @@ internal sealed class StatementPreparer(string commandText, MySqlParameterCollec
 	{
 		public bool IsComplete { get; private set; }
 
+		protected override void OnStatementBegin(int index) => m_statementStartIndex = index;
+
 		protected override void OnNamedParameter(int index, int length)
 		{
-			var parameterIndex = Preparer.GetParameterIndex(Preparer.CommandText.Substring(index, length));
+			var parameterIndex = Preparer.GetParameterIndex(Preparer.CommandText.Substring(index, length), m_statementStartIndex);
 			if (parameterIndex != -1)
 				DoAppendParameter(parameterIndex, index, length);
 		}
@@ -93,6 +125,7 @@ internal sealed class StatementPreparer(string commandText, MySqlParameterCollec
 
 		private int m_currentParameterIndex;
 		private int m_lastIndex;
+		private int m_statementStartIndex;
 	}
 
 	private sealed class PreparedCommandSqlParser(StatementPreparer preparer, List<ParsedStatement> statements, List<int> statementStartEndIndexes, ByteBufferWriter writer)
@@ -104,12 +137,14 @@ internal sealed class StatementPreparer(string commandText, MySqlParameterCollec
 			StatementStartEndIndexes.Add(Writer.Position);
 			Writer.Write((byte) CommandKind.StatementPrepare);
 			m_lastIndex = index;
+			m_statementStartIndex = index;
 		}
 
 		protected override void OnNamedParameter(int index, int length)
 		{
 			var parameterName = Preparer.CommandText.Substring(index, length);
-			DoAppendParameter(parameterName, -1, index, length);
+			if (!Preparer.IsAccountName(parameterName, m_statementStartIndex))
+				DoAppendParameter(parameterName, -1, index, length);
 		}
 
 		protected override void OnPositionalParameter(int index)
@@ -146,6 +181,7 @@ internal sealed class StatementPreparer(string commandText, MySqlParameterCollec
 
 		private int m_currentParameterIndex;
 		private int m_lastIndex;
+		private int m_statementStartIndex;
 	}
 
 	private string CommandText { get; } = commandText;
