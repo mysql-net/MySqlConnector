@@ -55,12 +55,7 @@ public class Transaction : IClassFixture<TransactionFixture>
 	public void DbConnectionIsolationLevel(IsolationLevel inputIsolationLevel, string expectedTransactionIsolationLevel)
 	{
 		DbConnection connection = m_connection;
-		connection.Execute(@"set global log_output = 'table';");
-		connection.Execute(@"set global general_log = 1;");
-		using (var trans = connection.BeginTransaction(inputIsolationLevel))
-			trans.Commit();
-
-		connection.Execute(@"set global general_log = 0;");
+		BeginAndCommitWithGeneralLog(connection, inputIsolationLevel);
 
 		// we could use @tx_isolation (in MySQL 5.6/5.7) and @transaction_isolation (in MySQL 5.7/8.0), but would require a different query for different server versions
 		var results = connection.Query<string>($"select convert(argument USING utf8) from mysql.general_log where thread_id = @ServerThread and convert(argument using utf8) like '%isolation level%' and argument not like 'select%' order by event_time;", new { m_connection.ServerThread });
@@ -80,10 +75,7 @@ public class Transaction : IClassFixture<TransactionFixture>
 	public void DbConnectionTransactionCommand(IsolationLevel inputIsolationLevel, string expectedTransactionIsolationLevel)
 	{
 		DbConnection connection = m_connection;
-		connection.Execute(@"set global log_output = 'table';");
-		connection.Execute(@"set global general_log = 1;");
-		using (var trans = connection.BeginTransaction(inputIsolationLevel))
-			trans.Commit();
+		BeginAndCommitWithGeneralLog(connection, inputIsolationLevel);
 
 		var results = connection.Query<string>($"select convert(argument USING utf8) from mysql.general_log where thread_id = @ServerThread and convert(argument using utf8) like 'start transaction%' order by event_time;", new { m_connection.ServerThread });
 		var lastStartTransactionQuery = results.Last();
@@ -447,6 +439,22 @@ public class Transaction : IClassFixture<TransactionFixture>
 		task1.GetAwaiter().GetResult();
 		Assert.Equal(0, Task.WaitAny(task2, Task.Delay(TimeSpan.FromSeconds(10))));
 		task2.GetAwaiter().GetResult();
+	}
+
+	private static void BeginAndCommitWithGeneralLog(DbConnection connection, IsolationLevel isolationLevel)
+	{
+		connection.Execute(@"set global log_output = 'table';");
+		connection.Execute(@"set global general_log = 1;");
+		try
+		{
+			using var trans = connection.BeginTransaction(isolationLevel);
+			trans.Commit();
+		}
+		finally
+		{
+			// the general log is global, so leaving it on would log every statement from all the other tests (for the rest of the test run)
+			connection.Execute(@"set global general_log = 0;");
+		}
 	}
 
 	private readonly TransactionFixture m_database;

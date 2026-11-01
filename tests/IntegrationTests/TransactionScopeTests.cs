@@ -665,7 +665,10 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		using var transaction = new TransactionScope(TransactionScopeOption.Required, TimeSpan.FromSeconds(2));
 		using var connection = new MySqlConnection(connectionString);
 
-		Thread.Sleep(4000); // Sleep for 4 seconds to exceed the 2 second timeout
+		// System.Transactions aborts the transaction after a number of thread pool timer callbacks, which can take much longer than 2 seconds when the thread pool is busy
+		using var transactionCompleted = new ManualResetEventSlim();
+		System.Transactions.Transaction.Current.TransactionCompleted += (_, _) => transactionCompleted.Set();
+		Assert.True(transactionCompleted.Wait(TimeSpan.FromSeconds(60), TestContext.Current.CancellationToken));
 
 		var transactionException = Assert.Throws<TransactionException>(connection.Open);
 		Assert.IsType<TimeoutException>(transactionException.InnerException);
