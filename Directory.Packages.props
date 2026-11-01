@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageVersion Include="AdoNet.Specification.Tests" Version="3.0.0-beta.1" />
-    <PackageVersion Include="Dapper.StrongName" Version="2.1.79" />
+    <PackageVersion Include="Dapper.StrongName" Version="2.1.89" />
     <PackageVersion Include="log4net" Version="3.3.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="10.0.14" />
     <PackageVersion Include="Microsoft.Bcl.Memory" Version="10.0.14" />
