@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <AssemblyOriginatorKeyFile>..\..\MySqlConnector.snk</AssemblyOriginatorKeyFile>
@@ -25,12 +26,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
     <Using Include="System" />
     <Using Include="System.Collections.Generic" />
     <Using Include="System.Data" />

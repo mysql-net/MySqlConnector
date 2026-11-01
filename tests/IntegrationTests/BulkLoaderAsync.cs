@@ -110,7 +110,7 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 	public async Task BulkLoadCsvFileNotFound()
 	{
 		using var connection = new MySqlConnection(GetConnectionString());
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 
 		var secureFilePath = await connection.ExecuteScalarAsync<string>(@"select @@global.secure_file_priv;");
 		if (string.IsNullOrEmpty(secureFilePath) || secureFilePath == "NULL")
@@ -131,7 +131,11 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		bl.Local = false;
 		try
 		{
+#if MYSQL_DATA
 			int rowCount = await bl.LoadAsync();
+#else
+			int rowCount = await bl.LoadAsync(TestContext.Current.CancellationToken);
+#endif
 		}
 		catch (Exception exception)
 		{
@@ -157,7 +161,7 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 	public async Task BulkLoadLocalCsvFileNotFound()
 	{
 		using var connection = new MySqlConnection(GetLocalConnectionString());
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		MySqlBulkLoader bl = new MySqlBulkLoader(connection)
 		{
 			Timeout = 3, // Set a short timeout for this test because the file not found exception takes a long time otherwise, the timeout does not change the result
@@ -174,7 +178,11 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		bl.Local = true;
 		try
 		{
+#if MYSQL_DATA
 			int rowCount = await bl.LoadAsync();
+#else
+			int rowCount = await bl.LoadAsync(TestContext.Current.CancellationToken);
+#endif
 		}
 		catch (MySqlException mySqlException)
 		{
@@ -266,7 +274,7 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 	public async Task BulkLoadMissingFileName()
 	{
 		using var connection = new MySqlConnection(GetConnectionString());
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		MySqlBulkLoader bl = new MySqlBulkLoader(connection)
 		{
 			TableName = m_testTable,
@@ -286,7 +294,7 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 #else
 		await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
 		{
-			int rowCount = await bl.LoadAsync();
+			int rowCount = await bl.LoadAsync(TestContext.Current.CancellationToken);
 		});
 #endif
 	}
@@ -374,7 +382,7 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 	public async Task BulkLoadMemoryStreamInvalidOperation()
 	{
 		using var connection = new MySqlConnection(GetConnectionString());
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
 		using var memoryStream = new MemoryStream(m_memoryStreamBytes, false);
 #if !MYSQL_DATA
@@ -388,7 +396,7 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		bl.FieldQuotationOptional = true;
 		bl.Local = false;
 #if !MYSQL_DATA
-		await Assert.ThrowsAsync<InvalidOperationException>(async () => { var rowCount = await bl.LoadAsync(); });
+		await Assert.ThrowsAsync<InvalidOperationException>(async () => { var rowCount = await bl.LoadAsync(TestContext.Current.CancellationToken); });
 #else
 		await Assert.ThrowsAsync<MySqlException>(async () => { var rowCount = await bl.LoadAsync(memoryStream); });
 #endif
@@ -398,7 +406,7 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 	public async Task BulkLoadLocalMemoryStream()
 	{
 		using var connection = new MySqlConnection(GetLocalConnectionString());
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
 		using var memoryStream = new MemoryStream(m_memoryStreamBytes, false);
 #if !MYSQL_DATA
@@ -412,7 +420,7 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		bl.FieldQuotationOptional = true;
 		bl.Local = true;
 #if !MYSQL_DATA
-		int rowCount = await bl.LoadAsync();
+		int rowCount = await bl.LoadAsync(TestContext.Current.CancellationToken);
 #else
 		int rowCount = await bl.LoadAsync(memoryStream);
 #endif
@@ -425,46 +433,46 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 	{
 		using var connection = new MySqlConnection(GetLocalConnectionString());
 		using var connection2 = new MySqlConnection(GetLocalConnectionString());
-		await connection.OpenAsync();
-		await connection2.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
+		await connection2.OpenAsync(TestContext.Current.CancellationToken);
 		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_reader_source;
 drop table if exists bulk_load_data_reader_destination;
 create table bulk_load_data_reader_source(value int, name text);
 create table bulk_load_data_reader_destination(value int, name text);
 insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five'),(6,'six');", connection))
 		{
-			await cmd.ExecuteNonQueryAsync();
+			await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 		}
 
 		using (var cmd = new MySqlCommand("select * from bulk_load_data_reader_source;", connection))
-		using (var reader = await cmd.ExecuteReaderAsync())
+		using (var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken))
 		{
 			var bulkCopy = new MySqlBulkCopy(connection2) { DestinationTableName = "bulk_load_data_reader_destination", };
-			var result = await bulkCopy.WriteToServerAsync(reader);
+			var result = await bulkCopy.WriteToServerAsync(reader, TestContext.Current.CancellationToken);
 			Assert.Equal(7, result.RowsInserted);
 			Assert.Empty(result.Warnings);
 		}
 
 		using var cmd1 = new MySqlCommand("select * from bulk_load_data_reader_source order by value;", connection);
 		using var cmd2 = new MySqlCommand("select * from bulk_load_data_reader_destination order by value;", connection2);
-		using var reader1 = await cmd1.ExecuteReaderAsync();
-		using var reader2 = await cmd2.ExecuteReaderAsync();
-		while (await reader1.ReadAsync())
+		using var reader1 = await cmd1.ExecuteReaderAsync(TestContext.Current.CancellationToken);
+		using var reader2 = await cmd2.ExecuteReaderAsync(TestContext.Current.CancellationToken);
+		while (await reader1.ReadAsync(TestContext.Current.CancellationToken))
 		{
-			Assert.True(await reader2.ReadAsync());
+			Assert.True(await reader2.ReadAsync(TestContext.Current.CancellationToken));
 			Assert.Equal(reader1.GetInt32(0), reader2.GetInt32(0));
 			Assert.Equal(reader1.GetString(1), reader2.GetString(1));
 		}
-		Assert.False(await reader2.ReadAsync());
+		Assert.False(await reader2.ReadAsync(TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
 	public async Task BulkCopyNullDataTable()
 	{
 		using var connection = new MySqlConnection(GetLocalConnectionString());
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		var bulkCopy = new MySqlBulkCopy(connection);
-		await Assert.ThrowsAsync<ArgumentNullException>(async () => await bulkCopy.WriteToServerAsync(default(DataTable)));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await bulkCopy.WriteToServerAsync(default(DataTable), TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
@@ -485,18 +493,18 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 		};
 
 		using var connection = new MySqlConnection(GetLocalConnectionString());
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
 create table bulk_load_data_table(a int, b longblob);", connection))
 		{
-			await cmd.ExecuteNonQueryAsync();
+			await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 		}
 
 		var bulkCopy = new MySqlBulkCopy(connection)
 		{
 			DestinationTableName = "bulk_load_data_table",
 		};
-		var result = await bulkCopy.WriteToServerAsync(dataTable);
+		var result = await bulkCopy.WriteToServerAsync(dataTable, TestContext.Current.CancellationToken);
 		Assert.Equal(2, result.RowsInserted);
 		Assert.Empty(result.Warnings);
 	}
@@ -509,11 +517,11 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 	public async Task BulkCopyNotifyAfter(int notifyAfter, int rowCount, int expectedEventCount, int expectedRowsCopied)
 	{
 		using var connection = new MySqlConnection(GetLocalConnectionString());
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		using (var cmd = new MySqlCommand(@"drop table if exists bulk_copy_notify_after;
 			create table bulk_copy_notify_after(value int);", connection))
 		{
-			await cmd.ExecuteNonQueryAsync();
+			await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 		}
 
 		var bulkCopy = new MySqlBulkCopy(connection)
@@ -536,7 +544,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		foreach (var x in Enumerable.Range(1, rowCount))
 			dataTable.Rows.Add(new object[] { x });
 
-		var result = await bulkCopy.WriteToServerAsync(dataTable);
+		var result = await bulkCopy.WriteToServerAsync(dataTable, TestContext.Current.CancellationToken);
 		Assert.Equal(expectedEventCount, eventCount);
 		Assert.Equal(expectedRowsCopied, rowsCopied);
 		Assert.Equal(rowCount, result.RowsInserted);
@@ -551,11 +559,11 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 	public async Task BulkCopyAbort(int notifyAfter, int rowCount, int abortAfter, int expectedEventCount, int expectedRowsCopied, long expectedCount)
 	{
 		using var connection = new MySqlConnection(GetLocalConnectionString());
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		using (var cmd = new MySqlCommand(@"drop table if exists bulk_copy_abort;
 			create table bulk_copy_abort(value longtext);", connection))
 		{
-			await cmd.ExecuteNonQueryAsync();
+			await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 		}
 
 		var bulkCopy = new MySqlBulkCopy(connection)
@@ -581,14 +589,14 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		foreach (var x in Enumerable.Range(1, rowCount))
 			dataTable.Rows.Add(new object[] { str });
 
-		var result = await bulkCopy.WriteToServerAsync(dataTable);
+		var result = await bulkCopy.WriteToServerAsync(dataTable, TestContext.Current.CancellationToken);
 		Assert.Equal(expectedEventCount, eventCount);
 		Assert.Equal(expectedRowsCopied, rowsCopied);
 		Assert.Equal(expectedCount, result.RowsInserted);
 		Assert.Empty(result.Warnings);
 
 		using (var cmd = new MySqlCommand("select count(value) from bulk_copy_abort;", connection))
-			Assert.Equal(expectedCount, await cmd.ExecuteScalarAsync());
+			Assert.Equal(expectedCount, await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
@@ -620,7 +628,7 @@ create table bulk_load_data_table(str varchar(5), number tinyint);", connection)
 		{
 			DestinationTableName = "bulk_load_data_table",
 		};
-		var result = await bulkCopy.WriteToServerAsync(dataTable);
+		var result = await bulkCopy.WriteToServerAsync(dataTable, TestContext.Current.CancellationToken);
 		Assert.Equal(2, result.RowsInserted);
 		Assert.Equal(2, result.Warnings.Count);
 		Assert.Equal(MySqlErrorCode.WarningDataOutOfRange, result.Warnings[0].ErrorCode);
@@ -631,9 +639,9 @@ create table bulk_load_data_table(str varchar(5), number tinyint);", connection)
 	public async Task BulkCopyNullDataReader()
 	{
 		using var connection = new MySqlConnection(GetLocalConnectionString());
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		var bulkCopy = new MySqlBulkCopy(connection);
-		await Assert.ThrowsAsync<ArgumentNullException>(async () => await bulkCopy.WriteToServerAsync(default(DbDataReader)));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await bulkCopy.WriteToServerAsync(default(DbDataReader), TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
@@ -652,11 +660,11 @@ create table bulk_load_data_table(str varchar(5), number tinyint);", connection)
 		};
 
 		using var connection = new MySqlConnection(GetLocalConnectionString());
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
 create table bulk_load_data_table(id BIGINT UNIQUE NOT NULL AUTO_INCREMENT, geo_data GEOMETRY NOT NULL);", connection))
 		{
-			await cmd.ExecuteNonQueryAsync();
+			await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 		}
 
 		var bc = new MySqlBulkCopy(connection)
@@ -672,7 +680,7 @@ create table bulk_load_data_table(id BIGINT UNIQUE NOT NULL AUTO_INCREMENT, geo_
 			},
 		};
 
-		await bc.WriteToServerAsync(dataTable);
+		await bc.WriteToServerAsync(dataTable, TestContext.Current.CancellationToken);
 	}
 #endif
 

@@ -34,7 +34,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		};
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		Assert.Equal(ConnectionState.Closed, connection.State);
-		await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());
+		await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync(TestContext.Current.CancellationToken));
 		Assert.Equal(ConnectionState.Closed, connection.State);
 	}
 
@@ -44,7 +44,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		var csb = AppConfig.CreateConnectionStringBuilder();
 		csb.Password = "wrong";
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());
+		await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync(TestContext.Current.CancellationToken));
 		Assert.Equal(ConnectionState.Closed, connection.State);
 	}
 
@@ -65,11 +65,11 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 	{
 		using var connection = new MySqlConnection(m_database.Connection.ConnectionString);
 		Assert.Equal(ConnectionState.Closed, connection.State);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		Assert.Equal(ConnectionState.Open, connection.State);
 		await connection.CloseAsync();
 		Assert.Equal(ConnectionState.Closed, connection.State);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		Assert.Equal(ConnectionState.Open, connection.State);
 	}
 
@@ -106,8 +106,8 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		var csb = AppConfig.CreateConnectionStringBuilder();
 		csb.Keepalive = 1;
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await connection.OpenAsync();
-		await Task.Delay(3000);
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
+		await Task.Delay(3000, TestContext.Current.CancellationToken);
 	}
 
 	[SkippableFact(ServerFeatures.Timeout)]
@@ -157,7 +157,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		csb.Password = null;
 
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await MySqlConnection.ClearPoolAsync(connection);
+		await MySqlConnection.ClearPoolAsync(connection, TestContext.Current.CancellationToken);
 
 		var wasCalled = false;
 		connection.ProvidePasswordCallback = x =>
@@ -170,7 +170,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 			return password;
 		};
 
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		Assert.True(wasCalled);
 	}
 
@@ -202,11 +202,11 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		csb.Password = null;
 
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await MySqlConnection.ClearPoolAsync(connection);
+		await MySqlConnection.ClearPoolAsync(connection, TestContext.Current.CancellationToken);
 
 		connection.ProvidePasswordCallback = _ => $"wrong_{password}";
 
-		var ex = await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+		var ex = await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync(TestContext.Current.CancellationToken));
 		Assert.Equal(MySqlErrorCode.AccessDenied, ex.ErrorCode);
 	}
 
@@ -218,12 +218,12 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		csb.Password = null;
 
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await MySqlConnection.ClearPoolAsync(connection);
+		await MySqlConnection.ClearPoolAsync(connection, TestContext.Current.CancellationToken);
 
 		var innerException = new NotSupportedException();
 		connection.ProvidePasswordCallback = _ => throw innerException;
 
-		var ex = await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+		var ex = await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync(TestContext.Current.CancellationToken));
 		Assert.Equal(MySqlErrorCode.ProvidePasswordCallbackFailed, ex.ErrorCode);
 		Assert.Same(innerException, ex.InnerException);
 	}
@@ -240,7 +240,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		connection.ProvidePasswordCallback = _ => password;
 
 		using var clonedConnection = connection.Clone();
-		await clonedConnection.OpenAsync();
+		await clonedConnection.OpenAsync(TestContext.Current.CancellationToken);
 		Assert.Equal(ConnectionState.Closed, connection.State);
 		Assert.Equal(ConnectionState.Open, clonedConnection.State);
 	}
@@ -345,7 +345,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		Assert.Equal(csb.Database, connection.Database);
 
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(csb.Database, connection.Database);
 		Assert.Equal(csb.Database, await QueryCurrentDatabaseAsync(connection));
@@ -580,22 +580,22 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 	public async Task PingNoConnection()
 	{
 		using var connection = new MySqlConnection();
-		Assert.False(await connection.PingAsync());
+		Assert.False(await connection.PingAsync(TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
 	public async Task PingBeforeConnecting()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
-		Assert.False(await connection.PingAsync());
+		Assert.False(await connection.PingAsync(TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
 	public async Task PingConnection()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
-		await connection.OpenAsync();
-		Assert.True(await connection.PingAsync());
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
+		Assert.True(await connection.PingAsync(TestContext.Current.CancellationToken));
 	}
 #endif
 

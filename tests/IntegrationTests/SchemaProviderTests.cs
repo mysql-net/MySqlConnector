@@ -157,7 +157,7 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 	[Fact]
 	public async Task GetMetaDataCollectionsSchemaAsync()
 	{
-		var table = await m_database.Connection.GetSchemaAsync();
+		var table = await m_database.Connection.GetSchemaAsync(TestContext.Current.CancellationToken);
 		Assert.Equal(3, table.Columns.Count);
 		Assert.Equal("CollectionName", table.Columns[0].ColumnName);
 	}
@@ -165,7 +165,7 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 	[Fact]
 	public async Task GetCharacterSetsSchemaAsync()
 	{
-		var table = await m_database.Connection.GetSchemaAsync("CharacterSets");
+		var table = await m_database.Connection.GetSchemaAsync("CharacterSets", TestContext.Current.CancellationToken);
 		Assert.Equal(4, table.Columns.Count);
 		Assert.Contains("latin1", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
 		Assert.Contains("ascii", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
@@ -184,13 +184,13 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 	{
 		// a query whose text isn't valid UTF-8 makes INFORMATION_SCHEMA.PROCESSLIST fail on MySQL 9.1 and later: https://bugs.mysql.com/bug.php?id=121434
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		using var command = new MySqlCommand("SELECT SLEEP(3), @data;", connection);
 		command.Parameters.AddWithValue("@data", new byte[] { 0x9D, 0x86, 0xBA, 0x31, 0x8D, 0xFB });
-		var queryTask = command.ExecuteScalarAsync();
-		await Task.Delay(TimeSpan.FromSeconds(1));
+		var queryTask = command.ExecuteScalarAsync(TestContext.Current.CancellationToken);
+		await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
 
-		var table = await m_database.Connection.GetSchemaAsync("ProcessList");
+		var table = await m_database.Connection.GetSchemaAsync("ProcessList", TestContext.Current.CancellationToken);
 		Assert.Contains(table.Rows.Cast<DataRow>(), x => (long) x["ID"] == connection.ServerThread);
 
 		await queryTask;
@@ -201,12 +201,12 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 	{
 		// a query containing a supplementary character makes INFORMATION_SCHEMA.PROCESSLIST fail on MySQL 9.1 and later: https://bugs.mysql.com/bug.php?id=121434
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		using var command = new MySqlCommand("SELECT SLEEP(3), '\U0001F600';", connection);
-		var queryTask = command.ExecuteScalarAsync();
-		await Task.Delay(TimeSpan.FromSeconds(1));
+		var queryTask = command.ExecuteScalarAsync(TestContext.Current.CancellationToken);
+		await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
 
-		var table = await m_database.Connection.GetSchemaAsync("ProcessList");
+		var table = await m_database.Connection.GetSchemaAsync("ProcessList", TestContext.Current.CancellationToken);
 		var row = Assert.Single(table.Rows.Cast<DataRow>(), x => (long) x["ID"] == connection.ServerThread);
 		Assert.Equal("Query", row["COMMAND"]);
 
@@ -254,6 +254,33 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 			(schemaName, "PRIMARY", "pk_test", true, true, "BTREE"),
 		};
 		Assert.Equal(expected, actual);
+	}
+
+	[Theory]
+	[InlineData("Tables")]
+#if !MYSQL_DATA
+	[InlineData("Partitions")]
+#endif
+	public void UnsignedColumnTypes(string schemaName)
+	{
+		// these INFORMATION_SCHEMA columns are BIGINT UNSIGNED in MySQL and MariaDB
+		var table = m_database.Connection.GetSchema(schemaName);
+		foreach (var columnName in new[] { "TABLE_ROWS", "AVG_ROW_LENGTH", "DATA_LENGTH", "MAX_DATA_LENGTH", "INDEX_LENGTH", "DATA_FREE" })
+			Assert.Equal(typeof(ulong), table.Columns[columnName]!.DataType);
+	}
+
+	[Fact]
+	public void TablesAutoIncrementGreaterThanInt64MaxValue()
+	{
+		// INFORMATION_SCHEMA.TABLES.AUTO_INCREMENT is BIGINT UNSIGNED
+		m_database.Connection.Execute("""
+			DROP TABLE IF EXISTS schema_tables_auto_increment;
+			CREATE TABLE schema_tables_auto_increment(id BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT) AUTO_INCREMENT = 9223372036854775809;
+			""");
+
+		var table = m_database.Connection.GetSchema("Tables", new[] { null, m_database.Connection.Database, "schema_tables_auto_increment" });
+		var row = Assert.Single(table.Rows.Cast<DataRow>());
+		Assert.Equal(9223372036854775809UL, row["AUTO_INCREMENT"]);
 	}
 
 	[Fact]

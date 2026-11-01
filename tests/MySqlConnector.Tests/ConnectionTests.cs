@@ -46,7 +46,7 @@ public class ConnectionTests : IDisposable
 		m_csb.Pooling = true;
 		using (var connection = new MySqlConnection(m_csb.ConnectionString))
 		{
-			await connection.OpenAsync();
+			await connection.OpenAsync(TestContext.Current.CancellationToken);
 			Assert.Equal(1, m_server.ActiveConnections);
 
 			Assert.Equal(m_server.ServerVersion, connection.ServerVersion);
@@ -64,7 +64,7 @@ public class ConnectionTests : IDisposable
 
 		m_csb.Pooling = false;
 		using var connection = new MySqlConnection(m_csb.ConnectionString);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		Assert.Equal(1, m_server.ActiveConnections);
 
 		Assert.Equal(m_server.ServerVersion, connection.ServerVersion);
@@ -86,14 +86,14 @@ public class ConnectionTests : IDisposable
 
 		using (var connection = new MySqlConnection(m_csb.ConnectionString))
 		{
-			await connection.OpenAsync();
+			await connection.OpenAsync(TestContext.Current.CancellationToken);
 			serverThread = connection.ServerThread;
-			await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+			await Task.Delay(TimeSpan.FromSeconds(delaySeconds), TestContext.Current.CancellationToken);
 		}
 
 		using (var connection = new MySqlConnection(m_csb.ConnectionString))
 		{
-			await connection.OpenAsync();
+			await connection.OpenAsync(TestContext.Current.CancellationToken);
 			if (shouldTimeout)
 				Assert.NotEqual(serverThread, connection.ServerThread);
 			else
@@ -108,7 +108,7 @@ public class ConnectionTests : IDisposable
 	{
 		m_csb.MinimumPoolSize = (uint) size;
 		using var connection = new MySqlConnection(m_csb.ConnectionString);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		Assert.Equal(size, m_server.ActiveConnections);
 	}
 
@@ -300,20 +300,20 @@ public class ConnectionTests : IDisposable
 			Pipelining = pipelining,
 		};
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		var serverThread = connection.ServerThread;
-		await connection.ChangeDatabaseAsync("db2");
+		await connection.ChangeDatabaseAsync("db2", TestContext.Current.CancellationToken);
 		await connection.CloseAsync();
 
 		m_server.ClearReceivedCommands();
 		m_server.PipelinedResetCommandCount = pipelining ? 3 : 0;
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 		Assert.Equal(serverThread, connection.ServerThread);
 		Assert.Equal("db1", connection.Database);
 		Assert.Equal(["ResetConnection", "Query SET NAMES utf8mb4;", "InitDatabase db1"], m_server.ReceivedCommands);
 
 		using var command = new MySqlCommand("SELECT 1;", connection);
-		Assert.Equal(1, await command.ExecuteScalarAsync());
+		Assert.Equal(1, await command.ExecuteScalarAsync(TestContext.Current.CancellationToken));
 	}
 
 	[Theory]
@@ -582,7 +582,7 @@ public class ConnectionTests : IDisposable
 					}
 					case 2:
 					{
-						await Assert.ThrowsAsync<MySqlException>(async () => await connection.ResetConnectionAsync().ConfigureAwait(false));
+						await Assert.ThrowsAsync<MySqlException>(async () => await connection.ResetConnectionAsync(TestContext.Current.CancellationToken).ConfigureAwait(false));
 						break;
 					}
 				}
@@ -594,12 +594,12 @@ public class ConnectionTests : IDisposable
 
 				await connection.OpenAsync().ConfigureAwait(false);
 				Assert.Equal(ConnectionState.Open, connection.State);
-			}));
+			}, TestContext.Current.CancellationToken));
 		}
 
-		barrier.SignalAndWait();
+		barrier.SignalAndWait(TestContext.Current.CancellationToken);
 		m_server.Reset();
-		barrier.SignalAndWait();
+		barrier.SignalAndWait(TestContext.Current.CancellationToken);
 
 		await Task.WhenAll(tasks);
 	}

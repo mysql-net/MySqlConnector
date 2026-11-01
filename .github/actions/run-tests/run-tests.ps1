@@ -7,11 +7,14 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$assemblyPath = "artifacts/bin/$Project/$($Configuration.ToLowerInvariant())_$TargetFramework/$Project.dll"
+# xUnit.net v3 test projects are executables: .NET builds are run from the .dll, but .NET Framework builds only produce an .exe
+$extension = if ($TargetFramework -match '^net4\d+$') { 'exe' } else { 'dll' }
+$testModule = "artifacts/bin/$Project/$($Configuration.ToLowerInvariant())_$TargetFramework/$Project.$extension"
 $resultsDirectory = Join-Path $env:RUNNER_TEMP 'TestResults'
 $resultsFileName = ($Title -replace '[^\w.-]+', '-').Trim('-') + '.trx'
 
-dotnet test $assemblyPath --logger "trx;LogFileName=$resultsFileName" --results-directory $resultsDirectory
+# global.json opts in to the Microsoft.Testing.Platform mode of 'dotnet test'; arguments after '--' are passed to the test application
+dotnet test --test-modules $testModule --results-directory $resultsDirectory -- --report-xunit-trx --report-xunit-trx-filename $resultsFileName
 $exitCode = $LASTEXITCODE
 if ($exitCode -eq 0)
 {

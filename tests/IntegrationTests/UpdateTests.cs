@@ -38,8 +38,8 @@ insert into update_rows_reader (value) VALUES (1), (2), (1), (4);
 			p.Value = 4;
 			cmd.Parameters.Add(p);
 
-			using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
-			Assert.False(await reader.ReadAsync().ConfigureAwait(false));
+			using var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
+			Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken).ConfigureAwait(false));
 
 			if (closeDispose == 1)
 				reader.Close();
@@ -48,7 +48,7 @@ insert into update_rows_reader (value) VALUES (1), (2), (1), (4);
 			Assert.Equal(expectedRowsUpdated, reader.RecordsAffected);
 
 			if (closeDispose == 0)
-				Assert.False(await reader.NextResultAsync().ConfigureAwait(false));
+				Assert.False(await reader.NextResultAsync(TestContext.Current.CancellationToken).ConfigureAwait(false));
 		}
 	}
 
@@ -84,7 +84,7 @@ insert into update_rows_non_query (value) VALUES (1), (2), (1), (4);
 			p.Value = 4;
 			cmd.Parameters.Add(p);
 
-			var rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+			var rowsAffected = await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 			Assert.Equal(expectedRowsUpdated, rowsAffected);
 		}
 	}
@@ -125,7 +125,7 @@ insert into update_rows_dapper (value) VALUES (1), (2), (1), (4);
 		csb.UseAffectedRows = useAffectedRows;
 		using (var connection = new MySqlConnection(csb.ConnectionString))
 		{
-			await connection.OpenAsync();
+			await connection.OpenAsync(TestContext.Current.CancellationToken);
 			using (var cmd = connection.CreateCommand())
 			{
 				cmd.CommandText = @"drop table if exists update_rows_dapper_async;

@@ -27,7 +27,7 @@ try
 		throw "dotnet restore failed with exit code $LASTEXITCODE"
 	}
 
-	foreach ($framework in @('net462', 'net48'))
+	foreach ($framework in @('net472', 'net48'))
 	{
 		$redirectOutput = Join-Path $testRunDirectory "$framework\redirects-enabled"
 		New-Item -ItemType Directory -Path $redirectOutput -Force | Out-Null

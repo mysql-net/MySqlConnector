@@ -446,7 +446,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 		var csb = CreateConnectionStringBuilder();
 		csb.OldGuids = oldGuids;
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await connection.OpenAsync().ConfigureAwait(false);
+		await connection.OpenAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 		try
 		{
 			Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guid = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
@@ -468,14 +468,14 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 	{
 		using var cmd = Connection.CreateCommand();
 		cmd.CommandText = $"select `{column}` from datatypes_guids order by rowid";
-		using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
+		using var reader = await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 		Assert.Equal(fieldType, reader.GetFieldType(0));
 
-		Assert.True(await reader.ReadAsync().ConfigureAwait(false));
+		Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken).ConfigureAwait(false));
 		Assert.True(reader.IsDBNull(0));
 		Assert.Throws<GetGuidWhenNullException>(() => reader.GetGuid(0));
 
-		Assert.True(await reader.ReadAsync().ConfigureAwait(false));
+		Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken).ConfigureAwait(false));
 		Assert.False(reader.IsDBNull(0));
 		Assert.NotNull(reader.GetValue(0));
 		Assert.IsType(fieldType, reader.GetValue(0));
@@ -488,17 +488,17 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 #endif
 		Assert.Throws(exceptionType, () => reader.GetGuid(0));
 
-		Assert.True(await reader.ReadAsync().ConfigureAwait(false));
+		Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken).ConfigureAwait(false));
 		Assert.NotNull(reader.GetValue(0));
 		Assert.IsType(fieldType, reader.GetValue(0));
 		Assert.Equal(new Guid("33221100-5544-7766-8899-aabbccddeeff"), reader.GetGuid(0));
 
-		Assert.True(await reader.ReadAsync().ConfigureAwait(false));
+		Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken).ConfigureAwait(false));
 		Assert.NotNull(reader.GetValue(0));
 		Assert.IsType(fieldType, reader.GetValue(0));
 		Assert.Equal(new Guid("33221100-5544-7766-8899-aabbccddeeff"), reader.GetGuid(0));
 
-		Assert.False(await reader.ReadAsync().ConfigureAwait(false));
+		Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken).ConfigureAwait(false));
 	}
 
 #if !MYSQL_DATA
@@ -873,7 +873,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 	{
 		// NOTE: MySQL Server will reset the connection when it receives an oversize packet, so we need to create a test-specific connection here
 		using var connection = new MySqlConnection(CreateConnectionStringBuilder().ConnectionString);
-		await connection.OpenAsync();
+		await connection.OpenAsync(TestContext.Current.CancellationToken);
 
 		var data = CreateByteArray(size);
 		var isSupported = size < 1048576 || AppConfig.SupportedFeatures.HasFlag(ServerFeatures.LargePackets);
@@ -884,7 +884,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 			try
 			{
 				cmd.Parameters.AddWithValue("@data", data);
-				await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+				await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 				lastInsertId = cmd.LastInsertedId;
 				Assert.True(isSupported);
 			}

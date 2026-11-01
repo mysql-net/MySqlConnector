@@ -43,8 +43,8 @@ public class SslSecurityTests
 			using var connection = new MySqlConnection(csb.ConnectionString);
 
 			// opening the connection should fail, but this can be because FakeMySqlServer doesn't implement the full protocol so wait for the client's response to be captured
-			var exception = await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());
-			var finished = await Task.WhenAny(server.ClearPasswordResponse, Task.Delay(TimeSpan.FromSeconds(30)));
+			var exception = await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync(TestContext.Current.CancellationToken));
+			var finished = await Task.WhenAny(server.ClearPasswordResponse, Task.Delay(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken));
 			Assert.True(finished == server.ClearPasswordResponse, "the fake server never reached the cleartext-password auth switch");
 
 			// the password should not be leaked

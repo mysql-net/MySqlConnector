@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 
 #if MYSQL_DATA
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
+[assembly: Xunit.v3.Parallelization(Mode = Xunit.Sdk.ParallelMode.None)]
 #endif
 
 namespace IntegrationTests;

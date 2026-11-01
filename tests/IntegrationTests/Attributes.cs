@@ -1,23 +1,26 @@
+using System.Runtime.CompilerServices;
+
 namespace IntegrationTests;
 
 public class SkippableFactAttribute : FactAttribute
 {
-	public SkippableFactAttribute()
-		: this(ServerFeatures.None, ConfigSettings.None)
+	public SkippableFactAttribute([CallerFilePath] string sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+		: this(ServerFeatures.None, ConfigSettings.None, sourceFilePath, sourceLineNumber)
 	{
 	}
 
-	public SkippableFactAttribute(ServerFeatures serverFeatures)
-		: this(serverFeatures, ConfigSettings.None)
+	public SkippableFactAttribute(ServerFeatures serverFeatures, [CallerFilePath] string sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+		: this(serverFeatures, ConfigSettings.None, sourceFilePath, sourceLineNumber)
 	{
 	}
 
-	public SkippableFactAttribute(ConfigSettings configSettings)
-		: this(ServerFeatures.None, configSettings)
+	public SkippableFactAttribute(ConfigSettings configSettings, [CallerFilePath] string sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+		: this(ServerFeatures.None, configSettings, sourceFilePath, sourceLineNumber)
 	{
 	}
 
-	public SkippableFactAttribute(ServerFeatures serverFeatures, ConfigSettings configSettings)
+	public SkippableFactAttribute(ServerFeatures serverFeatures, ConfigSettings configSettings, [CallerFilePath] string sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+		: base(sourceFilePath, sourceLineNumber)
 	{
 		Skip = TestUtilities.GetSkipReason(serverFeatures, configSettings);
 	}
@@ -39,22 +42,23 @@ public class SkippableFactAttribute : FactAttribute
 
 public class SkippableTheoryAttribute : TheoryAttribute
 {
-	public SkippableTheoryAttribute()
-		: this(ServerFeatures.None, ConfigSettings.None)
+	public SkippableTheoryAttribute([CallerFilePath] string sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+		: this(ServerFeatures.None, ConfigSettings.None, sourceFilePath, sourceLineNumber)
 	{
 	}
 
-	public SkippableTheoryAttribute(ServerFeatures serverFeatures)
-		: this(serverFeatures, ConfigSettings.None)
+	public SkippableTheoryAttribute(ServerFeatures serverFeatures, [CallerFilePath] string sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+		: this(serverFeatures, ConfigSettings.None, sourceFilePath, sourceLineNumber)
 	{
 	}
 
-	public SkippableTheoryAttribute(ConfigSettings configSettings)
-		: this(ServerFeatures.None, configSettings)
+	public SkippableTheoryAttribute(ConfigSettings configSettings, [CallerFilePath] string sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+		: this(ServerFeatures.None, configSettings, sourceFilePath, sourceLineNumber)
 	{
 	}
 
-	public SkippableTheoryAttribute(ServerFeatures serverFeatures, ConfigSettings configSettings)
+	public SkippableTheoryAttribute(ServerFeatures serverFeatures, ConfigSettings configSettings, [CallerFilePath] string sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+		: base(sourceFilePath, sourceLineNumber)
 	{
 		Skip = TestUtilities.GetSkipReason(serverFeatures, configSettings);
 	}

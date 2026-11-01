@@ -29,14 +29,14 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		{
 			await Task.Delay(TimeSpan.FromSeconds(0.5));
 			cmd.Cancel();
-		});
+		}, TestContext.Current.CancellationToken);
 
 		var stopwatch = Stopwatch.StartNew();
 		TestUtilities.AssertExecuteScalarReturnsOneOrIsCanceled(cmd);
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
 
 #pragma warning disable xUnit1031 // Do not use blocking task operations in test method
-		task.Wait(); // shouldn't throw
+		task.Wait(TestContext.Current.CancellationToken); // shouldn't throw
 #pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 	}
 
@@ -254,7 +254,7 @@ create table cancel_completed_command (
 		{
 			cmd.CommandText = @"insert into cancel_completed_command (id, value) values (1, null);";
 
-			using (await cmd.ExecuteReaderAsync().ConfigureAwait(false))
+			using (await cmd.ExecuteReaderAsync(TestContext.Current.CancellationToken).ConfigureAwait(false))
 				cmd.Cancel();
 		}
 
@@ -262,13 +262,13 @@ create table cancel_completed_command (
 		{
 			cmd.CommandText = @"update cancel_completed_command SET value = ""value"" where id = 1;";
 
-			await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+			await cmd.ExecuteNonQueryAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 		}
 
 		using (var cmd = m_database.Connection.CreateCommand())
 		{
 			cmd.CommandText = "select value from cancel_completed_command where id = 1;";
-			var value = (string) await cmd.ExecuteScalarAsync();
+			var value = (string) await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken);
 			Assert.Equal("value", value);
 		}
 	}
@@ -595,7 +595,7 @@ create table cancel_completed_command (
 		{
 			batch.BatchCommands.Add(new MySqlBatchCommand(@"insert into cancel_completed_command (id, value) values (1, null);"));
 
-			using (await batch.ExecuteReaderAsync().ConfigureAwait(false))
+			using (await batch.ExecuteReaderAsync(TestContext.Current.CancellationToken).ConfigureAwait(false))
 				batch.Cancel();
 		}
 
@@ -603,13 +603,13 @@ create table cancel_completed_command (
 		{
 			batch.BatchCommands.Add(new MySqlBatchCommand(@"update cancel_completed_command SET value = ""value"" where id = 1;"));
 
-			await batch.ExecuteNonQueryAsync().ConfigureAwait(false);
+			await batch.ExecuteNonQueryAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
 		}
 
 		using (var cmd = m_database.Connection.CreateCommand())
 		{
 			cmd.CommandText = "select value from cancel_completed_command where id = 1;";
-			var value = (string) await cmd.ExecuteScalarAsync();
+			var value = (string) await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken);
 			Assert.Equal("value", value);
 		}
 	}
