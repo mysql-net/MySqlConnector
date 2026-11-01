@@ -26,12 +26,7 @@ weight: 30
   * The legacy `db.connection_string`, `db.name`, `db.statement`, `db.system`, `db.user`, `net.*`, and `thread.id` tags and the `exception` event are no longer recorded.
   * `Open` activities now have `db.namespace` and `server.address` tags even if the connection fails.
   * A command timeout sets `error.type` to `timeout`.
-* **Possibly breaking** Update dependencies: [#1674](https://github.com/mysql-net/MySqlConnector/issues/1674).
-  * Microsoft.Extensions.Logging.Abstractions from 8.0.2 to 10.0.12.
-  * System.Diagnostics.DiagnosticSource from 8.0.1 to 10.0.12.
-  * Replace IndexRange with Microsoft.Bcl.Memory 10.0.12.
-  * MySqlConnector.Authentication.Ed25519: Microsoft.AspNetCore.Cryptography.KeyDerivation from 8.0.16 to 10.0.12.
-  * This lets MySqlConnector load on .NET Framework without binding redirects, e.g., in a plugin host or WiX custom action.
+* **Possibly breaking** Update dependencies to avoid binding redirects on .NET Framework: [#1674](https://github.com/mysql-net/MySqlConnector/issues/1674).
 * **Possibly breaking** When a pooled connection's database was changed (with `ChangeDatabase` or `USE`), select the connection string's `Database` again without reauthenticating: [#1671](https://github.com/mysql-net/MySqlConnector/pull/1671).
   * This avoids calling `ProvidePasswordCallback` and saves round trips when pipelining is enabled.
   * With `ConnectionReset=False`, other session state is no longer reset in this case.
