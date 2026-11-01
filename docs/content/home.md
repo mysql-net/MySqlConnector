@@ -1,5 +1,5 @@
 ---
-lastmod: 2025-11-11
+lastmod: 2026-10-31
 date: 2016-10-16
 title: Home
 weight: 10
@@ -17,7 +17,7 @@ MySqlConnector is a C# [ADO.NET](https://learn.microsoft.com/en-us/dotnet/framew
 [Azure Database for MySQL](https://azure.microsoft.com/en-us/products/mysql/),
 [Google Cloud SQL for MySQL](https://cloud.google.com/sql/docs/mysql/),
 [Percona Server](https://www.percona.com/software/mysql-database/percona-server) and more. It provides implementations of
-`DbConnection`, `DbCommand`, `DbDataReader`, `DbTransaction` &mdash; the classes
+`DbDataSource`, `DbConnection`, `DbCommand`, `DbDataReader`, `DbTransaction` &mdash; the classes
 needed to query and update databases from C# code.
 
 ## Getting Started

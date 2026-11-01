@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-01-28
+lastmod: 2026-10-31
 date: 2016-10-16
 title: Use with ORMs
 description: A list of .NET object-relational mappers that work well with MySqlConnector.
@@ -26,5 +26,6 @@ This library is compatible with popular .NET ORMs including:
 
 For Entity Framework support, use:
 
-* Pomelo.EntityFrameworkCore.MySql ([GitHub](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql), [NuGet](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql))
+* Microting.EntityFrameworkCore.MySql ([GitHub](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql), [NuGet](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql))
+* [EF9 and below] Pomelo.EntityFrameworkCore.MySql ([GitHub](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql), [NuGet](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql))
   * See [Tutorial: Connect to MySQL with Entity Framework Core](/tutorials/efcore/).

@@ -1,6 +1,6 @@
 ## About
 
-MySqlConnector is a C# [ADO.NET](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/) driver for [MySQL](https://www.mysql.com/), [MariaDB](https://mariadb.org/), [Amazon Aurora](https://aws.amazon.com/rds/aurora/), [Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/) and other MySQL-compatible databases.
+MySqlConnector is a C# [ADO.NET](https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/) driver for [MySQL](https://www.mysql.com/), [MariaDB](https://mariadb.org/), [Amazon Aurora](https://aws.amazon.com/rds/aurora/), [Azure Database for MySQL](https://azure.microsoft.com/en-us/products/mysql/) and other MySQL-compatible databases.
 
 More documentation is available at the [MySqlConnector website](https://mysqlconnector.net/).
 
@@ -27,7 +27,7 @@ command.Parameters.AddWithValue("@OrderId", orderId);
 
 // execute the command and read the results
 await using var reader = await command.ExecuteReaderAsync();
-while (reader.Read())
+while (await reader.ReadAsync())
 {
 	var id = reader.GetInt32("order_id");
 	var date = reader.GetDateTime("order_date");
@@ -66,15 +66,19 @@ app.Run();
 
 * Full support for async I/O
 * High performance
-* Supports .NET Framework, .NET Core, and .NET 5.0+
+* OpenTelemetry tracing and metrics
+* Trimming and Native AOT compatible
+* Supports .NET Framework 4.6.2+, .NET 8.0+, and .NET Standard 2.0+
 
 ## Main Types
 
 The main types provided by this library are:
 
+* `MySqlDataSource` (implementation of `DbDataSource`)
 * `MySqlConnection` (implementation of `DbConnection`)
 * `MySqlCommand` (implementation of `DbCommand`)
 * `MySqlDataReader` (implementation of `DbDataReader`)
+* `MySqlBatch` (implementation of `DbBatch`)
 * `MySqlBulkCopy`
 * `MySqlBulkLoader`
 * `MySqlConnectionStringBuilder`
@@ -85,7 +89,7 @@ The main types provided by this library are:
 
 ## Related Packages
 
-* Entity Framework Core: [Pomelo.EntityFrameworkCore.MySql](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/)
+* Entity Framework Core: [Microting.EntityFrameworkCore.MySql](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/), [Pomelo.EntityFrameworkCore.MySql](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/)
 
 ## Feedback
 

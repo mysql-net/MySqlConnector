@@ -2,9 +2,9 @@
 
 [![NuGet](https://img.shields.io/nuget/vpre/MySqlConnector.svg)](https://www.nuget.org/packages/MySqlConnector/)
 
-This is an [ADO.NET](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/) data
+This is an [ADO.NET](https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/) data
 provider for [MySQL](https://www.mysql.com/) and other compatible servers including [MariaDB](https://www.mariadb.org).
-It provides implementations of
+It provides implementations of `DbDataSource`,
 `DbConnection`, `DbCommand`, `DbDataReader`, `DbTransaction`—the classes
 needed to query and update databases from managed code.
 
@@ -32,6 +32,7 @@ This library [fixes dozens of outstanding bugs](https://mysqlconnector.net/tutor
 ### Cutting Edge
 
 This library implements the latest ADO.NET APIs, from async (introduced in .NET Framework 4.5), through `DbBatch` (.NET 6.0) and `DbDataSource` (.NET 7.0).
+It supports OpenTelemetry [tracing](https://opentelemetry.io/docs/specs/semconv/db/database-spans/) and [metrics](https://opentelemetry.io/docs/specs/semconv/db/database-metrics/).
 
 ### License
 
@@ -54,7 +55,8 @@ This library is compatible with popular .NET ORMs including:
 
 For Entity Framework support, use:
 
-* Pomelo.EntityFrameworkCore.MySql ([GitHub](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql), [NuGet](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql))
+* Microting.EntityFrameworkCore.MySql ([GitHub](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql), [NuGet](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql))
+* [EF9 and below] Pomelo.EntityFrameworkCore.MySql ([GitHub](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql), [NuGet](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql))
 
 For ASP.NET Core health checks, use:
 

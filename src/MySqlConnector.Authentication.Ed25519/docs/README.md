@@ -2,8 +2,8 @@
 
 This package implements the following authentication plugins for MariaDB:
 
-* [`client_ed25519`](https://mariadb.com/kb/en/authentication-plugin-ed25519/).
-* [PARSEC](https://mariadb.com/kb/en/authentication-plugin-parsec/)
+* [ed25519](https://mariadb.com/docs/server/reference/plugins/authentication-plugins/authentication-plugin-ed25519)
+* [PARSEC](https://mariadb.com/docs/server/reference/plugins/authentication-plugins/authentication-plugin-parsec)
 
 ## How to Use
 
