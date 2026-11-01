@@ -24,7 +24,10 @@ public class SkippableFactAttribute : FactAttribute
 
 	public string MySqlData
 	{
-		get => null;
+		get
+		{
+			return null;
+		}
 		set
 		{
 #if MYSQL_DATA
@@ -58,7 +61,10 @@ public class SkippableTheoryAttribute : TheoryAttribute
 
 	public string MySqlData
 	{
-		get => null;
+		get
+		{
+			return null;
+		}
 		set
 		{
 #if MYSQL_DATA

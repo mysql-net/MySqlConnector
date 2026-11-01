@@ -180,9 +180,11 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		get
 		{
 			VerifyNotDisposed();
-			return m_resultSet is null ? throw new InvalidOperationException("There is no current result set.") :
-				m_resultSet.ContainsCommandParameters ? 0 :
-				m_resultSet.FieldCount;
+			return m_resultSet is null
+				? throw new InvalidOperationException("There is no current result set.")
+				: m_resultSet.ContainsCommandParameters
+					? 0
+					: m_resultSet.FieldCount;
 		}
 	}
 
@@ -195,8 +197,9 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		get
 		{
 			VerifyNotDisposed();
-			return m_resultSet is null ? throw new InvalidOperationException("There is no current result set.") :
-				!m_resultSet.ContainsCommandParameters && m_resultSet.HasRows;
+			return m_resultSet is null
+				? throw new InvalidOperationException("There is no current result set.")
+				: !m_resultSet.ContainsCommandParameters && m_resultSet.HasRows;
 		}
 	}
 
@@ -287,7 +290,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	public TimeOnly GetTimeOnly(string name) => GetTimeOnly(GetOrdinal(name));
 #endif
 
-	public TimeSpan GetTimeSpan(int ordinal) => GetResultSet().GetCurrentRow().GetTimeSpan(ordinal);
+	public TimeSpan GetTimeSpan(int ordinal) => (TimeSpan) GetValue(ordinal);
 	public TimeSpan GetTimeSpan(string name) => GetTimeSpan(GetOrdinal(name));
 
 	public override Stream GetStream(int ordinal) => GetResultSet().GetCurrentRow().GetStream(ordinal);
@@ -697,9 +700,9 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	private ResultSet GetResultSet()
 	{
 		VerifyNotDisposed();
-		return m_resultSet is null || m_resultSet.ContainsCommandParameters ?
-			throw new InvalidOperationException("There is no current result set.") :
-			m_resultSet;
+		return m_resultSet is null || m_resultSet.ContainsCommandParameters
+			? throw new InvalidOperationException("There is no current result set.")
+			: m_resultSet;
 	}
 
 	private readonly ResultSet m_resultSet;

@@ -34,110 +34,110 @@ public class CachedProcedureTests
 				"IN test INT", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "IN", "test", "INT", false, 0, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"IN test INT UNSIGNED", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "IN", "test", "INT", true, 0, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"-- IN ignored INT UNSIGNED,\r\nIN notignored INT", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "IN", "notignored", "INT", false, 0, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"IN param1 INT,\r\nIN param2 INT", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "IN", "param1", "INT", false, 0, MySqlGuidFormat.Binary16),
 					new CachedParameter(2, "IN", "param2", "INT", false, 0, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"IN /* ignored BIGINT,\r\nIN*/ param1 INT", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "IN", "param1", "INT", false, 0, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"IN param1 INT(11)", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "IN", "param1", "INT", false, 11, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"param1 BIGINT(21) UNSIGNED ZEROFILL", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "IN", "param1", "BIGINT", true, 21, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"param1 VARCHAR(63)", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "IN", "param1", "VARCHAR", false, 63, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"param1 VARCHAR(63) CHARSET latin1", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "IN", "param1", "VARCHAR", false, 63, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"param1 VARCHAR(63) COLLATE utf8bin", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "IN", "param1", "VARCHAR", false, 63, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"param1 VARCHAR(63) CHARACTER SET latin1 COLLATE latin1_bin", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "IN", "param1", "VARCHAR", false, 63, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"`par``am` INT", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "IN", "par`am", "INT", false, 0, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"IN input enum ('One', 'Two', 'Three')", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "IN", "input", "ENUM", false, 0, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"OUT param DECIMAL(10,5)", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "OUT", "param", "DECIMAL", false, 0, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"INOUT param LONGTEXT", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "INOUT", "param", "LONGTEXT", false, 0, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"OUT param1 BINARY(16)", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "OUT", "param1", "BINARY", false, 16, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				"OUT param1 CHAR(36)", MySqlGuidFormat.Char36, new object[]
 				{
 					new CachedParameter(1, "OUT", "param1", "CHAR", false, 36, MySqlGuidFormat.Char36),
-				}
+				},
 			],
 			[
 				"ColSet set('set1','set2','set3')", MySqlGuidFormat.Binary16, new object[]
 				{
 					new CachedParameter(1, "IN", "ColSet", "SET", false, 0, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				@"IN param1 DATETIME(6),
@@ -155,7 +155,7 @@ out param6 bool",
 					new CachedParameter(4, "INOUT", "param4", "VARCHAR", false, 63, MySqlGuidFormat.Binary16),
 					new CachedParameter(5, "IN", "param5", "BIGINT", true, 20, MySqlGuidFormat.Binary16),
 					new CachedParameter(6, "OUT", "param6", "TINYINT", false, 1, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 			[
 				@"
@@ -171,7 +171,7 @@ param4 INTEGER(3)
 					new CachedParameter(2, "IN", "param2", "VARCHAR", false, 0, MySqlGuidFormat.Binary16),
 					new CachedParameter(3, "IN", "param3", "DOUBLE", false, 20, MySqlGuidFormat.Binary16),
 					new CachedParameter(4, "IN", "param4", "INT", false, 3, MySqlGuidFormat.Binary16),
-				}
+				},
 			],
 		};
 	}

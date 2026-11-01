@@ -556,10 +556,10 @@ internal sealed class ConnectionPool : IConnectionPoolMetadata, IDisposable
 		}
 
 		m_loadBalancer = cs.ConnectionProtocol != MySqlConnectionProtocol.Sockets ? null :
-			cs.HostNames!.Count == 1 || cs.LoadBalance == MySqlLoadBalance.FailOver ? FailOverLoadBalancer.Instance :
-			cs.LoadBalance == MySqlLoadBalance.Random ? RandomLoadBalancer.Instance :
-			cs.LoadBalance == MySqlLoadBalance.LeastConnections ? new LeastConnectionsLoadBalancer(m_hostSessions!) :
-			 new RoundRobinLoadBalancer();
+						 cs.HostNames!.Count == 1 || cs.LoadBalance == MySqlLoadBalance.FailOver ? FailOverLoadBalancer.Instance :
+						 cs.LoadBalance == MySqlLoadBalance.Random ? RandomLoadBalancer.Instance :
+						 cs.LoadBalance == MySqlLoadBalance.LeastConnections ? new LeastConnectionsLoadBalancer(m_hostSessions!) :
+						 new RoundRobinLoadBalancer();
 
 		// create tag lists for reporting pool metrics
 		var connectionString = cs.ConnectionStringBuilder.GetConnectionString(includePassword: false);

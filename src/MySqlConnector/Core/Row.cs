@@ -257,9 +257,9 @@ internal sealed class Row
 		};
 
 	private DateTime ParseDateTime(ReadOnlySpan<byte> data) =>
-		data.Length is >= 10 and <= 26 ?
-			TextDateTimeColumnReader.ParseDateTime(data, Connection.ConvertZeroDateTime, Connection.AllowZeroDateTime, Connection.DateTimeKind, out var mySqlDateTime) ?? mySqlDateTime.GetDateTime() :
-			throw new FormatException($"Couldn't interpret value as a valid DateTime: {Encoding.UTF8.GetString(data)}");
+		data.Length is >= 10 and <= 26
+			? TextDateTimeColumnReader.ParseDateTime(data, Connection.ConvertZeroDateTime, Connection.AllowZeroDateTime, Connection.DateTimeKind, out var mySqlDateTime) ?? mySqlDateTime.GetDateTime()
+			: throw new FormatException($"Couldn't interpret value as a valid DateTime: {Encoding.UTF8.GetString(data)}");
 
 	public DateTimeOffset GetDateTimeOffset(int ordinal) => new(DateTime.SpecifyKind(GetDateTime(ordinal), DateTimeKind.Utc));
 
@@ -270,9 +270,9 @@ internal sealed class Row
 #if NET11_0_OR_GREATER
 		return new ReadOnlyMemoryStream(m_data.Slice(offset, length));
 #else
-		return MemoryMarshal.TryGetArray(m_data, out var arraySegment) ?
-			new MemoryStream(arraySegment.Array!, arraySegment.Offset + offset, length, writable: false) :
-			throw new InvalidOperationException("Can't get underlying array.");
+		return MemoryMarshal.TryGetArray(m_data, out var arraySegment)
+			? new MemoryStream(arraySegment.Array!, arraySegment.Offset + offset, length, writable: false)
+			: throw new InvalidOperationException("Can't get underlying array.");
 #endif
 	}
 
@@ -314,12 +314,14 @@ internal sealed class Row
 	}
 
 	public MySqlDateTime GetMySqlDateTime(int ordinal) =>
-		GetColumnReader(ordinal, "MySqlDateTime", out var data, out var columnDefinition) is DateTimeColumnReader dateTimeReader ? dateTimeReader.ReadMySqlDateTime(data, columnDefinition) :
-			throw CreateInvalidCastException(ordinal, "MySqlDateTime");
+		GetColumnReader(ordinal, "MySqlDateTime", out var data, out var columnDefinition) is DateTimeColumnReader dateTimeReader
+			? dateTimeReader.ReadMySqlDateTime(data, columnDefinition)
+			: throw CreateInvalidCastException(ordinal, "MySqlDateTime");
 
 	public TimeSpan GetTimeSpan(int ordinal) =>
-		GetColumnReader(ordinal, "TimeSpan", out var data, out var columnDefinition) is TimeColumnReader timeReader ? timeReader.ReadTimeSpan(data, columnDefinition) :
-			throw CreateInvalidCastException(ordinal, "TimeSpan");
+		GetColumnReader(ordinal, "TimeSpan", out var data, out var columnDefinition) is TimeColumnReader timeReader
+			? timeReader.ReadTimeSpan(data, columnDefinition)
+			: throw CreateInvalidCastException(ordinal, "TimeSpan");
 
 	public MySqlGeometry GetMySqlGeometry(int ordinal)
 	{

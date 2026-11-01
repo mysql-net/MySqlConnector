@@ -1477,13 +1477,15 @@ $$";
 		MySqlException exception;
 		if (prepareCommand)
 		{
-			exception = isAsync ? (await Assert.ThrowsAsync<MySqlException>(async () => await command.PrepareAsync())) :
-				Assert.Throws<MySqlException>(() => command.Prepare());
+			exception = isAsync
+				? (await Assert.ThrowsAsync<MySqlException>(async () => await command.PrepareAsync()))
+				: Assert.Throws<MySqlException>(() => command.Prepare());
 		}
 		else
 		{
-			exception = isAsync ? (await Assert.ThrowsAsync<MySqlException>(async () => await command.ExecuteNonQueryAsync())) :
-				Assert.Throws<MySqlException>(() => command.ExecuteNonQuery());
+			exception = isAsync
+				? (await Assert.ThrowsAsync<MySqlException>(async () => await command.ExecuteNonQueryAsync()))
+				: Assert.Throws<MySqlException>(() => command.ExecuteNonQuery());
 		}
 
 #if !MYSQL_DATA
@@ -1746,8 +1748,9 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 #if MYSQL_DATA
 		var result = MemoryMarshal.Cast<byte, float>((byte[]) value).ToArray();
 #else
-		var result = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.VectorType) ? (ReadOnlyMemory<float>) value :
-			MemoryMarshal.Cast<byte, float>((byte[]) value).ToArray();
+		var result = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.VectorType)
+			? (ReadOnlyMemory<float>) value
+			: MemoryMarshal.Cast<byte, float>((byte[]) value).ToArray();
 #endif
 		Assert.Equal(floatArray, result);
 	}

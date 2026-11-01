@@ -65,8 +65,9 @@ internal sealed class FakeMySqlServerConnection
 
 					// record the command (with its text, for COM_QUERY and COM_INIT_DB)
 					var commandKind = (CommandKind) bytes[0];
-					var receivedCommand = commandKind is CommandKind.Query or CommandKind.InitDatabase ?
-						$"{commandKind} {Encoding.UTF8.GetString(bytes, 1, bytes.Length - 1)}" : commandKind.ToString();
+					var receivedCommand = commandKind is CommandKind.Query or CommandKind.InitDatabase
+						? $"{commandKind} {Encoding.UTF8.GetString(bytes, 1, bytes.Length - 1)}"
+						: commandKind.ToString();
 					m_server.AddReceivedCommand(receivedCommand);
 
 					if (commandKind == CommandKind.ResetConnection && m_server.PipelinedResetCommandCount > 1)

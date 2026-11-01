@@ -78,9 +78,11 @@ VALUES ('a'), ('b'), ('c'), ('d'), ('e'), ('f'), ('g'), ('h'), ('i'), ('j');");
 		}
 
 		var collation = connection.Query<string>(@"select @@collation_connection;").Single();
-		var expected = connection.HasServerVersion("8.", "9.", "26.") ? "utf8mb4_0900_ai_ci" :
-			connection.HasServerVersion("11.4.", "11.8.", "12.3.") ? "utf8mb4_uca1400_ai_ci" :
-			"utf8mb4_general_ci";
+		var expected = connection.HasServerVersion("8.", "9.", "26.")
+			? "utf8mb4_0900_ai_ci"
+			: connection.HasServerVersion("11.4.", "11.8.", "12.3.")
+				? "utf8mb4_uca1400_ai_ci"
+				: "utf8mb4_general_ci";
 		Assert.Equal(expected, collation);
 	}
 

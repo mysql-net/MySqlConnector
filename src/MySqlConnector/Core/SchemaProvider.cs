@@ -57,7 +57,8 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 			var clrTypeName = clrType.ToString();
 			var mySqlDbType = columnType.MySqlDbType;
 			var dataTypeName = mySqlDbType == MySqlDbType.Guid ? "GUID" :
-				mySqlDbType == MySqlDbType.Bool ? "BOOL" : columnType.DataTypeName;
+							   mySqlDbType == MySqlDbType.Bool ? "BOOL" :
+							   columnType.DataTypeName;
 			var isAutoIncrementable = mySqlDbType is MySqlDbType.Byte or MySqlDbType.Int16 or MySqlDbType.Int24 or MySqlDbType.Int32 or MySqlDbType.Int64
 				or MySqlDbType.UByte or MySqlDbType.UInt16 or MySqlDbType.UInt24 or MySqlDbType.UInt32 or MySqlDbType.UInt64;
 			var isBestMatch = clrTypes.Add(clrTypeName);
@@ -545,9 +546,9 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 			// MariaDB doesn't have performance_schema.processlist, and INFORMATION_SCHEMA.PROCESSLIST isn't deprecated there.
 			var serverVersion = connection.Session.ServerVersion;
 			usePerformanceSchema = !serverVersion.IsMariaDb && serverVersion.Version >= ServerVersions.SupportsPerformanceSchemaProcessList;
-			command.CommandText = usePerformanceSchema ?
-				"SELECT ID, USER, HOST, DB, COMMAND, TIME, STATE, INFO FROM performance_schema.processlist;" :
-				"SELECT ID, USER, HOST, DB, COMMAND, TIME, STATE, INFO FROM INFORMATION_SCHEMA.PROCESSLIST;";
+			command.CommandText = usePerformanceSchema
+				? "SELECT ID, USER, HOST, DB, COMMAND, TIME, STATE, INFO FROM performance_schema.processlist;"
+				: "SELECT ID, USER, HOST, DB, COMMAND, TIME, STATE, INFO FROM INFORMATION_SCHEMA.PROCESSLIST;";
 		}, cancellationToken).ConfigureAwait(false);
 
 		// If the server was started with performance_schema=OFF, that table is empty (instead of containing at least this connection), so fall back to

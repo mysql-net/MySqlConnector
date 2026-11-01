@@ -276,11 +276,16 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		var actualProtocolString = reader.GetString(1);
 
 #pragma warning disable SYSLIB0039 // SslProtocols.Tls11 is obsolete
-		var expectedProtocol = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls12) ? SslProtocols.Tls12 :
-			AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls11) ? SslProtocols.Tls11 :
-			SslProtocols.Tls;
-		var expectedProtocolString = expectedProtocol == SslProtocols.Tls12 ? "TLSv1.2" :
-			expectedProtocol == SslProtocols.Tls11 ? "TLSv1.1" : "TLSv1";
+		var expectedProtocol = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls12)
+			? SslProtocols.Tls12
+			: AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls11)
+				? SslProtocols.Tls11
+				: SslProtocols.Tls;
+		var expectedProtocolString = expectedProtocol == SslProtocols.Tls12
+			? "TLSv1.2"
+			: expectedProtocol == SslProtocols.Tls11
+				? "TLSv1.1"
+				: "TLSv1";
 #pragma warning restore SYSLIB0039 // SslProtocols.Tls11 is obsolete
 
 		// TLS 1.3 is always negotiated on Linux with OpenSSL 1.1.1 (https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0#tls-13--openssl-111-on-linux);

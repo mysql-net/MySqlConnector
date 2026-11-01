@@ -846,7 +846,10 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	[AllowNull]
 	public override object this[string key]
 	{
-		get => MySqlConnectionStringOption.GetOptionForKey(key).GetObject(this);
+		get
+		{
+			return MySqlConnectionStringOption.GetOptionForKey(key).GetObject(this);
+		}
 		set
 		{
 			var option = MySqlConnectionStringOption.GetOptionForKey(key);

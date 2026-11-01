@@ -31,7 +31,7 @@
 
   <ItemGroup>
     <GlobalPackageReference Include="MinVer" Version="7.0.0" />
-    <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
+    <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.3.151-beta" />
   </ItemGroup>
 
 </Project>
