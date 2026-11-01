@@ -346,6 +346,80 @@ SELECT @'var' as R")]
 		Assert.Equal(expectedSql, Encoding.UTF8.GetString(payload.Span));
 	}
 
+	// https://github.com/mysql-net/MySqlConnector/issues/1480
+	[Theory]
+	[InlineData("ALTER USER test@'%' IDENTIFIED BY 'password';")]
+	[InlineData("ALTER USER test@localhost IDENTIFIED BY 'password';")]
+	[InlineData("CREATE USER test@localhost IDENTIFIED BY 'password';")]
+	[InlineData("ALTER USER 'test' @'%' IDENTIFIED BY 'password';")]
+	[InlineData("ALTER USER 'test' @'localhost' IDENTIFIED BY 'password';")]
+	[InlineData("ALTER USER 'test' @localhost IDENTIFIED BY 'password';")]
+	[InlineData("ALTER USER 'test'\n@'%' IDENTIFIED BY 'password';")]
+	[InlineData("CREATE USER 'test' @'%' IDENTIFIED BY 'password';")]
+	[InlineData("CREATE USER 'test' @localhost IDENTIFIED BY 'password';")]
+	[InlineData("create user 'test' @'%' identified by 'password';")]
+	[InlineData("/* comment */ CREATE USER 'test' @'%' IDENTIFIED BY 'password';")]
+	[InlineData("DROP USER 'test' @'%';")]
+	[InlineData("RENAME USER 'test' @'%' TO 'test2' @'%';")]
+	[InlineData("GRANT SELECT ON db.* TO 'test' @'%';")]
+	[InlineData("REVOKE SELECT ON db.* FROM 'test' @'%';")]
+	[InlineData("SET PASSWORD FOR 'test' @'%' = 'password';")]
+	[InlineData("SHOW GRANTS FOR 'test' @'%';")]
+	[InlineData("SELECT 1; ALTER USER 'test' @'%' IDENTIFIED BY 'password';")]
+	public void Bug1480(string sql)
+	{
+		var parsedSql = GetParsedSql(sql);
+		Assert.Equal(sql, parsedSql);
+	}
+
+	[Fact]
+	public void AccountNameWithWhitespaceAndParameter()
+	{
+		var parameters = new MySqlParameterCollection();
+		parameters.AddWithValue("@password", "secret");
+		var parsedSql = GetParsedSql("ALTER USER 'test' @'%' IDENTIFIED BY @password;", parameters);
+		Assert.Equal("ALTER USER 'test' @'%' IDENTIFIED BY 'secret';", parsedSql);
+	}
+
+	// the account-name handling for CREATE USER, etc. must not change how '@' is parsed in other statements
+	[Theory]
+	[InlineData("SELECT@@version")]
+	[InlineData("SELECT@@IDENTITY")]
+	[InlineData("SET@@session.sql_mode='ANSI'")]
+	[InlineData("SELECT @@version")]
+	[InlineData("SELECT 1;SELECT@@version")]
+	public void SystemVariableWithoutSpaceAfterKeyword(string sql)
+	{
+		Assert.Equal(sql, GetParsedSql(sql));
+	}
+
+	[Theory]
+	[InlineData("SELECT * FROM t WHERE c LIKE@name")]
+	[InlineData("SELECT * FROM t WHERE@name")]
+	[InlineData("SELECT _utf8mb4@name")]
+	[InlineData("SELECT 1 WHERE 1 AND@name")]
+	[InlineData("SELECT * FROM t WHERE c LIKE '%' @name '%'")]
+	[InlineData("SELECT `amount` @name")]
+	[InlineData("SELECT \"amount\" @name")]
+	[InlineData("SELECT 'amount' @name")]
+	[InlineData("SELECT 'amount'\n@name")]
+	[InlineData("SELECT 1;SELECT 'amount' @name")]
+	[InlineData("ALTER USER 'test'@'%' IDENTIFIED BY 'password'; SELECT 'amount' @name")]
+	public void ParameterAfterWordOrQuotedStringIsSubstituted(string sql)
+	{
+		var parameters = new MySqlParameterCollection();
+		parameters.AddWithValue("@name", 123);
+		var parsedSql = GetParsedSql(sql, parameters);
+		Assert.Equal(sql.Replace("@name", "123"), parsedSql);
+	}
+
+	[Fact]
+	public void UndefinedParameterAfterWordWithoutSpaceThrows()
+	{
+		var exception = Assert.Throws<MySqlException>(() => GetParsedSql("SELECT * FROM t WHERE c LIKE@name"));
+		Assert.Contains("'@name' must be defined", exception.Message);
+	}
+
 	public static IEnumerable<object[]> FormatParameterData =>
 		new[]
 		{

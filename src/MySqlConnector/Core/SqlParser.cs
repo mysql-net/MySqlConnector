@@ -17,6 +17,7 @@ internal abstract class SqlParser(StatementPreparer preparer)
 		var state = State.Beginning;
 		var beforeCommentState = State.Beginning;
 		var isNamedParameter = false;
+		var isAccountStatement = false;
 		for (var index = 0; index < sql.Length; index++)
 		{
 			var ch = sql[index];
@@ -69,6 +70,7 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				}
 				else
 				{
+					var wasNamedParameter = isNamedParameter;
 					if (isNamedParameter)
 					{
 						OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
@@ -78,6 +80,10 @@ internal abstract class SqlParser(StatementPreparer preparer)
 					{
 						OnStatementEnd(index);
 						state = State.Beginning;
+					}
+					else if (isAccountStatement && !wasNamedParameter && IsWhitespace(ch))
+					{
+						state = State.PossibleAccountNameSeparator;
 					}
 					else
 					{
@@ -93,6 +99,7 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				}
 				else
 				{
+					var wasNamedParameter = isNamedParameter;
 					if (isNamedParameter)
 					{
 						OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
@@ -102,6 +109,10 @@ internal abstract class SqlParser(StatementPreparer preparer)
 					{
 						OnStatementEnd(index);
 						state = State.Beginning;
+					}
+					else if (isAccountStatement && !wasNamedParameter && IsWhitespace(ch))
+					{
+						state = State.PossibleAccountNameSeparator;
 					}
 					else
 					{
@@ -117,6 +128,7 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				}
 				else
 				{
+					var wasNamedParameter = isNamedParameter;
 					if (isNamedParameter)
 					{
 						OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
@@ -127,10 +139,34 @@ internal abstract class SqlParser(StatementPreparer preparer)
 						OnStatementEnd(index);
 						state = State.Beginning;
 					}
+					else if (isAccountStatement && !wasNamedParameter && IsWhitespace(ch))
+					{
+						state = State.PossibleAccountNameSeparator;
+					}
 					else
 					{
 						state = State.Statement;
 					}
+				}
+			}
+			else if (state == State.PossibleAccountNameSeparator)
+			{
+				// only reached in statements that contain account names (see IsAccountStatement): skip whitespace
+				// after a quoted value, looking for the '@' that separates the user and host parts of a MySQL
+				// account name (e.g., CREATE USER 'user' @'host'); if found, swallow it (and let the host name that
+				// follows be parsed as literal SQL) rather than starting a new parameter
+				if (IsWhitespace(ch))
+				{
+				}
+				else if (ch == '@')
+				{
+					state = State.Statement;
+				}
+				else
+				{
+					// no '@' was found; re-process this character as ordinary SQL text
+					state = State.Statement;
+					index--;
 				}
 			}
 			else if (state == State.SecondHyphen)
@@ -219,6 +255,9 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				if (state is not State.Beginning and not State.Statement)
 					throw new InvalidOperationException($"Unexpected state: {state}");
 
+				if (state == State.Beginning && !IsWhitespace(ch) && ch != ';')
+					isAccountStatement = IsAccountStatement(sql, index);
+
 				if (ch == '-' && index < sql.Length - 2 && sql[index + 1] == '-' && sql[index + 2] is (>= '\0' and <= ' ') or '\x7F')
 				{
 					beforeCommentState = state;
@@ -242,8 +281,15 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				}
 				else if (ch == '@')
 				{
-					state = State.AtSign;
-					parameterStartIndex = index;
+					// in a statement that contains account names, an '@' immediately after an unquoted name (e.g.,
+					// CREATE USER user@host) separates the user and host parts of the account name; it can't start a
+					// parameter, so treat it as literal SQL. In any other statement (SELECT@@version, LIKE@name), it
+					// is a system variable or parameter as usual.
+					if (!isAccountStatement || index == 0 || !IsVariableName(sql[index - 1]))
+					{
+						state = State.AtSign;
+						parameterStartIndex = index;
+					}
 				}
 				else if (ch == '#')
 				{
@@ -284,6 +330,10 @@ internal abstract class SqlParser(StatementPreparer preparer)
 		{
 			if (isNamedParameter)
 				OnNamedParameter(parameterStartIndex, sql.Length - parameterStartIndex);
+			state = State.Statement;
+		}
+		else if (state == State.PossibleAccountNameSeparator)
+		{
 			state = State.Statement;
 		}
 
@@ -346,6 +396,36 @@ internal abstract class SqlParser(StatementPreparer preparer)
 		NeedsSemicolon = 4,
 	}
 
+	/// <summary>
+	/// Returns <c>true</c> if the statement starting at <paramref name="index"/> can contain MySQL account names
+	/// (<c>'user'@'host'</c>), where an '@' can also separate the user and host parts instead of starting a parameter.
+	/// </summary>
+	private static bool IsAccountStatement(string sql, int index)
+	{
+		var first = ReadKeyword(sql, ref index);
+		if (first.Equals("GRANT", StringComparison.OrdinalIgnoreCase) || first.Equals("REVOKE", StringComparison.OrdinalIgnoreCase))
+			return true;
+
+		var second = ReadKeyword(sql, ref index);
+		if (first.Equals("CREATE", StringComparison.OrdinalIgnoreCase) || first.Equals("ALTER", StringComparison.OrdinalIgnoreCase) || first.Equals("DROP", StringComparison.OrdinalIgnoreCase) || first.Equals("RENAME", StringComparison.OrdinalIgnoreCase))
+			return second.Equals("USER", StringComparison.OrdinalIgnoreCase);
+		if (first.Equals("SET", StringComparison.OrdinalIgnoreCase))
+			return second.Equals("PASSWORD", StringComparison.OrdinalIgnoreCase);
+		if (first.Equals("SHOW", StringComparison.OrdinalIgnoreCase))
+			return second.Equals("GRANTS", StringComparison.OrdinalIgnoreCase);
+		return false;
+	}
+
+	private static ReadOnlySpan<char> ReadKeyword(string sql, ref int index)
+	{
+		while (index < sql.Length && IsWhitespace(sql[index]))
+			index++;
+		var start = index;
+		while (index < sql.Length && sql[index] is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z'))
+			index++;
+		return sql.AsSpan(start, index - start);
+	}
+
 	private static bool IsWhitespace(char ch) => ch is ' ' or '\t' or '\r' or '\n';
 
 	private static bool IsVariableName(char ch) => ch is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z') or (>= '0' and <= '9') or '.' or '_' or '$' or (>= (char) 0x0080 and <= (char) 0xFFFF);
@@ -371,5 +451,6 @@ internal abstract class SqlParser(StatementPreparer preparer)
 		QuestionMark,
 		AtSign,
 		NamedParameter,
+		PossibleAccountNameSeparator,
 	}
 }
