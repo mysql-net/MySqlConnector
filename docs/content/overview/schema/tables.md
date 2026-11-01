@@ -1,6 +1,6 @@
 ---
 date: 2022-07-10
-lastmod: 2022-08-12
+lastmod: 2026-11-01
 title: Tables Schema
 ---
 
@@ -17,13 +17,13 @@ TABLE_TYPE | string |
 ENGINE | string | 
 VERSION | string | 
 ROW_FORMAT | string | 
-TABLE_ROWS | long | 
-AVG_ROW_LENGTH | long | 
-DATA_LENGTH | long | 
-MAX_DATA_LENGTH | long | 
-INDEX_LENGTH | long | 
-DATA_FREE | long | 
-AUTO_INCREMENT | long | 
+TABLE_ROWS | ulong | 
+AVG_ROW_LENGTH | ulong | 
+DATA_LENGTH | ulong | 
+MAX_DATA_LENGTH | ulong | 
+INDEX_LENGTH | ulong | 
+DATA_FREE | ulong | 
+AUTO_INCREMENT | ulong | 
 CREATE_TIME | DateTime | 
 UPDATE_TIME | DateTime | 
 CHECK_TIME | DateTime | 

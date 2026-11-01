@@ -256,6 +256,33 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 		Assert.Equal(expected, actual);
 	}
 
+	[Theory]
+	[InlineData("Tables")]
+#if !MYSQL_DATA
+	[InlineData("Partitions")]
+#endif
+	public void UnsignedColumnTypes(string schemaName)
+	{
+		// these INFORMATION_SCHEMA columns are BIGINT UNSIGNED in MySQL and MariaDB
+		var table = m_database.Connection.GetSchema(schemaName);
+		foreach (var columnName in new[] { "TABLE_ROWS", "AVG_ROW_LENGTH", "DATA_LENGTH", "MAX_DATA_LENGTH", "INDEX_LENGTH", "DATA_FREE" })
+			Assert.Equal(typeof(ulong), table.Columns[columnName]!.DataType);
+	}
+
+	[Fact]
+	public void TablesAutoIncrementGreaterThanInt64MaxValue()
+	{
+		// INFORMATION_SCHEMA.TABLES.AUTO_INCREMENT is BIGINT UNSIGNED
+		m_database.Connection.Execute("""
+			DROP TABLE IF EXISTS schema_tables_auto_increment;
+			CREATE TABLE schema_tables_auto_increment(id BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT) AUTO_INCREMENT = 9223372036854775809;
+			""");
+
+		var table = m_database.Connection.GetSchema("Tables", new[] { null, m_database.Connection.Database, "schema_tables_auto_increment" });
+		var row = Assert.Single(table.Rows.Cast<DataRow>());
+		Assert.Equal(9223372036854775809UL, row["AUTO_INCREMENT"]);
+	}
+
 	[Fact]
 	public void IndexColumns()
 	{

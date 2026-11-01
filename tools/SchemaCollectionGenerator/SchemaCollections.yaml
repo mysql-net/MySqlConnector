@@ -326,17 +326,17 @@
   - name: PARTITION_DESCRIPTION
     type: string
   - name: TABLE_ROWS
-    type: long
+    type: ulong
   - name: AVG_ROW_LENGTH
-    type: long
+    type: ulong
   - name: DATA_LENGTH
-    type: long
+    type: ulong
   - name: MAX_DATA_LENGTH
-    type: long
+    type: ulong
   - name: INDEX_LENGTH
-    type: long
+    type: ulong
   - name: DATA_FREE
-    type: long
+    type: ulong
   - name: CREATE_TIME
     type: DateTime
   - name: UPDATE_TIME
@@ -591,19 +591,19 @@
   - name: ROW_FORMAT
     type: string
   - name: TABLE_ROWS
-    type: long
+    type: ulong
   - name: AVG_ROW_LENGTH
-    type: long
+    type: ulong
   - name: DATA_LENGTH
-    type: long
+    type: ulong
   - name: MAX_DATA_LENGTH
-    type: long
+    type: ulong
   - name: INDEX_LENGTH
-    type: long
+    type: ulong
   - name: DATA_FREE
-    type: long
+    type: ulong
   - name: AUTO_INCREMENT
-    type: long
+    type: ulong
   - name: CREATE_TIME
     type: DateTime
   - name: UPDATE_TIME
