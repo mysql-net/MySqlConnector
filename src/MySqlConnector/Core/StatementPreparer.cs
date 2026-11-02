@@ -43,11 +43,10 @@ internal sealed class StatementPreparer(string commandText, MySqlParameterCollec
 		return index;
 	}
 
+	private bool HasParameter(string name) => (parameters?.NormalizedIndexOf(name) ?? -1) != -1;
+
 	// MySQL doesn't allow user variables in account-management statements, so in those statements, an '@' that isn't followed by the name
 	// of a parameter must be part of an account name (e.g., user@localhost or 'user' @'%') and is left as-is.
-	private bool IsAccountName(string name, int statementStartIndex) =>
-		IsAccountManagementStatement(statementStartIndex) && (parameters?.NormalizedIndexOf(name) ?? -1) == -1;
-
 	private bool IsAccountManagementStatement(int statementStartIndex)
 	{
 		var sql = CommandText.AsSpan(statementStartIndex);
@@ -137,13 +136,13 @@ internal sealed class StatementPreparer(string commandText, MySqlParameterCollec
 			StatementStartEndIndexes.Add(Writer.Position);
 			Writer.Write((byte) CommandKind.StatementPrepare);
 			m_lastIndex = index;
-			m_statementStartIndex = index;
+			m_isAccountManagementStatement = Preparer.IsAccountManagementStatement(index);
 		}
 
 		protected override void OnNamedParameter(int index, int length)
 		{
 			var parameterName = Preparer.CommandText.Substring(index, length);
-			if (!Preparer.IsAccountName(parameterName, m_statementStartIndex))
+			if (!m_isAccountManagementStatement || Preparer.HasParameter(parameterName))
 				DoAppendParameter(parameterName, -1, index, length);
 		}
 
@@ -181,7 +180,7 @@ internal sealed class StatementPreparer(string commandText, MySqlParameterCollec
 
 		private int m_currentParameterIndex;
 		private int m_lastIndex;
-		private int m_statementStartIndex;
+		private bool m_isAccountManagementStatement;
 	}
 
 	private string CommandText { get; } = commandText;
