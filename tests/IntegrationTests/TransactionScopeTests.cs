@@ -19,6 +19,34 @@ public class TransactionScopeTests : IClassFixture<DatabaseFixture>
 #endif
 	};
 
+	public static IEnumerable<object[]> ConnectionStringsAndIsolationLevels { get; } =
+		ConnectionStrings.SelectMany(x => new (System.Transactions.IsolationLevel IsolationLevel, string Expected)[]
+		{
+			(System.Transactions.IsolationLevel.ReadUncommitted, "READ-UNCOMMITTED"),
+			(System.Transactions.IsolationLevel.ReadCommitted, "READ-COMMITTED"),
+			(System.Transactions.IsolationLevel.RepeatableRead, "REPEATABLE-READ"),
+			(System.Transactions.IsolationLevel.Serializable, "SERIALIZABLE"),
+#if !MYSQL_DATA
+			(System.Transactions.IsolationLevel.Snapshot, "REPEATABLE-READ"),
+#endif
+		}.Select(y => new object[] { x[0], y.IsolationLevel, y.Expected })).ToList();
+
+	[Theory]
+	[MemberData(nameof(ConnectionStringsAndIsolationLevels))]
+	public void SetsIsolationLevel(string connectionString, System.Transactions.IsolationLevel isolationLevel, string expectedIsolationLevel)
+	{
+		using var scope = new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = isolationLevel });
+		using var connection = new MySqlConnection(AppConfig.ConnectionString + ";" + connectionString);
+		connection.Open();
+
+		// MySQL 8.0 only has 'transaction_isolation' and MariaDB 11.0 and earlier only have 'tx_isolation'; servers that have both report the same value
+		// (match the names exactly because MariaDB also has 'innodb_snapshot_isolation')
+		using var command = new MySqlCommand("show session variables where variable_name in ('transaction_isolation', 'tx_isolation');", connection);
+		using var reader = command.ExecuteReader();
+		Assert.True(reader.Read());
+		Assert.Equal(expectedIsolationLevel, reader.GetString(1));
+	}
+
 	[Theory]
 	[MemberData(nameof(ConnectionStrings))]
 	public void EnlistTransactionWhenClosed(string connectionString)

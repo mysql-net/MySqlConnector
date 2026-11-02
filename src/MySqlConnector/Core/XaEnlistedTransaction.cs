@@ -12,6 +12,7 @@ internal sealed class XaEnlistedTransaction(Transaction transaction, MySqlConnec
 		var id = Interlocked.Increment(ref s_currentId);
 		m_xid = "'" + Transaction.TransactionInformation.LocalIdentifier + "', '" + id.ToString(CultureInfo.InvariantCulture) + "'";
 
+		SetSessionIsolationLevel();
 		ExecuteXaCommand("START");
 
 		// TODO: Support EnlistDurable and enable recovery via "XA RECOVER"

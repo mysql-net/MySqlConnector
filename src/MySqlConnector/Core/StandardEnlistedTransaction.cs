@@ -8,25 +8,10 @@ internal sealed class StandardEnlistedTransaction(Transaction transaction, MySql
 {
 	protected override void OnStart()
 	{
-		var isolationLevel = Transaction.IsolationLevel switch
-		{
-			IsolationLevel.Serializable => "serializable",
-			IsolationLevel.ReadCommitted => "read committed",
-			IsolationLevel.ReadUncommitted => "read uncommitted",
-			IsolationLevel.RepeatableRead => "repeatable read",
-			IsolationLevel.Snapshot => "repeatable read",
-			IsolationLevel.Chaos => throw new NotSupportedException($"IsolationLevel.{Transaction.IsolationLevel} is not supported."),
-
-			// "In terms of the SQL:1992 transaction isolation levels, the default InnoDB level is REPEATABLE READ." - http://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-model.html
-			IsolationLevel.Unspecified => "repeatable read",
-			_ => "repeatable read",
-		};
-
-		using var cmd = new MySqlCommand($"set session transaction isolation level {isolationLevel};", Connection);
-		cmd.ExecuteNonQuery();
+		SetSessionIsolationLevel();
 
 		var consistentSnapshotText = Transaction.IsolationLevel == IsolationLevel.Snapshot ? " with consistent snapshot" : "";
-		cmd.CommandText = $"start transaction{consistentSnapshotText};";
+		using var cmd = new MySqlCommand($"start transaction{consistentSnapshotText};", Connection);
 		cmd.ExecuteNonQuery();
 	}
 
