@@ -108,6 +108,29 @@ INSERT INTO bug_1096 (`Name`) VALUES ('Demo-Name');");
 		Assert.Throws<ArgumentNullException>(() => reader.GetOrdinal(null));
 	}
 
+#if !MYSQL_DATA
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void InvalidCastExceptionIdentifiesColumn(bool prepare)
+	{
+		using var cmd = m_database.Connection.CreateCommand();
+		cmd.CommandText = "select 1 as id, cast(null as signed) as missing, 'text' as name, '' as blank, 1e300 as big;";
+		if (prepare)
+			cmd.Prepare();
+
+		using var reader = cmd.ExecuteReader();
+		Assert.True(reader.Read());
+		Assert.Equal("Can't convert NULL to Int32 for column 'missing' (ordinal 1)", Assert.Throws<InvalidCastException>(() => reader.GetInt32(1)).Message);
+		Assert.Equal("Can't convert NULL to String for column 'missing' (ordinal 1)", Assert.Throws<InvalidCastException>(() => reader.GetString("missing")).Message);
+		Assert.Equal("Can't convert NULL to Stream for column 'missing' (ordinal 1)", Assert.Throws<InvalidCastException>(() => reader.GetStream(1)).Message);
+		Assert.EndsWith(" to Int32 for column 'name' (ordinal 2)", Assert.Throws<InvalidCastException>(() => reader.GetFieldValue<int>(2)).Message);
+		Assert.EndsWith(" to String for column 'id' (ordinal 0)", Assert.Throws<InvalidCastException>(() => reader.GetString(0)).Message);
+		Assert.Equal("Can't convert an empty string to Char for column 'blank' (ordinal 3)", Assert.Throws<InvalidCastException>(() => reader.GetChar(3)).Message);
+		Assert.Equal("Can't convert 1E+300 to Single for column 'big' (ordinal 4)", Assert.Throws<InvalidCastException>(() => reader.GetFloat(4)).Message);
+	}
+#endif
+
 	[Fact]
 	public void GetOrdinalAfterNextResult()
 	{

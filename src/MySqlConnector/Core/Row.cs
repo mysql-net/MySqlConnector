@@ -1,4 +1,5 @@
 using System.Buffers.Text;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using MySqlConnector.ColumnReaders;
@@ -123,7 +124,7 @@ internal sealed class Row
 
 	public long GetBytes(int ordinal, long dataOffset, byte[]? buffer, int bufferOffset, int length)
 	{
-		CheckBinaryColumn(ordinal);
+		CheckBinaryColumn(ordinal, "Byte[]");
 
 		if (buffer is null)
 		{
@@ -143,8 +144,8 @@ internal sealed class Row
 
 	public char GetChar(int ordinal)
 	{
-		var stringValue = (string) GetValue(ordinal);
-		return stringValue.Length > 0 ? stringValue[0] : throw new InvalidCastException();
+		var stringValue = GetValue(ordinal) as string ?? throw CreateInvalidCastException(ordinal, "Char");
+		return stringValue.Length > 0 ? stringValue[0] : throw CreateInvalidCastException(ordinal, "an empty string", "Char");
 	}
 
 	public long GetChars(int ordinal, long dataOffset, char[]? buffer, int bufferOffset, int length)
@@ -265,7 +266,7 @@ internal sealed class Row
 
 	public Stream GetStream(int ordinal)
 	{
-		CheckBinaryColumn(ordinal);
+		CheckBinaryColumn(ordinal, "Stream");
 		var (offset, length) = m_dataOffsetLengths[ordinal];
 #if NET11_0_OR_GREATER
 		return new ReadOnlyMemoryStream(m_data.Slice(offset, length));
@@ -276,7 +277,7 @@ internal sealed class Row
 #endif
 	}
 
-	public string GetString(int ordinal) => (string) GetValue(ordinal);
+	public string GetString(int ordinal) => GetValue(ordinal) as string ?? throw CreateInvalidCastException(ordinal, "String");
 
 	public decimal GetDecimal(int ordinal) =>
 		GetColumnReader(ordinal, "Decimal", out var data, out var columnDefinition) switch
@@ -302,15 +303,15 @@ internal sealed class Row
 		return columnReader switch
 		{
 			FloatColumnReader floatReader => floatReader.ReadSingle(data, columnDefinition),
-			DoubleColumnReader doubleReader => ToSingle(doubleReader.ReadDouble(data, columnDefinition)),
+			DoubleColumnReader doubleReader => ToSingle(doubleReader.ReadDouble(data, columnDefinition), ordinal),
 			DecimalColumnReader decimalReader => (float) decimalReader.ReadDecimal(data, columnDefinition),
 			_ => throw CreateInvalidCastException(ordinal, "Single"),
 		};
 
 		// Loss of precision is expected, significant loss of information is not.
 		// Use explicit range checks to guard against that.
-		static float ToSingle(double value) =>
-			value is >= float.MinValue and <= float.MaxValue ? (float) value : throw new InvalidCastException("The value cannot be safely cast to Single.");
+		float ToSingle(double value, int columnOrdinal) =>
+			value is >= float.MinValue and <= float.MaxValue ? (float) value : throw CreateInvalidCastException(columnOrdinal, value.ToString(CultureInfo.InvariantCulture), "Single");
 	}
 
 	public MySqlDateTime GetMySqlDateTime(int ordinal) =>
@@ -328,19 +329,19 @@ internal sealed class Row
 		var value = GetValue(ordinal);
 		if (value is byte[] bytes && ResultSet.ColumnDefinitions![ordinal].ColumnType == ColumnType.Geometry)
 			return new MySqlGeometry(bytes);
-		throw new InvalidCastException($"Can't convert {ResultSet.ColumnDefinitions![ordinal].ColumnType} to MySqlGeometry.");
+		throw CreateInvalidCastException(ordinal, "MySqlGeometry");
 	}
 
 	public MySqlDecimal GetMySqlDecimal(int ordinal)
 	{
 		if (IsDBNull(ordinal))
-			return (MySqlDecimal) GetValue(ordinal);
+			throw CreateInvalidCastException(ordinal, "MySqlDecimal");
 		var (offset, length) = m_dataOffsetLengths[ordinal];
 		var data = m_data.Slice(offset, length).Span;
 		var columnType = ResultSet.ColumnDefinitions![ordinal].ColumnType;
 		if (columnType is ColumnType.NewDecimal or ColumnType.Decimal)
 			return new MySqlDecimal(Encoding.UTF8.GetString(data));
-		throw new InvalidCastException($"Can't convert {ResultSet.ColumnDefinitions![ordinal].ColumnType} to MySqlDecimal.");
+		throw CreateInvalidCastException(ordinal, "MySqlDecimal");
 	}
 
 	public int GetValues(object[] values)
@@ -369,20 +370,25 @@ internal sealed class Row
 
 		var (offset, length) = m_dataOffsetLengths[ordinal];
 		if (offset == -1)
-			throw new InvalidCastException($"Can't convert NULL to {typeName}");
+			throw CreateInvalidCastException(ordinal, typeName);
 
 		data = m_data.Span.Slice(offset, length);
 		columnDefinition = ResultSet.ColumnDefinitions[ordinal];
 		return m_columnReaders[ordinal];
 	}
 
+	// Creates the exception for a column that is NULL or whose type can't be converted to typeName.
 	private InvalidCastException CreateInvalidCastException(int ordinal, string typeName) =>
-		new($"Can't convert {ResultSet.GetColumnType(ordinal)} to {typeName}");
+		CreateInvalidCastException(ordinal, IsDBNull(ordinal) ? "NULL" : ResultSet.GetColumnType(ordinal).ToString(), typeName);
 
-	private void CheckBinaryColumn(int ordinal)
+	// Creates the exception for a value that can't be converted to typeName; identifies the column so users can find the problem.
+	private InvalidCastException CreateInvalidCastException(int ordinal, string value, string typeName) =>
+		new($"Can't convert {value} to {typeName} for column '{ResultSet.ColumnDefinitions![ordinal].Name}' (ordinal {ordinal})");
+
+	private void CheckBinaryColumn(int ordinal, string typeName)
 	{
 		if (m_dataOffsetLengths[ordinal].Offset == -1)
-			throw new InvalidCastException("Column is NULL.");
+			throw CreateInvalidCastException(ordinal, typeName);
 
 		var column = ResultSet.ColumnDefinitions![ordinal];
 		var columnType = column.ColumnType;
@@ -391,7 +397,7 @@ internal sealed class Row
 			columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob &&
 			columnType != ColumnType.Geometry && columnType != ColumnType.Vector))
 		{
-			throw new InvalidCastException($"Can't convert {columnType} to bytes.");
+			throw CreateInvalidCastException(ordinal, typeName);
 		}
 	}
 
