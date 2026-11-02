@@ -690,16 +690,23 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 	{
 		connectionString = AppConfig.ConnectionString + ";" + connectionString;
 
-		using var transaction = new TransactionScope(TransactionScopeOption.Required, TimeSpan.FromSeconds(2));
-		using var connection = new MySqlConnection(connectionString);
+		// System.Transactions aborts the transaction after a number of thread pool timer callbacks, which can take much longer than 2 seconds when the thread pool is busy.
+		// It also occasionally never aborts the transaction at all (seen only on .NET 8 in CI), even though a transaction created afterwards times out normally, so start over.
+		for (var attempt = 0; attempt < 3; attempt++)
+		{
+			using var transactionCompleted = new ManualResetEventSlim();
+			using var transaction = new TransactionScope(TransactionScopeOption.Required, TimeSpan.FromSeconds(2));
+			System.Transactions.Transaction.Current.TransactionCompleted += (_, _) => transactionCompleted.Set();
+			if (!transactionCompleted.Wait(TimeSpan.FromSeconds(15), TestContext.Current.CancellationToken))
+				continue;
 
-		// System.Transactions aborts the transaction after a number of thread pool timer callbacks, which can take much longer than 2 seconds when the thread pool is busy
-		using var transactionCompleted = new ManualResetEventSlim();
-		System.Transactions.Transaction.Current.TransactionCompleted += (_, _) => transactionCompleted.Set();
-		Assert.True(transactionCompleted.Wait(TimeSpan.FromSeconds(60), TestContext.Current.CancellationToken));
+			using var connection = new MySqlConnection(connectionString);
+			var transactionException = Assert.Throws<TransactionException>(connection.Open);
+			Assert.IsType<TimeoutException>(transactionException.InnerException);
+			return;
+		}
 
-		var transactionException = Assert.Throws<TransactionException>(connection.Open);
-		Assert.IsType<TimeoutException>(transactionException.InnerException);
+		Assert.Fail("System.Transactions didn't time out the transaction.");
 	}
 
 	[SkippableFact(MySqlData = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")]
