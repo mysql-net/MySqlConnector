@@ -14,7 +14,7 @@ Complete documentation is available at the [MySqlConnector Documentation Website
 
 ### Performance
 
-This library outperforms MySQL Connector/NET (`MySql.Data`) on benchmarks:
+This library outperforms MySQL Connector/NET (`MySql.Data`) on benchmarks (lower is better):
 
 ![Benchmark](https://files.logoscdn.com/v1/assets/18420946/optimized?share=vnRIEg1fh7n3QTr1&f=png)
 

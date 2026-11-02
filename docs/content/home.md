@@ -74,7 +74,7 @@ TiDB | |
 
 ## Performance
 
-MySqlConnector outperforms Connector/NET (MySql.Data) on benchmarks:
+MySqlConnector outperforms Connector/NET (MySql.Data) on benchmarks (lower is better):
 
 <p><img src="https://files.logoscdn.com/v1/assets/18420946/optimized?share=vnRIEg1fh7n3QTr1&f=png" alt="Benchmark results for MySql.Data vs MySqlConnector" width="736" height="492"></p>
 
