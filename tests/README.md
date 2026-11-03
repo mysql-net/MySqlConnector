@@ -5,14 +5,19 @@
 The `IntegrationTests` project is intended to verify that MySqlConnector performs as expected with various MySQL-compatible servers.
 It also verifies that MySqlConnector and MySQL Connector/NET (MySql.Data) have similar behavior, except where MySqlConnector [fixes known bugs](https://mysqlconnector.net/tutorials/migrating-from-connector-net/#fixed-bugs) or makes other [non-backwards-compatible changes](https://mysqlconnector.net/tutorials/migrating-from-connector-net/).
 
-The tests require a MySQL server. The simplest way to run one is with [Docker](https://www.docker.com/community-edition):
+The tests require a MySQL server. The simplest way to run one is with `init.ps1`, which starts a MySQL Server container (using [WSL containers](https://learn.microsoft.com/windows/wsl/) if `wslc` is installed, otherwise [Docker](https://www.docker.com/community-edition)) and creates the users, schemas, and components used by the tests:
 
-    docker run -d --rm --pull always --name mysqlconnector -e MYSQL_ROOT_PASSWORD=pass -p 3306:3306 --tmpfs /var/lib/mysql mysql:26.10 --max-allowed-packet=96M --character-set-server=utf8mb4 --disable-log-bin --local-infile=1 --max-connections=250
-    docker exec mysqlconnector mysql -uroot -ppass -e "INSTALL COMPONENT 'file://component_query_attributes'; CREATE USER 'caching-sha2-user'@'%' IDENTIFIED WITH caching_sha2_password BY 'Cach!ng-Sh@2-Pa55'; GRANT ALL PRIVILEGES ON *.* TO 'caching-sha2-user'@'%';"
+    ./tests/init.ps1
+
+This also configures the server with the TLS certificates in `.ci/server/certs`, so you can set `Data.PasswordlessUser` to `no_password`, `Data.SecondaryDatabase` to `testdb2`, and `Data.CertificatesPath` (see below), and remove `CachingSha2Password`, `QueryAttributes`, and `Sha256Password` from `Data.UnsupportedFeatures`.
+
+To test MariaDB, pass its image (and a different container name and port to run it alongside MySQL), then set `Data.UnsupportedFeatures` to the list for that version in `.github/workflows/ci.yml`:
+
+    ./tests/init.ps1 -Image mariadb:12.3 -Name mariadb -Port 3123
 
 Copy the file `IntegrationTests/config.json.example` to `IntegrationTests/config.json`, then edit
-the `config.json` file in order to connect to your server. If you are using the Docker
-command above, then the default options will work and do not need to be modified.
+the `config.json` file in order to connect to your server. If you are using init.ps1
+then the default options will work and do not need to be modified.
 Otherwise, set the following options appropriately:
 
 * `Data.ConnectionString`: The full connection string to your server. You should specify a database name. If the database does not exist, the test will attempt to create it.
