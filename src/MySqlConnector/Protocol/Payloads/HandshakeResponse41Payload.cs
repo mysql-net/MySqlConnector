@@ -29,7 +29,6 @@ internal static class HandshakeResponse41Payload
 			(serverCapabilities & ProtocolCapabilities.DeprecateEof) |
 			(compressionMethod == CompressionMethod.Zstandard ? ProtocolCapabilities.ZstandardCompressionAlgorithm : 0) |
 			(serverCapabilities & ProtocolCapabilities.QueryAttributes) |
-			(serverCapabilities & ProtocolCapabilities.MariaDbCacheMetadata) |
 			additionalCapabilities;
 
 		writer.Write((int) clientCapabilities);
