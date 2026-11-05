@@ -202,6 +202,32 @@ values
   ('{33221100-5544-7766-8899-aabbccddeeff}', '{33221100-5544-7766-8899-aabbccddeeff}',
     '{33221100-5544-7766-8899-aabbccddeeff}', X'00112233445566778899AABBCCDDEEFF');
 
+drop table if exists datatypes_guid_column_types;
+create table datatypes_guid_column_types (
+  rowid integer not null primary key auto_increment,
+  char16 char(16) null,
+  varchar16 varchar(16) null,
+  binary16 binary(16) null,
+  varbinary16 varbinary(16) null,
+  char32 char(32) null,
+  varchar32 varchar(32) null,
+  binary32 binary(32) null,
+  varbinary32 varbinary(32) null,
+  char36 char(36) null,
+  varchar36 varchar(36) null,
+  binary36 binary(36) null,
+  varbinary36 varbinary(36) null
+);
+
+insert into datatypes_guid_column_types (char16, varchar16, binary16, varbinary16, char32, varchar32, binary32, varbinary32, char36, varchar36, binary36, varbinary36)
+values
+  ('0123456789abcdef', '0123456789abcdef', X'00112233445566778899AABBCCDDEEFF', X'00112233445566778899AABBCCDDEEFF',
+    '00112233445566778899aabbccddeeff', '00112233445566778899aabbccddeeff', '00112233445566778899aabbccddeeff', '00112233445566778899aabbccddeeff',
+    '00112233-4455-6677-8899-aabbccddeeff', '00112233-4455-6677-8899-aabbccddeeff', '00112233-4455-6677-8899-aabbccddeeff', '00112233-4455-6677-8899-aabbccddeeff');
+
+drop view if exists datatypes_guid_column_types_view;
+create view datatypes_guid_column_types_view as select * from datatypes_guid_column_types;
+
 drop table if exists datatypes_geometry;
 create table datatypes_geometry (
   rowid integer not null primary key auto_increment,

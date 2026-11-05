@@ -238,7 +238,7 @@ internal sealed class TypeMapper
 				var type = columnDefinition.ColumnType;
 				if (columnDefinition.CharacterSet == CharacterSet.Binary)
 				{
-					if ((guidFormat is MySqlGuidFormat.Binary16 or MySqlGuidFormat.TimeSwapBinary16 or MySqlGuidFormat.LittleEndianBinary16) && columnDefinition.ColumnLength == 16)
+					if ((guidFormat is MySqlGuidFormat.Binary16 or MySqlGuidFormat.TimeSwapBinary16 or MySqlGuidFormat.LittleEndianBinary16) && columnDefinition.ColumnLength == 16 && type == ColumnType.String)
 						return MySqlDbType.Guid;
 
 					return type switch

@@ -51,6 +51,15 @@ internal closed class ColumnReader
 					return GuidChar32ColumnReader.Instance;
 				goto case ColumnType.String;
 
+			case ColumnType.String when columnDefinition.ColumnLength == 16:
+				return connection.GuidFormat switch
+				{
+					MySqlGuidFormat.Binary16 => GuidBinary16ColumnReader.Instance,
+					MySqlGuidFormat.TimeSwapBinary16 => GuidTimeSwapBinary16ColumnReader.Instance,
+					MySqlGuidFormat.LittleEndianBinary16 => GuidLittleEndianBinary16ColumnReader.Instance,
+					_ => BytesColumnReader.Instance,
+				};
+
 			case ColumnType.String:
 			case ColumnType.VarString:
 			case ColumnType.VarChar:
@@ -62,16 +71,6 @@ internal closed class ColumnReader
 			case ColumnType.Set:
 				if (columnDefinition.CharacterSet != CharacterSet.Binary)
 					return StringColumnReader.Instance;
-				if (columnDefinition.ColumnLength == 16)
-				{
-					return connection.GuidFormat switch
-					{
-						MySqlGuidFormat.Binary16 => GuidBinary16ColumnReader.Instance,
-						MySqlGuidFormat.TimeSwapBinary16 => GuidTimeSwapBinary16ColumnReader.Instance,
-						MySqlGuidFormat.LittleEndianBinary16 => GuidLittleEndianBinary16ColumnReader.Instance,
-						_ => BytesColumnReader.Instance,
-					};
-				}
 				return BytesColumnReader.Instance;
 
 			case ColumnType.Json:
