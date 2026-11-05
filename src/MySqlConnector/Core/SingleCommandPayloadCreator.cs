@@ -365,7 +365,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 					outParameters.Add(param);
 					argParameterNames.Add(outName);
 
-					// special handling for GUIDs to ensure that the result set has a type and length that will be autodetected as a GUID
+					// special handling for GUIDs to ensure that the result set has the right length to be read with GetGuid
 					switch (param.MySqlDbType, param.Size)
 					{
 						case (MySqlDbType.Guid, 16):

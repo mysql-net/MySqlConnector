@@ -675,6 +675,13 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 			var columnIndex = i + 1;
 			if (param.HasSetDbType && !row.IsDBNull(columnIndex))
 			{
+				// servers report CAST(@out AS BINARY(16)) as VARBINARY(16), which isn't detected as a Guid column, so read it explicitly
+				if (param.MySqlDbType == MySqlDbType.Guid)
+				{
+					param.Value = row.GetGuid(columnIndex);
+					continue;
+				}
+
 				var dbTypeMapping = TypeMapper.Instance.GetDbTypeMapping(param.DbType);
 				if (dbTypeMapping is not null && param.DbType is not DbType.Object)
 				{

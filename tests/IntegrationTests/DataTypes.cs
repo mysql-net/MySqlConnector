@@ -674,7 +674,120 @@ UNHEX('33221100554477668899AABBCCDDEEFF'),
 		Assert.Equal(MySqlDbType.Binary, ((MySqlDbColumn) reader.GetColumnSchema()[0]).ProviderType);
 		Assert.Equal(data, reader.GetValue(0));
 	}
+
+	// a column read through a view or derived table must be detected the same way as when it's read directly from the table
+	public static TheoryData<MySqlGuidFormat, string, bool> GuidFormatsSourcesAndPrepare { get; } = new(
+		from guidFormat in new[] { MySqlGuidFormat.None, MySqlGuidFormat.Char36, MySqlGuidFormat.Char32, MySqlGuidFormat.Binary16, MySqlGuidFormat.TimeSwapBinary16, MySqlGuidFormat.LittleEndianBinary16 }
+		from source in new[] { "datatypes_guid_column_types", "datatypes_guid_column_types_view", "(select * from datatypes_guid_column_types) derived" }
+		from prepare in new[] { false, true }
+		select (guidFormat, source, prepare));
+
+	[Theory]
+	[MemberData(nameof(GuidFormatsSourcesAndPrepare))]
+	public void OnlyGuidFormatColumnTypeIsReturnedAsGuid(MySqlGuidFormat guidFormat, string source, bool prepare)
+	{
+		const string char16 = "0123456789abcdef";
+		const string char32 = "00112233445566778899aabbccddeeff";
+		const string char36 = "00112233-4455-6677-8899-aabbccddeeff";
+		byte[] binary16 = [0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF];
+		var isBinary16 = guidFormat is MySqlGuidFormat.Binary16 or MySqlGuidFormat.TimeSwapBinary16 or MySqlGuidFormat.LittleEndianBinary16;
+
+		// each value in datatypes_guid_column_types would be a valid GUID if its column were (incorrectly) read as a Guid
+		(string Column, object Value, MySqlDbType MySqlDbType)[] columns =
+		[
+			("char16", char16, MySqlDbType.String),
+			("varchar16", char16, MySqlDbType.VarChar),
+			("binary16", binary16, isBinary16 ? MySqlDbType.Guid : MySqlDbType.Binary),
+			("varbinary16", binary16, MySqlDbType.VarBinary),
+			("char32", char32, guidFormat == MySqlGuidFormat.Char32 ? MySqlDbType.Guid : MySqlDbType.String),
+			("varchar32", char32, MySqlDbType.VarChar),
+			("binary32", Encoding.ASCII.GetBytes(char32), MySqlDbType.Binary),
+			("varbinary32", Encoding.ASCII.GetBytes(char32), MySqlDbType.VarBinary),
+			("char36", char36, guidFormat == MySqlGuidFormat.Char36 ? MySqlDbType.Guid : MySqlDbType.String),
+			("varchar36", char36, MySqlDbType.VarChar),
+			("binary36", Encoding.ASCII.GetBytes(char36), MySqlDbType.Binary),
+			("varbinary36", Encoding.ASCII.GetBytes(char36), MySqlDbType.VarBinary),
+		];
+
+		var csb = CreateConnectionStringBuilder();
+		csb.GuidFormat = guidFormat;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+		using var command = new MySqlCommand($"select {string.Join(", ", columns.Select(x => x.Column))} from {source};", connection);
+		if (prepare)
+			command.Prepare();
+		using var reader = command.ExecuteReader();
+		Assert.True(reader.Read());
+
+		var schema = reader.GetColumnSchema();
+		var expected = columns.Select(x => (x.Column, x.MySqlDbType, x.MySqlDbType == MySqlDbType.Guid ? typeof(Guid) : x.Value.GetType()));
+		var actual = columns.Select((x, i) => (x.Column, ((MySqlDbColumn) schema[i]).ProviderType, reader.GetFieldType(i)));
+		Assert.Equal(expected, actual);
+
+		for (var i = 0; i < columns.Length; i++)
+		{
+			if (columns[i].MySqlDbType == MySqlDbType.Guid)
+				Assert.IsType<Guid>(reader.GetValue(i));
+			else
+				Assert.Equal(columns[i].Value, reader.GetValue(i));
+		}
+	}
 #endif
+
+	public static TheoryData<bool, bool> OldGuidsAndPrepare { get; } = new(
+		from oldGuids in new[] { false, true }
+		from prepare in new[] { false, true }
+		select (oldGuids, prepare));
+
+	[Theory]
+	[MemberData(nameof(OldGuidsAndPrepare))]
+	public void OnlyOldGuidsColumnTypeIsReturnedAsGuid(bool oldGuids, bool prepare)
+	{
+		var csb = CreateConnectionStringBuilder();
+		csb.OldGuids = oldGuids;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+		using var command = new MySqlCommand("select binary16, varbinary16, char36, varchar36 from datatypes_guid_column_types;", connection);
+		if (prepare)
+			command.Prepare();
+		using var reader = command.ExecuteReader();
+		Assert.True(reader.Read());
+
+		Type[] expected = oldGuids ? [typeof(Guid), typeof(byte[]), typeof(string), typeof(string)] : [typeof(byte[]), typeof(byte[]), typeof(Guid), typeof(string)];
+		Assert.Equal(expected, Enumerable.Range(0, reader.FieldCount).Select(reader.GetFieldType));
+		Assert.Equal(expected, Enumerable.Range(0, reader.FieldCount).Select(i => reader.GetValue(i).GetType()));
+	}
+
+	// the server reports these computed values as VARBINARY(16)
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void CastAsBinary16IsNotReturnedAsGuid(bool prepare) =>
+		DoComputedBinary16IsNotReturnedAsGuid("select cast(X'00112233445566778899AABBCCDDEEFF' as binary(16));", prepare);
+
+	[SkippableTheory(ServerFeatures.UuidToBin)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void UuidToBinIsNotReturnedAsGuid(bool prepare) =>
+		DoComputedBinary16IsNotReturnedAsGuid("select uuid_to_bin('00112233-4455-6677-8899-aabbccddeeff');", prepare);
+
+	private void DoComputedBinary16IsNotReturnedAsGuid(string sql, bool prepare)
+	{
+		var csb = CreateConnectionStringBuilder();
+		csb.OldGuids = true;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+		using var command = new MySqlCommand(sql, connection);
+		if (prepare)
+			command.Prepare();
+		using var reader = command.ExecuteReader();
+		Assert.Equal(typeof(byte[]), reader.GetFieldType(0));
+		Assert.True(reader.Read());
+		Assert.Equal(new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }, reader.GetValue(0));
+
+		// GetGuid can still read the value; OldGuids uses little-endian byte order
+		Assert.Equal(new Guid("33221100-5544-7766-8899-aabbccddeeff"), reader.GetGuid(0));
+	}
 
 	[Theory]
 	[InlineData("`Date`", "DATE", new object[] { null, "1000 01 01", "9999 12 31", null, "2016 04 05" })]
