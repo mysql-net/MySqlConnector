@@ -296,35 +296,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 				_ => ((ReadOnlyMemory<byte>) Value).Span,
 			};
 
-			// determine the number of bytes to be written
-			var length = inputSpan.Length + BinaryBytes.Length + 1;
-			foreach (var by in inputSpan)
-			{
-				if (by is 0x27 || by is 0x00 or 0x5C && !noBackslashEscapes)
-					length++;
-			}
-
-			var outputSpan = writer.GetSpan(length);
-			BinaryBytes.CopyTo(outputSpan);
-			var index = BinaryBytes.Length;
-			foreach (var by in inputSpan)
-			{
-				if (by == 0x00 && !noBackslashEscapes)
-				{
-					// \0
-					outputSpan[index++] = 0x5C;
-					outputSpan[index++] = 0x30;
-				}
-				else
-				{
-					if (by is 0x27 || by is 0x5C && !noBackslashEscapes)
-						outputSpan[index++] = by;
-					outputSpan[index++] = by;
-				}
-			}
-			outputSpan[index++] = 0x27;
-			Debug.Assert(index == length, "index == length");
-			writer.Advance(index);
+			WriteBinaryLiteral(writer, noBackslashEscapes, inputSpan);
 		}
 		else if (Value is Stream)
 		{
@@ -469,14 +441,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 						Utility.SwapBytes(bytes, 1, 3);
 					}
 				}
-				writer.Write(BinaryBytes);
-				foreach (var by in bytes)
-				{
-					if (by is 0x00 or 0x27 or 0x5C)
-						writer.Write((byte) 0x5C);
-					writer.Write(by == 0 ? (byte) 0x30 : by);
-				}
-				writer.Write((byte) '\'');
+				WriteBinaryLiteral(writer, noBackslashEscapes, bytes);
 			}
 			else
 			{
@@ -539,6 +504,41 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		else
 		{
 			throw new NotSupportedException($"Parameter type {Value.GetType().Name} is not supported; see https://mysqlconnector.net/param-type. Value: {Value}");
+		}
+
+		static void WriteBinaryLiteral(ByteBufferWriter writer, bool noBackslashEscapes, ReadOnlySpan<byte> inputSpan)
+		{
+			var binaryLiteralPrefix = "_binary'"u8;
+
+			// determine the number of bytes to be written
+			var length = inputSpan.Length + binaryLiteralPrefix.Length + 1;
+			foreach (var by in inputSpan)
+			{
+				if (by is 0x27 || by is 0x00 or 0x5C && !noBackslashEscapes)
+					length++;
+			}
+
+			var outputSpan = writer.GetSpan(length);
+			binaryLiteralPrefix.CopyTo(outputSpan);
+			var index = binaryLiteralPrefix.Length;
+			foreach (var by in inputSpan)
+			{
+				if (by == 0x00 && !noBackslashEscapes)
+				{
+					// \0
+					outputSpan[index++] = 0x5C;
+					outputSpan[index++] = 0x30;
+				}
+				else
+				{
+					if (by is 0x27 || by is 0x5C && !noBackslashEscapes)
+						outputSpan[index++] = by;
+					outputSpan[index++] = by;
+				}
+			}
+			outputSpan[index++] = 0x27;
+			Debug.Assert(index == length, "index == length");
+			writer.Advance(index);
 		}
 
 		static void WriteString(ByteBufferWriter writer, bool noBackslashEscapes, ReadOnlySpan<char> value)
@@ -998,8 +998,6 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			return bytes;
 		}
 	}
-
-	private static ReadOnlySpan<byte> BinaryBytes => "_binary'"u8;
 
 	private DbType m_dbType;
 	private MySqlDbType m_mySqlDbType;

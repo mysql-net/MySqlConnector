@@ -428,6 +428,18 @@ SELECT @'var' as R")]
 	}
 
 	[Theory]
+	[InlineData(StatementPreparerOptions.GuidFormatBinary16, false, "_binary'\\0''\\\\ABCD\u00A1EFGHIJK'")]
+	[InlineData(StatementPreparerOptions.GuidFormatBinary16, true, "_binary'\0''\\ABCD\u00A1EFGHIJK'")]
+	public void GuidFormatBinaryEscaping(object guidFormatOptions, bool noBackslashEscapes, string replacedValue)
+	{
+		var parameters = new MySqlParameterCollection { new("@param", new Guid("00275c41-4243-44c2-a145-464748494a4b")) };
+		const string sql = "SELECT @param;";
+		var options = (StatementPreparerOptions) guidFormatOptions | (noBackslashEscapes ? StatementPreparerOptions.NoBackslashEscapes : StatementPreparerOptions.None);
+		var parsedSql = GetParsedSql(sql, parameters, options);
+		Assert.Equal(sql.Replace("@param", replacedValue), parsedSql);
+	}
+
+	[Theory]
 	[InlineData("SELECT 1;", "SELECT 1;", false, true)]
 	[InlineData("SELECT 1;", "SELECT 1;", true, true)]
 	[InlineData("SELECT 1", "SELECT 1", false, true)]
