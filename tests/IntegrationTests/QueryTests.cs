@@ -1382,6 +1382,42 @@ create table command_behavior_single_result(id integer not null primary key);");
 		var result = cmd.ExecuteScalar();
 		Assert.Equal(value, result);
 	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void NoBackslashEscapesBinaryGuid(bool noBackslashEscapes)
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.GuidFormat = MySqlGuidFormat.Binary16;
+		csb.NoBackslashEscapes = noBackslashEscapes;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+		if (noBackslashEscapes)
+			connection.Execute("SET @@sql_mode = CONCAT(@@sql_mode, ',NO_BACKSLASH_ESCAPES');");
+
+		connection.Execute("""
+			DROP TABLE IF EXISTS no_backslash_escapes_guid;
+			CREATE TABLE no_backslash_escapes_guid (id INT PRIMARY KEY, token BINARY(16) NOT NULL);
+			""");
+		var guids = new[] { Guid.Empty, new Guid("00275c41-4243-44c2-a145-464748494a4b") };
+		for (var i = 0; i < guids.Length; i++)
+		{
+			using var insert = new MySqlCommand("INSERT INTO no_backslash_escapes_guid VALUES (@id, @token);", connection);
+			insert.Parameters.AddWithValue("@id", i);
+			insert.Parameters.AddWithValue("@token", guids[i]);
+			insert.ExecuteNonQuery();
+		}
+
+		using var select = new MySqlCommand("SELECT token FROM no_backslash_escapes_guid ORDER BY id;", connection);
+		using var reader = select.ExecuteReader();
+		foreach (var expected in guids)
+		{
+			Assert.True(reader.Read());
+			Assert.Equal(expected, reader.GetGuid(0));
+		}
+		Assert.False(reader.Read());
+	}
 #endif
 
 	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=97067")]
