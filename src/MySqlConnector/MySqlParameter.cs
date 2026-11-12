@@ -66,7 +66,10 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 
 	public override DbType DbType
 	{
-		get => m_dbType;
+		get
+		{
+			return m_dbType;
+		}
 		set
 		{
 			m_dbType = value;
@@ -78,7 +81,10 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 	[DbProviderSpecificTypeProperty(true)]
 	public MySqlDbType MySqlDbType
 	{
-		get => m_mySqlDbType;
+		get
+		{
+			return m_mySqlDbType;
+		}
 		set
 		{
 			m_dbType = TypeMapper.Instance.GetDbTypeForMySqlDbType(value);
@@ -89,7 +95,10 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 
 	public override ParameterDirection Direction
 	{
-		get => m_direction.GetValueOrDefault(ParameterDirection.Input);
+		get
+		{
+			return m_direction.GetValueOrDefault(ParameterDirection.Input);
+		}
 		set
 		{
 			if (value is not (ParameterDirection.Input or ParameterDirection.Output or
@@ -108,7 +117,10 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 	[AllowNull]
 	public override string ParameterName
 	{
-		get => m_name;
+		get
+		{
+			return m_name;
+		}
 		set
 		{
 			m_name = value ?? "";
@@ -133,7 +145,11 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 
 	public override object? Value
 	{
-		get => m_value;
+		get
+		{
+			return m_value;
+		}
+
 		set
 		{
 			m_value = value;

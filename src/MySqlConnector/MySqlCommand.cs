@@ -227,7 +227,10 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	/// <inheritdoc/>
 	public override int CommandTimeout
 	{
-		get => Math.Min(m_commandTimeout ?? Connection?.DefaultCommandTimeout ?? 0, int.MaxValue / 1000);
+		get
+		{
+			return Math.Min(m_commandTimeout ?? Connection?.DefaultCommandTimeout ?? 0, int.MaxValue / 1000);
+		}
 		set
 		{
 			ArgumentOutOfRangeException.ThrowIfNegative(value);

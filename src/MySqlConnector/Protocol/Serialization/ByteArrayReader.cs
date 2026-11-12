@@ -13,7 +13,10 @@ internal ref struct ByteArrayReader
 
 	public int Offset
 	{
-		readonly get => m_offset;
+		readonly get
+		{
+			return m_offset;
+		}
 		set
 		{
 			ArgumentOutOfRangeException.ThrowIfNegative(value);
