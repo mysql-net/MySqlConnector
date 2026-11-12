@@ -1,5 +1,5 @@
 ---
-lastmod: 2026-10-31
+lastmod: 2026-11-11
 date: 2017-03-27
 menu:
   main:
@@ -11,34 +11,45 @@ weight: 30
 
 # Version History
 
-### 3.0.0 Beta 1
+### 3.0.0
 
 * Support .NET 11.
   * Support `zstd` compression on .NET 11: [#717](https://github.com/mysql-net/MySqlConnector/issues/717).
   * With `UseCompression=True`, `zstd` is preferred over `zlib` if the server supports it.
-* **Breaking** Remove .NET 6.0 and .NET 9.0 target frameworks.
-  * .NET 6.0 support ended on 12 November 2024.
+* **Possibly Breaking** Remove .NET 6.0 and .NET 9.0 target frameworks.
+  * Microsoft ended .NET 6.0 support on 12 November 2024 and .NET 9.0 support on 10 November 2026.
   * The minimum supported version of .NET is now .NET 8.0; .NET 9.0 applications will use the `net8.0` build.
   * .NET 6.0 and .NET 7.0 applications should still work via `netstandard2.1`, but won't have `DbBatch` integration or `DateOnly`/`TimeOnly` support.
+* **Possibly Breaking** Remove .NET Framework 4.6.2 integration tests.
+  * MySqlConnector still targets `net462` as the minimum supported .NET Framework version but the integration tests for it have been removed and no longer run on each CI build.
+  * .NET Framework 4.6.2 will be unsupported [on 12 January 2027](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-framework) and we advise users to upgrade to a supported version.
 * **Breaking** Remove experimental OpenTelemetry semantic conventions: [#1435](https://github.com/mysql-net/MySqlConnector/issues/1435).
   * Only the [stable database semantic conventions](https://opentelemetry.io/docs/specs/semconv/db/database-spans/) are emitted; the `OTEL_SEMCONV_STABILITY_OPT_IN` environment variable is ignored.
   * `MySqlConnectorTracingOptionsBuilder.WithSemanticConventionsKinds` is now `[Obsolete]` and has no effect.
   * The legacy `db.connection_string`, `db.name`, `db.statement`, `db.system`, `db.user`, `net.*`, and `thread.id` tags and the `exception` event are no longer recorded.
   * `Open` activities now have `db.namespace` and `server.address` tags even if the connection fails.
   * A command timeout sets `error.type` to `timeout`.
-* **Possibly breaking** Update dependencies to avoid binding redirects on .NET Framework: [#1674](https://github.com/mysql-net/MySqlConnector/issues/1674).
-* **Possibly breaking** When a pooled connection's database was changed (with `ChangeDatabase` or `USE`), select the connection string's `Database` again without reauthenticating: [#1671](https://github.com/mysql-net/MySqlConnector/pull/1671).
+* **Possibly Breaking** `VARBINARY(16)` columns are no longer read as `Guid` when using `Binary16` `GuidFormat`: [#1691](https://github.com/mysql-net/MySqlConnector/issues/1691).
+  * A workaround is to call `MySqlDataReader.GetGuid` instead of `GetValue`.
+* **Possibly Breaking** Update dependencies to avoid binding redirects on .NET Framework: [#1674](https://github.com/mysql-net/MySqlConnector/issues/1674).
+* **Possibly Breaking** When a pooled connection's database was changed (with `ChangeDatabase` or `USE`), select the connection string's `Database` again without reauthenticating: [#1671](https://github.com/mysql-net/MySqlConnector/pull/1671).
   * This avoids calling `ProvidePasswordCallback` and saves round trips when pipelining is enabled.
   * With `ConnectionReset=False`, other session state is no longer reset in this case.
+* **Possibly Breaking** Set isolation level for XA transactions from `TransactionScope`: [#1299](https://github.com/mysql-net/MySqlConnector/issues/1299).
+  * XA transactions that don't specify an isolation level now use `SERIALIZABLE` instead of the server default.
+* **Possibly Breaking** Changed several columns in the `tables` schema from `long` to `ulong`; this matches the data type on most MySQL servers.
 * Add `MySqlDataSource.Clear` and `MySqlDataSource.ClearAsync`: [#1670](https://github.com/mysql-net/MySqlConnector/issues/1670).
 * Return `true` from `MySqlTransaction.SupportsSavepoints`: [#1676](https://github.com/mysql-net/MySqlConnector/issues/1676).
 * Use a plugin registered with `AuthenticationPlugins.Register` when the server switches to an authentication method that MySqlConnector doesn't implement: [#1678](https://github.com/mysql-net/MySqlConnector/pull/1678).
 * Use `performance_schema.processlist` for the `ProcessList` schema with MySQL 8.0.22 and later: [#1443](https://github.com/mysql-net/MySqlConnector/issues/1443).
 * Remove proxy detection for retired Azure Database for MySQL Single Server: [#1661](https://github.com/mysql-net/MySqlConnector/issues/1661).
+* Identify the column in InvalidCastException messages: [#1135](https://github.com/mysql-net/MySqlConnector/issues/1135).
+* Respect NoBackslashEscapes for binary GUID parameters: [#1692](https://github.com/mysql-net/MySqlConnector/issues/1692).
 * Fix `DnsCheckInterval` so new connections use the pool's cached DNS addresses, instead of possibly reconnecting to the old IP address after a DNS change: [#1666](https://github.com/mysql-net/MySqlConnector/issues/1666).
 * Fix prepared statement executing against the wrong database: [#1684](https://github.com/mysql-net/MySqlConnector/issues/1684).
 * Fix `DbType.Object` being mapped to `MySqlDbType.Vector`: [#1679](https://github.com/mysql-net/MySqlConnector/issues/1679).
 * Fix error status not being recorded on `Execute` activity: [#1667](https://github.com/mysql-net/MySqlConnector/issues/1667).
+* Fix `Parameter '@'%'' must be defined.` when executing account management statements: [#1480](https://github.com/mysql-net/MySqlConnector/issues/1480).
 * Optimization: Read typed values (e.g., `GetInt32`, `GetDateTime`) without boxing: [#721](https://github.com/mysql-net/MySqlConnector/issues/721).
 * Optimization: Reduce lock contention when resetting the command timeout for each row: [#1290](https://github.com/mysql-net/MySqlConnector/issues/1290).
 * Optimization: Reuse a cached buffer for large packets: [#1686](https://github.com/mysql-net/MySqlConnector/pull/1686).
