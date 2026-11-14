@@ -22,18 +22,18 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Set up .NET
-        uses: ./.github/actions/setup-dotnet
+        uses: $/.github/actions/setup-dotnet
         with:
           target-framework: ${{ inputs.tfm }}
 
       - name: Restore test binaries
-        uses: ./.github/actions/restore-test-binaries
+        uses: $/.github/actions/restore-test-binaries
 
       - name: MySqlConnector tests
-        uses: ./.github/actions/run-tests
+        uses: $/.github/actions/run-tests
         with:
           project: MySqlConnector.Tests
           target-framework: ${{ inputs.tfm }}
@@ -41,7 +41,7 @@ jobs:
 
       - name: Dependency injection tests
         if: ${{ !cancelled() && hashFiles(format('artifacts/bin/MySqlConnector.DependencyInjection.Tests/release_{0}/*.dll', inputs.tfm)) != '' }}
-        uses: ./.github/actions/run-tests
+        uses: $/.github/actions/run-tests
         with:
           project: MySqlConnector.DependencyInjection.Tests
           target-framework: ${{ inputs.tfm }}
@@ -49,7 +49,7 @@ jobs:
 
       - name: MySql.Data tests
         if: ${{ !cancelled() && hashFiles(format('artifacts/bin/MySqlConnector.Tests/mysqldata_{0}/*.dll', inputs.tfm)) != '' }}
-        uses: ./.github/actions/run-tests
+        uses: $/.github/actions/run-tests
         with:
           project: MySqlConnector.Tests
           target-framework: ${{ inputs.tfm }}
@@ -58,6 +58,6 @@ jobs:
 
       - name: Upload test results
         if: ${{ !cancelled() }}
-        uses: ./.github/actions/upload-test-results
+        uses: $/.github/actions/upload-test-results
         with:
           name: unit ${{ runner.os }} ${{ inputs.tfm }}

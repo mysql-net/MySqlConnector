@@ -20,7 +20,7 @@ runs:
         "name=test-results-$name" >> $env:GITHUB_OUTPUT
 
     - name: Upload test results
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v7.0.2
       with:
         name: ${{ steps.artifact.outputs.name }}
         path: ${{ runner.temp }}/TestResults/*.trx

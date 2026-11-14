@@ -22,7 +22,7 @@ jobs:
       contents: read
     steps:
       - name: Report test results
-        uses: dorny/test-reporter@v3
+        uses: dorny/test-reporter@v3.2.0
         with:
           artifact: test-results
           name: Test Results

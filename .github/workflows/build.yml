@@ -47,13 +47,13 @@ jobs:
         shell: pwsh
     steps:
       - name: Check out
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           # MinVer calculates the version from the git history
           fetch-depth: 0
 
       - name: Set up .NET
-        uses: ./.github/actions/setup-dotnet
+        uses: $/.github/actions/setup-dotnet
 
       - name: Copy integration test configuration
         run: Copy-Item .ci/config/config.json tests/IntegrationTests/config.json
@@ -93,7 +93,7 @@ jobs:
         run: tar -cf test-binaries.tar artifacts/bin/Conformance.Tests artifacts/bin/IntegrationTests artifacts/bin/MySqlConnector.DependencyInjection.Tests artifacts/bin/MySqlConnector.Tests
 
       - name: Upload test binaries
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: test-binaries-${{ runner.os }}
           path: test-binaries.tar
@@ -102,7 +102,7 @@ jobs:
 
       - name: Upload packages
         if: inputs.pack
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: packages
           path: artifacts/packages/*.nupkg

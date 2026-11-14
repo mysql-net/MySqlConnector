@@ -31,7 +31,7 @@ runs:
         "version=$version" >> $env:GITHUB_OUTPUT
 
     - name: Install .NET
-      uses: actions/setup-dotnet@v6
+      uses: actions/setup-dotnet@v6.1.0
       with:
         global-json-file: global.json
         dotnet-version: ${{ steps.runtime.outputs.version }}

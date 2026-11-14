@@ -62,19 +62,19 @@ jobs:
       TEST_NAME: ${{ inputs.configuration == 'MySqlData' && 'MySql.Data integration tests' || 'Integration tests' }}
     steps:
       - name: Check out
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Set up .NET
-        uses: ./.github/actions/setup-dotnet
+        uses: $/.github/actions/setup-dotnet
         with:
           target-framework: ${{ inputs.tfm }}
 
       - name: Restore test binaries
-        uses: ./.github/actions/restore-test-binaries
+        uses: $/.github/actions/restore-test-binaries
 
       - name: Log in to Docker Hub
         if: runner.os == 'Linux' && env.DOCKERHUB_TOKEN != ''
-        uses: docker/login-action@v4
+        uses: docker/login-action@v4.8.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -93,7 +93,7 @@ jobs:
 
       - name: Conformance tests
         if: inputs.configuration == 'Release' && hashFiles(format('artifacts/bin/Conformance.Tests/release_{0}/*.dll', inputs.tfm)) != ''
-        uses: ./.github/actions/run-tests
+        uses: $/.github/actions/run-tests
         env:
           CONNECTION_STRING: ${{ env.CONNECTION_OPTIONS }};database=conformance;ssl mode=disabled;${{ inputs.connection-string-extra }}
         with:
@@ -103,7 +103,7 @@ jobs:
 
       - name: ${{ env.TEST_NAME }} (No SSL)
         if: ${{ !cancelled() && steps.server.outcome == 'success' && contains(fromJSON(inputs.variants), 'nossl') }}
-        uses: ./.github/actions/run-tests
+        uses: $/.github/actions/run-tests
         env:
           DATA__CONNECTIONSTRING: ${{ env.CONNECTION_OPTIONS }};database=mysqltest;ssl mode=disabled;${{ inputs.connection-string-extra }}
         with:
@@ -114,7 +114,7 @@ jobs:
 
       - name: ${{ env.TEST_NAME }} (SSL)
         if: ${{ !cancelled() && steps.server.outcome == 'success' && contains(fromJSON(inputs.variants), 'ssl') }}
-        uses: ./.github/actions/run-tests
+        uses: $/.github/actions/run-tests
         env:
           DATA__CONNECTIONSTRING: ${{ env.CONNECTION_OPTIONS }};database=mysqltest;ssl mode=required;certificate file=${{ github.workspace }}/.ci/server/certs/ssl-client.pfx;${{ inputs.connection-string-extra }}
         with:
@@ -125,7 +125,7 @@ jobs:
 
       - name: ${{ env.TEST_NAME }} (Compression)
         if: ${{ !cancelled() && steps.server.outcome == 'success' && contains(fromJSON(inputs.variants), 'compression') }}
-        uses: ./.github/actions/run-tests
+        uses: $/.github/actions/run-tests
         env:
           DATA__CONNECTIONSTRING: ${{ env.CONNECTION_OPTIONS }};database=mysqltest;ssl mode=disabled;UseCompression=True;${{ inputs.connection-string-extra }}
         with:
@@ -136,6 +136,6 @@ jobs:
 
       - name: Upload test results
         if: ${{ !cancelled() }}
-        uses: ./.github/actions/upload-test-results
+        uses: $/.github/actions/upload-test-results
         with:
           name: integration ${{ inputs.configuration }} ${{ inputs.docker-image || runner.os }} ${{ inputs.tfm }}
