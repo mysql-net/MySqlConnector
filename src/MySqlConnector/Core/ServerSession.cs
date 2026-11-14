@@ -557,7 +557,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				{
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
-				else if (!m_isSecureConnection && password.Length != 0)
+				else if (!IsSecureTransportForAuthentication(currentAuthenticationMethod) && password.Length != 0)
 				{
 					var publicKey = await GetRsaPublicKeyAsync(currentAuthenticationMethod, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 					payload = await SendEncryptedPasswordAsync(AuthPluginData, publicKey, password, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -925,6 +925,12 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private bool IsServerIdentityVerifiedForPassword =>
 		m_isUnixSocketConnection || m_isLoopbackConnection || (m_isSecureConnection && m_sslPolicyErrors == SslPolicyErrors.None);
 
+	// Over a secure transport, the server expects sha256_password and caching_sha2_password full authentication to send the password in
+	// clear text instead of encrypting it with the server's RSA public key. The server always treats TLS as secure, but treats a Unix
+	// domain socket as secure only for caching_sha2_password; it still expects an RSA-encrypted password for sha256_password.
+	private bool IsSecureTransportForAuthentication(string authenticationMethod) =>
+		m_isSecureConnection || (m_isUnixSocketConnection && authenticationMethod == "caching_sha2_password");
+
 	private async Task<PayloadData> SwitchAuthenticationAsync(ConnectionSettings cs, string password, PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		// if the server didn't support the hashed password; rehash with the new challenge
@@ -970,7 +976,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				goto case "sha256_password";
 
 			case "sha256_password":
-				if (!m_isSecureConnection && password.Length != 0)
+				if (!IsSecureTransportForAuthentication(switchRequest.Name) && password.Length != 0)
 				{
 					var publicKey = await GetRsaPublicKeyAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 					return await SendEncryptedPasswordAsync(switchRequest.Data, publicKey, password, ioBehavior, cancellationToken).ConfigureAwait(false);
