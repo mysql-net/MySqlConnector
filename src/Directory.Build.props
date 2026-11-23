@@ -27,8 +27,23 @@
     <MinVerDefaultPreReleaseIdentifiers>beta.0</MinVerDefaultPreReleaseIdentifiers>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <GenerateSBOM>true</GenerateSBOM>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Sbom.Targets" PrivateAssets="All" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Include="..\..\docs\static\img\logo.png" Pack="true" PackagePath="\" />
   </ItemGroup>
+
+  <!-- Microsoft.Sbom.Targets reads $(Version) at evaluation time, but MinVer sets it during the build. -->
+  <Target Name="SetSbomPackageVersion" BeforeTargets="GenerateSbomTarget">
+    <PropertyGroup>
+      <SbomGenerationPackageVersion>$(PackageVersion)</SbomGenerationPackageVersion>
+    </PropertyGroup>
+  </Target>
 
 </Project>
