@@ -29,6 +29,7 @@
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <GenerateSBOM>true</GenerateSBOM>
+    <SbomGenerationManifestInfo>SPDX:3.0</SbomGenerationManifestInfo>
   </PropertyGroup>
 
   <ItemGroup>
