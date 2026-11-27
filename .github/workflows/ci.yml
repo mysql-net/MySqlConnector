@@ -211,7 +211,7 @@ jobs:
         run: dotnet restore
 
       - name: Component detection
-        uses: advanced-security/component-detection-dependency-submission-action@v0.2.0
+        uses: advanced-security/component-detection-dependency-submission-action@v0.2.1
 
   # combines all jobs' test results into one artifact, which test-results.yml reports as a single check run;
   # that's a separate workflow because pull requests from forks don't get the "checks: write" permission
